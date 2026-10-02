@@ -1,0 +1,301 @@
+<title>KG Cities Interface</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Signika:wght@300;400;500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
+<style>
+  /* Layout: two fixed 1440x900 Foundry screens, scaled to fit the page width. Single dark look, by design: it mirrors the night map. */
+  :root {
+    --panel: rgba(12, 16, 26, 0.93);
+    --panel-2: rgba(22, 28, 42, 0.95);
+    --line: rgba(255, 255, 255, 0.08);
+    --line-2: rgba(255, 255, 255, 0.14);
+    --text: #e8edf3;
+    --muted: #93a1b5;
+    --faint: #66748a;
+    --gold: #ffc94a;
+    --gold-2: #f2c14e;
+    --gold-ink: #2a1d05;
+    --haven: #4cc9ff;
+    --danger: #ff6b6b;
+    --radius: 12px;
+    --shadow: 0 18px 50px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+  * { box-sizing: border-box; }
+  :root { color-scheme: dark; --ground: #05070b; }
+  body { margin: 0; background: var(--ground); font-family: Signika, "Segoe UI", system-ui, sans-serif; color: var(--text); padding-inline: 16px; padding-block: 24px 40px; }
+  .intro { max-width: 1440px; margin: 0 auto 20px; display: grid; gap: 6px; }
+  .intro h1 { margin: 0; font-weight: 600; font-size: 1.6rem; text-wrap: balance; }
+  .intro p { margin: 0; color: var(--muted); max-width: 70ch; line-height: 1.5; }
+  .intro ul { margin: 6px 0 0; padding-left: 1.2em; color: var(--muted); line-height: 1.6; max-width: 80ch; }
+  .intro b { color: var(--text); font-weight: 500; }
+  .stage { max-width: 1440px; margin: 0 auto 28px; }
+  .stage h2 { margin: 0 0 10px; font-weight: 500; font-size: 1.05rem; color: var(--muted); letter-spacing: .04em; }
+  .fit { position: relative; width: 100%; aspect-ratio: 1440 / 900; max-width: 100%; overflow: hidden; border-radius: 8px; }
+  .fit .frame { position: absolute; left: 0; top: 0; transform-origin: 0 0; margin: 0; }
+  .frame { position: relative; width: 1440px; height: 900px; overflow: hidden; margin: 0 auto 24px; border-radius: 6px; }
+  .map { position: absolute; inset: 0; background-size: cover; background-position: center; filter: saturate(1.05); }
+  .night { background-image: url(night-backdrop.jpg); }
+  .tag { position: absolute; left: 16px; bottom: 14px; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); background: rgba(0,0,0,.55); padding: 6px 10px; border-radius: 6px; }
+
+  /* Landmarks drawn on the map */
+  .lm { position: absolute; border-radius: 4px; }
+  .lm.gold { background: linear-gradient(160deg, #ffe08a, #d9a23a); box-shadow: 0 0 0 1px #fff3c9, 0 0 22px 6px rgba(255, 201, 74, .55); }
+  .lm.haven { background: linear-gradient(160deg, #9fe1ff, #2f86d6); box-shadow: 0 0 0 1px #dff4ff, 0 0 22px 6px rgba(76, 201, 255, .5); }
+  .lm-name { position: absolute; font-weight: 500; font-size: 15px; text-shadow: 0 0 6px rgba(0,0,0,.9), 0 0 14px currentColor; white-space: nowrap; }
+  .lm-name.gold { color: #ffe08a; }
+  .lm-name.haven { color: #9fe1ff; }
+  .selected { outline: 2px dashed var(--gold); outline-offset: 6px; animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 50% { outline-color: rgba(255, 201, 74, .35); } }
+
+  /* Shared panel */
+  .panel { position: absolute; background: var(--panel); border: 1px solid var(--line-2); border-radius: var(--radius); box-shadow: var(--shadow); backdrop-filter: blur(10px); }
+  .kbd { display: inline-block; min-width: 20px; padding: 1px 6px; border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 5px; font-size: 11px; color: var(--muted); text-align: center; background: rgba(255,255,255,.03); }
+  .badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; }
+  .badge.gold { color: var(--gold); background: rgba(255, 201, 74, .12); border: 1px solid rgba(255, 201, 74, .35); }
+  .badge.haven { color: var(--haven); background: rgba(76, 201, 255, .12); border: 1px solid rgba(76, 201, 255, .35); }
+  .badge.gm { color: #c9b6ff; background: rgba(160, 130, 255, .12); border: 1px solid rgba(160, 130, 255, .3); }
+
+  /* Hover card */
+  .card { width: 360px; overflow: hidden; }
+  .card .art { height: 168px; background-size: cover; background-position: center; position: relative; }
+  .card .art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 45%, var(--panel) 100%); }
+  .card .art .badge { position: absolute; top: 12px; left: 12px; z-index: 1; backdrop-filter: blur(6px); background: rgba(12,16,26,.7); }
+  .card .body { padding: 2px 18px 14px; }
+  .card h3 { margin: 0; font-size: 21px; font-weight: 600; color: #ffe08a; }
+  .card .sub { margin: 2px 0 10px; color: var(--muted); font-size: 13px; font-style: italic; }
+  .card p { margin: 0 0 12px; font-size: 13.5px; line-height: 1.5; color: #cfd8e3; }
+  .meta { display: flex; gap: 12px; font-size: 12.5px; color: var(--muted); margin-bottom: 12px; }
+  .meta i { color: var(--faint); margin-right: 4px; }
+  .card .foot { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--line); padding: 10px 18px; font-size: 12.5px; color: var(--muted); background: rgba(255,255,255,.02); }
+  .card .foot b { color: var(--text); font-weight: 500; }
+  .card.small { width: 300px; }
+  .card.small h3 { color: #9fe1ff; font-size: 18px; }
+  .card.small .body { padding-top: 14px; }
+
+  /* Search palette */
+  .search { width: 620px; left: 50%; transform: translateX(-50%); top: 34px; overflow: hidden; }
+  .search .bar { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+  .search .bar i { color: var(--muted); font-size: 17px; }
+  .search .bar .q { flex: 1; font-size: 19px; }
+  .search .bar .q .caret { display: inline-block; width: 2px; height: 20px; background: var(--gold); vertical-align: -3px; margin-left: 1px; }
+  .group { padding: 8px 10px 4px; }
+  .group h4 { margin: 4px 10px 6px; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); font-weight: 500; }
+  .row { display: flex; align-items: center; gap: 12px; padding: 9px 10px; border-radius: 8px; font-size: 15px; }
+  .row .ic { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; background: rgba(255,255,255,.05); color: var(--muted); font-size: 13px; }
+  .row .ic.gold { background: rgba(255,201,74,.14); color: var(--gold); }
+  .row .ic.haven { background: rgba(76,201,255,.14); color: var(--haven); }
+  .row .name { flex: 1; }
+  mark { background: none; color: var(--gold); font-weight: 600; }
+  .row .where { color: var(--muted); font-size: 13px; }
+  .row .dist { color: var(--faint); font-size: 12px; min-width: 52px; text-align: right; }
+  .row.active { background: rgba(255, 201, 74, .09); box-shadow: inset 2px 0 0 var(--gold); }
+  .search .foot { display: flex; gap: 16px; padding: 10px 18px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+
+  /* GM: edit-mode banner */
+  .banner { left: 50%; transform: translateX(-50%); top: 22px; display: flex; align-items: center; gap: 14px; padding: 10px 12px 10px 16px; border-radius: 999px; font-size: 14px; }
+  .banner .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 10px var(--gold); }
+  .banner .hint { color: var(--muted); }
+  .banner .hint b { color: var(--text); font-weight: 500; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line-2); background: rgba(255,255,255,.04); color: var(--text); font: 500 14px Signika, sans-serif; }
+  .btn.primary { background: linear-gradient(180deg, #ffd56b, #f2b43a); color: var(--gold-ink); border-color: #ffd56b; }
+  .btn.danger { color: var(--danger); border-color: rgba(255,107,107,.35); background: rgba(255,107,107,.06); }
+  .btn.ghost { border-color: transparent; background: none; color: var(--muted); }
+  .btn.pill { border-radius: 999px; padding: 6px 12px; font-size: 13px; }
+
+  /* GM: click menu */
+  .menu { width: 250px; padding: 6px; }
+  .menu .head { padding: 8px 10px 8px; font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--line); margin-bottom: 6px; }
+  .menu .head b { color: var(--text); font-weight: 500; font-size: 14px; display: block; }
+  .menu .item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 7px; font-size: 14px; }
+  .menu .item i { width: 18px; text-align: center; color: var(--muted); }
+  .menu .item.hl { background: rgba(255,201,74,.09); }
+  .menu .item .k { margin-left: auto; }
+  .menu hr { border: 0; border-top: 1px solid var(--line); margin: 6px 4px; }
+
+  /* GM: POI editor, docked */
+  .editor { right: 18px; top: 18px; bottom: 18px; width: 410px; display: flex; flex-direction: column; overflow: hidden; }
+  .editor .top { padding: 16px 18px 14px; border-bottom: 1px solid var(--line); }
+  .editor .crumb { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .editor .title { width: 100%; font: 600 22px Signika, sans-serif; color: var(--text); background: none; border: 0; border-bottom: 1px dashed transparent; padding: 0; }
+  .editor .where { margin-top: 6px; font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; border-radius: 10px; background: rgba(0,0,0,.35); border: 1px solid var(--line); margin-top: 14px; }
+  .seg div { text-align: center; padding: 8px 4px; border-radius: 7px; font-size: 13px; color: var(--muted); }
+  .seg div i { margin-right: 6px; }
+  .seg .on.gold { background: rgba(255,201,74,.16); color: var(--gold); box-shadow: inset 0 0 0 1px rgba(255,201,74,.45); }
+  .editor .scroll { flex: 1; overflow: hidden; padding: 4px 18px; }
+  .sec { padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .sec h5 { margin: 0 0 10px; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); font-weight: 500; display: flex; justify-content: space-between; }
+  .field { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid var(--line-2); border-radius: 8px; background: rgba(255,255,255,.03); font-size: 14px; margin-bottom: 8px; }
+  .field i { color: var(--muted); }
+  .field .v { flex: 1; }
+  .field .v small { display: block; color: var(--muted); font-size: 12px; }
+  .field .chev { color: var(--faint); }
+  .imgrow { display: flex; gap: 10px; align-items: stretch; margin-bottom: 8px; }
+  .thumb { width: 92px; height: 64px; border-radius: 8px; background-size: cover; background-position: center; border: 1px solid var(--line-2); }
+  .imgrow .field { flex: 1; margin: 0; }
+  .ta { padding: 10px 12px; border: 1px solid var(--line-2); border-radius: 8px; background: rgba(255,255,255,.03); font-size: 13px; line-height: 1.45; color: #cfd8e3; height: 74px; overflow: hidden; }
+  .ta .ph { color: var(--faint); }
+  .toggle { display: flex; align-items: center; justify-content: space-between; padding: 7px 2px; font-size: 14px; }
+  .toggle small { display: block; color: var(--muted); font-size: 12px; }
+  .sw { width: 38px; height: 22px; border-radius: 999px; background: rgba(255,255,255,.12); position: relative; flex: none; }
+  .sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #c8d1dc; }
+  .sw.on { background: rgba(255,201,74,.55); }
+  .sw.on::after { left: 19px; background: #fff3c9; }
+  .shape { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .shape div { border: 1px solid var(--line-2); border-radius: 8px; padding: 10px 6px 8px; text-align: center; font-size: 12.5px; color: var(--muted); }
+  .shape div i { display: block; font-size: 18px; margin-bottom: 6px; }
+  .shape .on { border-color: rgba(255,201,74,.6); color: var(--gold); background: rgba(255,201,74,.07); }
+  .shape.two { grid-template-columns: repeat(2, 1fr); margin-top: 8px; }
+  .shape.disabled { opacity: .38; cursor: not-allowed; }
+  .locked { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,201,74,.45); background: rgba(255,201,74,.07); color: var(--gold); font-size: 14px; }
+  .locked .v { flex: 1; color: var(--text); }
+  .locked .v small { display: block; color: var(--muted); font-size: 12px; }
+  .locked .fa-lock { color: var(--muted); }
+  .tip { margin-top: 8px; font-size: 12px; color: var(--muted); display: flex; gap: 6px; align-items: baseline; }
+  .editor .bottom { display: flex; gap: 8px; padding: 14px 18px; border-top: 1px solid var(--line); background: rgba(0,0,0,.2); }
+  .editor .bottom .grow { flex: 1; }
+  .annot { position: absolute; font-size: 12px; color: #fff; background: #7a5cff; padding: 4px 8px; border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,.5); }
+</style>
+
+<header class="intro">
+  <h1>KG Cities interface</h1>
+  <p>Mockup of the interaction layer for every city: one look shared by the hover card, search, the GM's edit mode and the point-of-interest editor, matched to the map's own colours. Gold marks points of interest, cyan marks safe havens.</p>
+  <ul>
+    <li><b>Players:</b> hovering a landmark shows a card with its picture and story; Ctrl+F opens search for landmarks, streets, places and addresses, with distance from your view.</li>
+    <li><b>GM:</b> edit mode shows a banner with what clicks do; clicking a plain building offers a quick menu; the editor docks to the right edge instead of a pop-up, so the map stays in view.</li>
+  </ul>
+</header>
+
+<!-- ============ Screen 1: everyone ============ -->
+<section class="stage"><h2>Players: hover card and search</h2><div class="fit">
+<div class="frame" id="players">
+  <div class="map night"></div>
+
+  <!-- landmarks on the map -->
+  <div class="lm gold" style="left:660px; top:470px; width:46px; height:70px; transform: rotate(-18deg)"></div>
+  <div class="lm-name gold" style="left:618px; top:552px">Old North Church</div>
+  <div class="lm haven" style="left:300px; top:640px; width:40px; height:34px"></div>
+  <div class="lm-name haven" style="left:248px; top:684px">Cheers (Bull &amp; Finch)</div>
+
+  <!-- search palette -->
+  <div class="panel search">
+    <div class="bar"><i class="fa-solid fa-magnifying-glass"></i><div class="q">salem<span class="caret"></span></div><span class="kbd">Ctrl F</span></div>
+    <div class="group">
+      <h4>Landmarks</h4>
+      <div class="row active"><div class="ic gold"><i class="fa-solid fa-landmark"></i></div><div class="name">Old North Church</div><div class="where">193 <mark>Salem</mark> St, North End</div><div class="dist">0.4 mi</div></div>
+      <h4>Streets</h4>
+      <div class="row"><div class="ic"><i class="fa-solid fa-road"></i></div><div class="name"><mark>Salem</mark> Street</div><div class="where">North End</div><div class="dist">0.3 mi</div></div>
+      <div class="row"><div class="ic"><i class="fa-solid fa-road"></i></div><div class="name"><mark>Salem</mark> Street</div><div class="where">Charlestown</div><div class="dist">1.1 mi</div></div>
+      <h4>Places</h4>
+      <div class="row"><div class="ic"><i class="fa-solid fa-utensils"></i></div><div class="name"><mark>Salem</mark> Street Deli</div><div class="where">Restaurant</div><div class="dist">0.4 mi</div></div>
+    </div>
+    <div class="foot"><span><span class="kbd">↑</span> <span class="kbd">↓</span> choose</span><span><span class="kbd">Enter</span> fly there</span><span><span class="kbd">Esc</span> close</span><span style="margin-left:auto">Try an address: <b style="color:var(--text);font-weight:500">193 Salem St</b></span></div>
+  </div>
+
+  <!-- hover card: point of interest -->
+  <div class="panel card" style="left:740px; top:372px">
+    <div class="art" style="background-image:url(poi-church.webp)"><span class="badge gold"><i class="fa-solid fa-star"></i> Point of interest</span></div>
+    <div class="body">
+      <h3>Old North Church</h3>
+      <div class="sub">Christ Church in the City of Boston, 1723</div>
+      <p>Boston's oldest standing church. On the night of April 18, 1775, two lanterns hung in its steeple warned that the regulars were crossing by sea.</p>
+      <div class="meta"><span><i class="fa-solid fa-location-dot"></i>193 Salem St</span><span><i class="fa-solid fa-map"></i>North End</span><span><i class="fa-solid fa-person-walking"></i>0.4 mi</span></div>
+    </div>
+    <div class="foot"><span><b>Click</b> to read the page</span><span><i class="fa-solid fa-book-open"></i></span></div>
+  </div>
+
+  <!-- hover card: safe haven, no art -->
+  <div class="panel card small" style="left:360px; top:560px">
+    <div class="body">
+      <span class="badge haven"><i class="fa-solid fa-shield-heart"></i> Safe haven</span>
+      <h3 style="margin-top:10px">Cheers (Bull &amp; Finch)</h3>
+      <p style="margin-top:6px">Where everybody knows your name. Neutral ground: no business is settled under this roof.</p>
+    </div>
+    <div class="foot"><span><b>Click</b> to read the page</span><span><i class="fa-solid fa-book-open"></i></span></div>
+  </div>
+
+</div></div></section>
+
+<!-- ============ Screen 2: GM editing ============ -->
+<section class="stage"><h2>GM: edit mode, quick menu and the point-of-interest editor</h2><div class="fit">
+<div class="frame" id="gm">
+  <div class="map night"></div>
+
+  <div class="lm gold selected" style="left:560px; top:470px; width:46px; height:70px; transform: rotate(-18deg)"></div>
+  <div class="lm-name gold" style="left:520px; top:552px">Old North Church</div>
+
+  <!-- edit-mode banner -->
+  <div class="panel banner">
+    <span class="dot"></span>
+    <span><b style="font-weight:600">Editing points of interest</b></span>
+    <span class="hint"><b>Click</b> a label, landmark or building &nbsp;·&nbsp; <b>Shift-click</b> for a pin</span>
+    <span class="btn pill primary"><i class="fa-solid fa-check"></i> Done <span class="kbd" style="border-color:rgba(0,0,0,.25);color:var(--gold-ink)">Esc</span></span>
+  </div>
+
+  <!-- click menu on a plain building -->
+  <div class="panel menu" style="left:160px; top:250px">
+    <div class="head"><b>Building on Hanover St</b>4 floors · 52 ft</div>
+    <div class="item hl"><i class="fa-solid fa-star" style="color:var(--gold)"></i> Make a point of interest <span class="k kbd">1</span></div>
+    <div class="item"><i class="fa-solid fa-shield-heart" style="color:var(--haven)"></i> Make a safe haven <span class="k kbd">2</span></div>
+    <div class="item"><i class="fa-solid fa-tag"></i> Add a label here <span class="k kbd">3</span></div>
+    <hr>
+    <div class="item"><i class="fa-solid fa-location-pin"></i> Drop a pin instead</div>
+  </div>
+  <div class="lm" style="left:120px; top:200px; width:36px; height:30px; outline:2px dashed #c8d1dc; outline-offset:4px"></div>
+
+  <!-- POI editor, docked -->
+  <div class="panel editor">
+    <div class="top">
+      <div class="crumb"><span><i class="fa-solid fa-pen-to-square"></i>&nbsp; Point of interest</span><span class="badge gm"><i class="fa-solid fa-eye-slash"></i> GM sees all</span></div>
+      <input class="title" value="Old North Church">
+      <div class="where"><i class="fa-solid fa-location-dot"></i> 193 Salem St, North End <span class="btn ghost pill" style="padding:2px 8px;font-size:12px"><i class="fa-solid fa-crosshairs"></i> Move</span></div>
+      <div class="seg">
+        <div><i class="fa-solid fa-tag"></i>Label</div>
+        <div class="on gold"><i class="fa-solid fa-star"></i>Point of interest</div>
+        <div><i class="fa-solid fa-shield-heart"></i>Safe haven</div>
+      </div>
+    </div>
+    <div class="scroll">
+      <div class="sec">
+        <h5>Story</h5>
+        <div class="field"><i class="fa-solid fa-book-open"></i><div class="v">Old North Church<small>Boston: Points of Interest</small></div><i class="fa-solid fa-chevron-down chev"></i></div>
+        <div class="imgrow"><div class="thumb" style="background-image:url(poi-church.webp)"></div><div class="field"><i class="fa-solid fa-image"></i><div class="v">From the journal page<small>Click to choose another</small></div></div></div>
+        <div class="ta"><span class="ph">Summary for the hover card. Leave empty to use the page's first paragraph.</span></div>
+      </div>
+      <div class="sec">
+        <h5>Scene <span style="text-transform:none;letter-spacing:0">GM only</span></h5>
+        <div class="field"><i class="fa-solid fa-map"></i><div class="v">Old North Church, interior<small>Click offers: read, view, activate for all</small></div><i class="fa-solid fa-chevron-down chev"></i></div>
+      </div>
+      <div class="sec">
+        <h5>On the map</h5>
+        <div class="locked" title="This is a custom model and cannot be changed.">
+          <i class="fa-solid fa-church"></i>
+          <div class="v">Custom model<small>Built by hand for this landmark: tower, belfry and spire to 191 ft</small></div>
+          <i class="fa-solid fa-lock"></i>
+        </div>
+        <div class="shape two disabled" title="This is a custom model and cannot be changed.">
+          <div><i class="fa-solid fa-building"></i>Building</div>
+          <div><i class="fa-solid fa-location-pin"></i>Pin</div>
+        </div>
+        <div class="tip"><i class="fa-solid fa-circle-info"></i> This is a custom model and cannot be changed. Other landmarks choose Building or Pin.</div>
+        <div class="toggle" style="margin-top:10px"><span>Glow</span><span class="sw on"></span></div>
+        <div class="toggle"><span>Hidden from players<small>Players see a plain building until you reveal it</small></span><span class="sw"></span></div>
+      </div>
+    </div>
+    <div class="bottom">
+      <span class="btn danger"><i class="fa-solid fa-trash"></i></span>
+      <span class="grow"></span>
+      <span class="btn ghost">Cancel</span>
+      <span class="btn primary"><i class="fa-solid fa-floppy-disk"></i> Save</span>
+    </div>
+  </div>
+
+</div></div></section>
+
+<script>
+  // Scale each 1440x900 screen to the width it has.
+  const fit = () => document.querySelectorAll(".fit").forEach((box) => {
+    box.querySelector(".frame").style.transform = `scale(${box.clientWidth / 1440})`;
+  });
+  addEventListener("resize", fit);
+  fit();
+</script>

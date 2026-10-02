@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Day Theme Mockups</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #111; font: 14px sans-serif; color: #eee; }
+  #grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; height: 100%; }
+  .cell { position: relative; }
+  .map { position: absolute; inset: 0; }
+  .tag { position: absolute; top: 8px; left: 8px; z-index: 2; background: #000c; padding: 4px 10px; border-radius: 4px; font-weight: 600; }
+</style>
+</head>
+<body>
+<div id="grid"></div>
+<script type="module">
+  // The day theme candidates side by side on one view. ?city=, ?z=, ?lon=, ?lat=
+  import * as maplibregl from "../lib/maplibre/maplibre-gl.mjs";
+  import { buildStyle } from "../scripts/style.mjs";
+  import { DAY_CANDIDATES } from "./day-candidates.mjs";
+  const q = new URLSearchParams(location.search);
+  const cities = await (await fetch("../data/cities/index.json")).json();
+  const city = cities.find((c) => c.id === (q.get("city") ?? "boston"));
+  const tiles = (await (await fetch("https://tiles.openfreemap.org/planet")).json()).tiles[0];
+  const base = new URL("..", location.href).href;
+  const k = 1 / (2.5 * 0.3048) * 40075016 * Math.cos((city.center[1] * Math.PI) / 180);
+  const zoomAt = (s) => Math.log2((s * k) / 512);
+  const center = [Number(q.get("lon") ?? city.center[0]), Number(q.get("lat") ?? city.center[1])];
+  const names = { overcast: "A. Overcast", slate: "B. Slate", parchment: "C. Parchment", dusk: "D. Dusk daylight", retro: "E. Retro", retroDim: "F. Retro, dim", retroBold: "G. Retro, bold" };
+  // ?only=retro,retroDim picks which candidates to show.
+  const only = q.get("only")?.split(",");
+  window.maps = [];
+  const shown = Object.keys(DAY_CANDIDATES).filter((k) => !only || only.includes(k));
+  document.getElementById("grid").style.gridTemplateRows = `repeat(${Math.ceil(shown.length / 3)}, 1fr)`;
+  for (const [key, palette] of Object.entries(DAY_CANDIDATES).filter(([k]) => !only || only.includes(k))) {
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    cell.innerHTML = `<div class="tag">${names[key] ?? key}</div><div class="map"></div>`;
+    document.getElementById("grid").append(cell);
+    const map = new maplibregl.Map({
+      container: cell.querySelector(".map"), center, zoom: Number(q.get("z") ?? 15), interactive: false,
+      style: buildStyle({ tiles, glyphs: `${base}data/fonts/{fontstack}/{range}.pbf`, look: "day", lean: 0.5, zoomAt, palette, cityNames: [city.name] })
+    });
+    window.maps.push(map);
+  }
+</script>
+</body>
+</html>

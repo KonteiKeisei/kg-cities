@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>KG Cities Preview</title>
+<style>
+  html, body, #map { margin: 0; height: 100%; background: #000; }
+  #hud { position: absolute; top: 6px; left: 6px; z-index: 2; font: 12px sans-serif; color: #fff; background: #0008; padding: 3px 6px; }
+</style>
+</head>
+<body>
+<div id="map"></div><div id="hud"></div>
+<script type="module">
+  // Live OpenFreeMap tiles in the module's style, outside Foundry.
+  // ?look=night|day, ?city=<id>, ?z (map zoom), ?lean=0..1
+  import * as maplibregl from "../lib/maplibre/maplibre-gl.mjs";
+  import { buildStyle } from "../scripts/style.mjs";
+  import { DAY_CANDIDATES } from "./day-candidates.mjs";
+  import { LIFTS } from "./day-lift.mjs";
+  const q = new URLSearchParams(location.search);
+  const cities = await (await fetch("../data/cities/index.json")).json();
+  const city = cities.find((c) => c.id === (q.get("city") ?? "boston")) ?? cities[0];
+  // ?archive=1 reads .cache/<city>/map.pmtiles (from tools/dry-run-generate.mjs), as Foundry will.
+  let tiles;
+  if (q.get("archive")) {
+    const { Archive } = await import("../scripts/pmtiles.mjs");
+    const archive = new Archive(`../.cache/${city.id}/map.pmtiles`);
+    maplibregl.addProtocol("kgcities", async (params) => {
+      const [, z, x, y] = params.url.slice(11).split("/");
+      const bytes = await archive.tile(+z, +x, +y);
+      return { data: bytes ? bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) : new ArrayBuffer(0) };
+    });
+    tiles = `kgcities://${city.id}/{z}/{x}/{y}`;
+  } else {
+    tiles = (await (await fetch("https://tiles.openfreemap.org/planet")).json()).tiles[0];
+  }
+  const tj = { tiles: [tiles] };
+  const base = new URL("..", location.href).href;
+  // City of Boston campaign scene: 100 px = 250 ft.
+  const k = 1 / (2.5 * 0.3048) * 40075016 * Math.cos((city.center[1] * Math.PI) / 180);
+  const zoomAt = (s) => Math.log2((s * k) / 512);
+  const map = new maplibregl.Map({
+    container: "map", center: [Number(q.get("lon") ?? city.center[0]), Number(q.get("lat") ?? city.center[1])], zoom: Number(q.get("z") ?? 13),
+    style: buildStyle({ tiles: tj.tiles[0], glyphs: `${base}data/fonts/{fontstack}/{range}.pbf`, look: q.get("look") ?? "night", lean: Number(q.get("lean") ?? 0.5), zoomAt, palette: DAY_CANDIDATES[q.get("cand")] ?? LIFTS[q.get("cand")] ?? null, attribution: "© OpenFreeMap © OpenStreetMap" })
+  });
+  window.map = map;
+  // Business places from the tiles' points of interest, so the preview shows the tan districts.
+  map.once("load", () => map.addLayer({ id: "poi-probe", type: "circle", source: "osm", "source-layer": "poi", paint: { "circle-opacity": 0, "circle-radius": 1 } }));
+  map.on("idle", () => {
+    if (!map.querySourceFeatures("osm", { sourceLayer: "poi" }).length) return;
+    if (map._kgPlaces) return;
+    map._kgPlaces = true;
+    const seen = new Set();
+    const feats = map.querySourceFeatures("osm", { sourceLayer: "poi" })
+      .filter((f) => !["park", "school", "college", "library", "place_of_worship", "hospital", "bus", "railway", "attraction", "museum", "town_hall", "police", "fire_station"].includes(f.properties.class))
+      .filter((f) => { const k = `${f.id}`; if (seen.has(k)) return false; seen.add(k); return true; })
+      .map((f) => ({ type: "Feature", geometry: f.geometry, properties: { tier: "business", name: f.properties.name, hidden: true } }));
+    map.getSource("places").setData({ type: "FeatureCollection", features: feats });
+  });
+  map.on("error", (e) => console.warn(e.error?.message ?? e));
+  const hud = document.getElementById("hud");
+  const show = () => { hud.textContent = `${city.name}  z ${map.getZoom().toFixed(2)} (canvas ${(2 ** map.getZoom() * 512 / k).toFixed(3)})`; };
+  map.on("move", show); show();
+</script>
+</body>
+</html>
