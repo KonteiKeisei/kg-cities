@@ -129,8 +129,8 @@ function tierOf(kind, kept) {
 export function buildPlaces(osm, corrections, gm = {}, { businesses = "generic" } = {}) {
   const out = [];
   const edits = gm.edits ?? {};
-  // An edit whose place id is not in this map data (made on other data, such as KG Boston
-  // Map's, or before the city's data was refreshed) finds its place again by the name the map
+  // An edit whose place id is not in this map data (made on other or older map data, or
+  // before the city's data was refreshed) finds its place again by the name the map
   // data gave it, kept in the edit as base. Every place of that name takes it.
   const ids = new Set(osm.map((p) => p.id));
   const norm = (s) => String(s ?? "").toLowerCase().normalize("NFKD").replace(/[^\w\s&]/g, "").replace(/\s+/g, " ").trim();

@@ -1,7 +1,7 @@
 // MapLibre style for a city's tiles (OpenMapTiles schema, as served by OpenFreeMap).
 // https://openmaptiles.org/schema/
-// Two looks from one set of layers: night (Midnight Commander, the KG Boston Map look) and day
-// (a pale map after the GM's reference, data/styles/day-reference.json, with blue water).
+// Two looks from one set of layers: night (Midnight Commander) and day (slate ground, sand
+// streets, blue water).
 // Pure: no Foundry.
 
 /* ---------------------------------------- */

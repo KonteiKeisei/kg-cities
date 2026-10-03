@@ -1,7 +1,7 @@
 # KG Cities: build plan
 
 Generate a playable, styled map scene of a US city from inside Foundry, downloading only that
-city. Built from the KG Boston Map engine, generalised.
+city.
 
 ## Cities
 
@@ -13,13 +13,13 @@ San Francisco, Los Angeles, Las Vegas, Austin, Miami.
 1. **Generate city** (Scenes sidebar, GM): pick a city and an era (1980s now, Modern later),
    and how much the scene covers (city core, or the whole metro).
 2. The GM's browser downloads that city's map tiles (metro, about 31 miles across, zoom 0 to 14)
-   from **OpenFreeMap** (free, no key, no limits; OpenStreetMap data). Protomaps, used by
-   KG Boston Map, blocks browser downloads, so it cannot be used from Foundry.
+   from **OpenFreeMap** (free, no key, no limits; OpenStreetMap data), or another tile server
+   set in the module settings. (Protomaps' public builds block browser downloads.)
 3. Tiles are packed into one PMTiles file and saved to `Data/kg-cities/<city>/`, with data
    derived from them in the browser: building heights (leaning 3D), place labels, the search
    index, the night-from-orbit image and its twinkling lights, landmark footprints.
-4. A new gridless scene is created at a fixed real scale (100 px = 250 ft, as the Boston
-   campaign scene), measured in feet and miles, with the city drawn on it.
+4. A new gridless scene is created at a fixed real scale (100 px = 250 ft), measured in feet
+   and miles, with the city drawn on it.
 
 Nothing city-specific ships with the module except small JSON city packs: bounds, landmarks
 with flavor text, and per-era data.
@@ -49,10 +49,9 @@ with flavor text, and per-era data.
 3. **Landmarks and Boston 1986 (done, 0.4.0).** A landmark list for every city (10 to 50,
    two-sentence texts, tools/landmarks/<city>.json); custom models for marquee landmarks
    (World Trade Center, Empire State Building from a mesh, Rockefeller Center as one POI);
-   Boston's 1986 pack from KG Boston Map's data; label edits re-matched by name.
-4. **Boston conversion (separate tool, not shipped).** A one-time script for the GM's own
-   campaign world: KG Boston Map's scene flags and settings into KG Cities, nothing removed.
-   KG Boston MBTA is retired in favour of KG Transit, which reads api.transit().
+   Boston's 1986 pack; label edits made on other map data re-matched by name.
+4. **Campaign conversion (done, not shipped).** A one-time move of an older Boston campaign's
+   scenes and settings into KG Cities. Transit is KG Transit's, which reads api.transit().
 5. **1980s eras for the other cities.** Towers not yet built and sites since rebuilt (the
    Las Vegas Strip especially), period roads and place names, period transit lines.
 6. **Modern era.**

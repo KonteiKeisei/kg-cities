@@ -1,7 +1,6 @@
 // Editing points of interest (GM): a banner while edit mode is on, a quick menu when a plain
 // building or empty map is clicked, and the editor docked beside the sidebar for labels, points
-// of interest and safe havens. Design: tools/mockups/ui-mockup.html. Saving keeps KG Boston
-// Map's rules, so converted campaign data behaves the same.
+// of interest and safe havens. Design: tools/mockups/ui-mockup.html.
 
 const CLICK_PX = 6;
 const CLICK_MS = 500;

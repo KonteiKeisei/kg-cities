@@ -220,7 +220,7 @@ const hslToHex = ([h, s, l]) => {
 export function nightColor(hex) {
   if (!/^#[0-9a-f]{6}$/i.test(hex ?? "")) return null;
   const [h, s, l] = hexToHsl(hex);
-  // Lighter but not neon: saturation capped, as the KG Boston MBTA line colours were tuned.
+  // Lighter but not neon: saturation capped, so a line still reads as its own colour.
   return hslToHex([h, Math.min(s, 0.72), Math.max(l, 0.56)]);
 }
 

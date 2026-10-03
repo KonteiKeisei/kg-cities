@@ -1,5 +1,5 @@
 {
-  "about": "The 1980s era for each city (Boston's is built from KG Boston Map's research by tools/build-boston-pack.mjs). transit: the lines (by ref in data/transit/<city>.json) that ran in 1986, or [] for a city with no rail transit then. cuts: extensions built since, cut off a kept line at its old end (tools/build-eras.mjs cutExtensions); laterStations: stations opened since on track that ran. sites: Las Vegas resort grounds cleared, found in OpenStreetMap by name or traced by hand (ring). towers: buildings dated 1987 or later are found in OpenStreetMap by tools/build-eras.mjs.",
+  "about": "The 1980s era for each city (Boston's 1986 is kept in its pack, data/cities/boston.json, by hand). transit: the lines (by ref in data/transit/<city>.json) that ran in 1986, or [] for a city with no rail transit then. cuts: extensions built since, cut off a kept line at its old end (tools/build-eras.mjs cutExtensions); laterStations: stations opened since on track that ran. sites: Las Vegas resort grounds cleared, found in OpenStreetMap by name or traced by hand (ring). towers: buildings dated 1987 or later are found in OpenStreetMap by tools/build-eras.mjs.",
   "year": 1986,
   "cities": {
     "new-york": {

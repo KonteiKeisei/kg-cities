@@ -273,14 +273,16 @@ async function buildCityData(city, { refresh, note }) {
     }
   }
   const metro = boxAround(city.metro.center, city.metro.miles);
-  const src = await tileSource();
+  // OpenFreeMap, unless the GM set their own tile server.
+  const server = String(game.settings.get(MODULE_ID, "tileServer") ?? "").trim();
+  const src = await tileSource(server || undefined);
   const list = tilesFor(metro, src.maxZoom);
   note.update(0, `${city.name}: downloading ${list.length} map tiles…`);
   const tiles = await downloadTiles(src.template, list, {
     onProgress: (d, n, b) => { if (d % 20 === 0 || d === n) note.update(0.6 * (d / n), `${city.name}: map tiles ${d} of ${n} (${(b / 1e6).toFixed(0)} MB)`); }
   });
   note.update(0.6, `${city.name}: packing the map…`);
-  const source = `OpenFreeMap ${src.version}`;
+  const source = `${server ? new URL(server).host : "OpenFreeMap"} ${src.version}`.trim();
   const packed = await writeArchive(
     await Promise.all([...tiles].map(async ([k, data]) => { const [z, x, y] = k.split("/").map(Number); return { z, x, y, data: await gzip(data) }; })),
     { bounds: metro, minZoom: 0, maxZoom: src.maxZoom, center: [...city.center, 12], metadata: { city: city.id, source, attribution: ATTRIBUTION } }

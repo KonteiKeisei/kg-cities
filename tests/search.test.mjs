@@ -1,15 +1,15 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-// Boston's search data from KG Boston Map, the module this search code came from (a sibling folder).
 import { addressFinder, buildIndex, decodeStreet, normalize, search } from "../scripts/search.mjs";
 import { buildPlaces, compileCorrections } from "../scripts/places.mjs";
 
-const streets = JSON.parse(readFileSync(new URL("../../kg-bostonmap/data/search/streets.json", import.meta.url)));
-const addresses = JSON.parse(readFileSync(new URL("../../kg-bostonmap/data/search/addresses.json", import.meta.url)));
-const osm = JSON.parse(readFileSync(new URL("../../kg-bostonmap/data/pois/osm.json", import.meta.url)));
-const fixes = compileCorrections(JSON.parse(readFileSync(new URL("../../kg-bostonmap/data/pois/1986.json", import.meta.url))));
-const landmarks = JSON.parse(readFileSync(new URL("../../kg-bostonmap/data/landmarks/seed.json", import.meta.url)));
+// A small piece of Boston's search data: a few streets with their house numbers, places, the
+// 1986 name corrections, two landmarks (tests/fixtures/boston-search.json).
+const fixture = JSON.parse(readFileSync(new URL("./fixtures/boston-search.json", import.meta.url)));
+const { streets, addresses, landmarks } = fixture;
+const fixes = compileCorrections(fixture.rules);
+const osm = fixture.places;
 const bounds = { north: 42.4685, south: 42.1942, west: -71.2699, east: -70.9492 };
 const entries = buildIndex({ streets, places: buildPlaces(osm, fixes), landmarks, bounds });
 const findAddress = addressFinder(streets, addresses);
@@ -48,9 +48,8 @@ test("an address finds the house number on that street", () => {
 });
 
 test("nothing off the map is found", async () => {
-  // On the original City of Boston view, Lexington's Massachusetts Avenue is off the map.
-  const { SCENE_BOUNDS } = await import("../../kg-bostonmap/scripts/geo.mjs");
-  const city = buildIndex({ streets, bounds: SCENE_BOUNDS });
+  // On a City of Boston view, Lexington's Massachusetts Avenue is off the map.
+  const city = buildIndex({ streets, bounds: fixture.cityBounds });
   const hits = search(city, "massachusetts avenue", { limit: 50 });
   assert.ok(hits.some((h) => /Back Bay|South End|Cambridge|Central Square/.test(h.sub)), hits.map((h) => h.sub).join(" / "));
   assert.deepEqual(hits.filter((h) => h.sub.includes("Lexington")), []);

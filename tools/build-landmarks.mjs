@@ -7,6 +7,8 @@
 // - The building at the spot (all its mapped parts, so a tower keeps its setbacks), from the
 //   same OpenFreeMap tiles the module uses; area: every building inside it (a complex such as
 //   Rockefeller Center); pin: true, or no building there (a park, a bridge): a gold pin.
+// - buildings: footprints given in the entry itself ([{ id, h, base, rings }]), for a landmark the
+//   map data has no building for (USS Constitution at her pier); shape: masses for one that is gone.
 // Landmarks already in the pack with a model (the World Trade Center, the Empire State
 // Building) are kept as they are; the rest are replaced by this list.
 //   node tools/build-landmarks.mjs boston
@@ -169,7 +171,9 @@ for (const e of source.landmarks) {
   if (!at) { report.push(`NOT FOUND  ${e.name} (${e.find ?? e.name})`); continue; }
   const [lat, lon] = at;
   let buildings = null;
-  if (e.shape) {
+  if (e.buildings?.length) {
+    buildings = e.buildings;
+  } else if (e.shape) {
     buildings = shapeBuildings(e, lat, lon);
   } else if (e.area) {
     buildings = buildingsIn(await buildingsAround(lat, lon), e.area.map(([la, lo]) => [lo, la]));
@@ -186,11 +190,6 @@ for (const e of source.landmarks) {
     if (!buildings?.length && compact && e.height) buildings = [{ id: `${slug(e.name)}-outline`, h: e.height, base: 0, rings: [found.outline] }];
     if (!buildings?.length) buildings = buildingAt(all, lat, lon);
     if (!buildings?.length && compact) buildings = [{ id: `${slug(e.name)}-outline`, h: e.height ?? 25, base: 0, rings: [found.outline] }];
-  }
-  // A model fitted to a footprint the new map data lacks (a ship at its pier): KG Boston Map's.
-  if (!buildings?.length && e.seedShape) {
-    const seed = JSON.parse(await readFile(new URL("../kg-bostonmap/data/landmarks/seed.json", root), "utf8"));
-    buildings = seed.find((s) => s.id === e.id)?.buildings ?? null;
   }
   const lm = {
     id: e.id ?? `pack:${slug(e.name)}`, name: e.name, lat: +lat.toFixed(6), lon: +lon.toFixed(6), glow: true,

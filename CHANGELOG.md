@@ -1,5 +1,14 @@
 # KG Cities changelog
 
+## 0.7.1: ready to share
+
+- **Map tile server** setting: download cities from your own server of OpenMapTiles-schema
+  vector tiles instead of OpenFreeMap.
+- License files: the code under MIT (LICENSE), the OpenStreetMap-derived data under the Open
+  Database License (DATA-LICENSE.md), credits for the libraries and fonts (CREDITS.md, and the
+  Noto fonts' license in data/fonts/OFL.txt). A README.
+- Stands alone: the tools and tests no longer read the retired Boston modules.
+
 ## 0.7.0: airports (with KG Transit)
 
 - Other modules can add landmarks to a city's map: `api.addLandmarks(fn)`. KG Transit adds the
@@ -67,11 +76,11 @@
 - Rockefeller Center is one landmark of all its buildings, from 30 Rock to Radio City.
 - Landmarks missing from the map data's buildings (Grand Central, Fenway Park, the MFA) are
   drawn on their true outline at their real height.
-- Boston 1986 (from KG Boston Map's research): the elevated Central Artery with the ground under
+- Boston 1986: the elevated Central Artery with the ground under
   it, no Big Dig tunnels, Ted Williams Tunnel or Seaport ramps, the 1986 T in its colours with
   the Washington Street El, 27 later towers hidden, and the period's place names. Boston's
-  landmarks keep KG Boston Map's ids, so a converted campaign merges onto them.
-- Label edits made on other map data (KG Boston Map's) find their place again by its original
+  landmarks keep their earlier ids, so a converted campaign merges onto them.
+- Label edits made on other map data find their place again by its original
   name; editing such a label moves the edit to the place's own id.
 - Search: equal matches (Beacon Street in a dozen towns) are listed nearest the screen first.
 - Elevated period highways get a dark edge, so they read as raised.
@@ -112,7 +121,7 @@
 - Every tower is equally see-through (the tallest no longer fade the most); taller roofs are
   lighter, by day and by night, so towers stand apart from the blocks around them.
 - Landmark buildings replace whatever the map data has on their footprint, by shape rather
-  than id (needed for landmarks made with other map data, like KG Boston Map's).
+  than id (needed for landmarks made with other map data).
 
 ## 0.2.3
 

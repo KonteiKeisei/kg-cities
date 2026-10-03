@@ -127,6 +127,11 @@ Hooks.once("init", () => {
     choices: { generic: "By type only (Restaurant, Bank, Package Store)", hide: "Hidden", show: "Today's names, minus chains that arrived later" },
     onChange: () => refreshPlaces()
   });
+  register("tileServer", {
+    name: "Map tile server",
+    hint: "Optional. The TileJSON address of a server of OpenMapTiles-schema vector tiles to download cities from, if you host your own. Empty uses OpenFreeMap (free, no key). Applies to cities generated or refreshed from now on.",
+    scope: "world", config: true, type: String, default: ""
+  });
 
   // { [city]: { list, removed } } once the GM edits a city's landmarks; until then the pack's seed.
   register("landmarks", {

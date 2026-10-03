@@ -8,14 +8,17 @@ export const TILEJSON = "https://tiles.openfreemap.org/planet";
 export const ATTRIBUTION = "© OpenFreeMap © OpenMapTiles © OpenStreetMap contributors";
 export const MAX_ZOOM = 14;
 
-/** The current tile URL template ({z}/{x}/{y}) and the data's date. */
-export async function tileSource() {
-  const res = await fetch(TILEJSON);
-  if (!res.ok) throw new Error(`OpenFreeMap is not answering (HTTP ${res.status})`);
+/**
+ * The current tile URL template ({z}/{x}/{y}) and the data's date, from a TileJSON address:
+ * OpenFreeMap's by default, or any server of OpenMapTiles-schema vector tiles (the GM's own).
+ */
+export async function tileSource(tilejson = TILEJSON) {
+  const res = await fetch(tilejson);
+  if (!res.ok) throw new Error(`The tile server is not answering (HTTP ${res.status}, ${tilejson})`);
   const tj = await res.json();
   const template = tj.tiles?.[0];
-  if (!template) throw new Error("OpenFreeMap sent no tile address");
-  return { template, version: template.match(/planet\/([^/]+)\//)?.[1] ?? "", maxZoom: Math.min(MAX_ZOOM, tj.maxzoom ?? MAX_ZOOM) };
+  if (!template) throw new Error(`The tile server sent no tile address (${tilejson})`);
+  return { template, version: template.match(/planet\/([^/]+)\//)?.[1] ?? tj.version ?? "", maxZoom: Math.min(MAX_ZOOM, tj.maxzoom ?? MAX_ZOOM) };
 }
 
 /** Every { z, x, y } covering a lat/lon box, from zoom 0 to maxZoom. */

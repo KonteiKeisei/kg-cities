@@ -1,5 +1,5 @@
 {
-  "about": "Boston's preconfigured landmarks, written as of 1986. Ids starting seed: are KG Boston Map's, so a converted campaign's saved landmarks merge onto these instead of doubling.",
+  "about": "Boston's preconfigured landmarks, written as of 1986. Ids starting seed: are kept from earlier versions, so a campaign's saved landmarks merge onto these instead of doubling.",
   "landmarks": [
     {
       "id": "seed:GSblbNOXMBm3gGlu",
@@ -52,8 +52,70 @@
       "name": "USS Constitution",
       "model": "uss-constitution",
       "find": "USS Constitution, Charlestown",
-      "seedShape": true,
-      "text": "'Old Ironsides', launched 1797 and never defeated, still a commissioned ship of the Navy at Pier 1 in the Charlestown Navy Yard. Sailors in 1812 uniforms take visitors below decks."
+      "text": "'Old Ironsides', launched 1797 and never defeated, still a commissioned ship of the Navy at Pier 1 in the Charlestown Navy Yard. Sailors in 1812 uniforms take visitors below decks.",
+      "buildings": [
+        {
+          "id": 35184538240026,
+          "h": null,
+          "base": 0,
+          "rings": [
+            [
+              [
+                -71.056826,
+                42.372624
+              ],
+              [
+                -71.056671,
+                42.372561
+              ],
+              [
+                -71.056346,
+                42.372408
+              ],
+              [
+                -71.056279,
+                42.372363
+              ],
+              [
+                -71.056231,
+                42.372296
+              ],
+              [
+                -71.056207,
+                42.372272
+              ],
+              [
+                -71.056247,
+                42.372284
+              ],
+              [
+                -71.056341,
+                42.372288
+              ],
+              [
+                -71.056416,
+                42.372309
+              ],
+              [
+                -71.056577,
+                42.372387
+              ],
+              [
+                -71.056885,
+                42.372551
+              ],
+              [
+                -71.056872,
+                42.372581
+              ],
+              [
+                -71.056826,
+                42.372624
+              ]
+            ]
+          ]
+        }
+      ]
     },
     {
       "id": "seed:vjP5KVYQl5ql0Y0m",

@@ -253,7 +253,7 @@ export class CityLayer {
     const inYear = (x) => year === null || ((x.from == null || year >= x.from) && (x.until == null || year < x.until));
     const cleared = (era.hiddenAreas ?? []).filter(inYear).map((a) => a.ring);
     // A landmark building drawn in gold replaces whatever the map data has on its footprint (by
-    // shape, not id: landmarks saved from other map data, such as KG Boston Map's, have other ids).
+    // shape, not id: landmarks saved from other or older map data have other ids).
     const footprints = landmarks.filter((lm) => !lm.hidden && lm.buildings?.length)
       .flatMap((lm) => [...lm.buildings, ...(lm.neighbours ?? [])].map((b) => b.rings[0]));
     let clearedIds = [];

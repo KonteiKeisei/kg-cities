@@ -11,7 +11,7 @@ const osm = [
 const none = compileCorrections({});
 
 test("an edit made on other map data finds its place again by name", () => {
-  // Shaped as KG Boston Map saved them: ids from its own data, the original name in base.
+  // Saved on other map data: ids from that data, the original name in base.
   const gm = { edits: {
     "poi:17603026266013": { name: "Rathskeller", kind: "nightclub", hidden: false, note: "", base: "Hunt's Photo & Video" },
     "poi:35185197727848": { hidden: true, base: { name: "9/11 Memorial", kind: "monument" } }
