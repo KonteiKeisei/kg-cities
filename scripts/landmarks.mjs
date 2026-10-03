@@ -252,8 +252,11 @@ export function landmarkFeatures(landmarks, { lean = DEFAULT_LEAN } = {}) {
   let key = 0;
   for (const lm of landmarks) {
     if (lm.hidden) continue;
-    // Tone: "gold" for points of interest, "haven" (blue) for the players' safe havens.
-    const props = { landmark: lm.id, name: lm.name, glow: lm.glow !== false, tone: lm.tone === "haven" ? "haven" : "gold" };
+    // Tone: "gold" for points of interest, "haven" (blue) for the players' safe havens, "airport"
+    // (violet) for airports.
+    const props = { landmark: lm.id, name: lm.name, glow: lm.glow !== false, tone: ["haven", "airport"].includes(lm.tone) ? lm.tone : "gold" };
+    // An airport's airfield, under everything else of it (hovering anywhere on it shows its card).
+    if (lm.grounds) features.push({ type: "Feature", properties: { ...props, part: "grounds" }, geometry: { type: "Polygon", coordinates: [lm.grounds] } });
     const faces = landmarkFaces(lm);
     // The name, in the landmark's colour: below a pin, on a building.
     features.push({ type: "Feature", properties: { ...props, part: "label", pin: !faces }, geometry: { type: "Point", coordinates: [lm.lon, lm.lat] } });

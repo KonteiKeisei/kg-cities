@@ -1,6 +1,6 @@
 import { latLonToScene, makeFrame, sceneToLatLon } from "./geo.mjs";
 import { CityLayer } from "./map-layer.mjs";
-import { DATA_VERSION, isUpdating, loadCities, loadCityPack, openGenerator, refreshTransit, updateCityData } from "./generator.mjs";
+import { DATA_VERSION, generateCity, isUpdating, loadCities, loadCityPack, openGenerator, refreshTransit, updateCityData } from "./generator.mjs";
 import { DEFAULT_TILT, NIGHT_MIN_SCALE, leanFor } from "./style.mjs";
 import { LandmarkStore, PlaceStore, SearchData } from "./city-stores.mjs";
 import { HoverCard } from "./ui-card.mjs";
@@ -47,7 +47,27 @@ const projection = {
   latLonToScene: (lat, lon) => (layer.frame ? latLonToScene(layer.frame, lat, lon) : null)
 };
 let editor = null;
-const card = new HoverCard({ landmarks, search: searchData, isEditing: () => !!editor?.editing });
+
+/* ---------------------------------------- */
+/*  Landmarks from other modules             */
+/* ---------------------------------------- */
+
+// Other modules can add landmarks to a city's map (KG Transit adds its airports): api.addLandmarks
+// takes a function of the city scene's flag returning landmark-like entries { id, name, lat, lon,
+// summary, tone: "gold" | "haven" | "airport", buildings?, grounds? (an outline ring, drawn
+// dashed), from?, until?, airport? }. They are drawn and hovered like the city's own, but not
+// edited or saved. Clicking an entry with `airport` (the GM) calls Hooks "kgCities.airport".
+const landmarkSources = new Set();
+let addedLandmarks = [];
+async function landmarksFromModules(c) {
+  const lists = await Promise.all([...landmarkSources].map((fn) => Promise.resolve().then(() => fn(c)).catch((err) => {
+    console.warn(`${MODULE_ID} | a module's landmarks failed`, err);
+    return [];
+  })));
+  return lists.flat().filter((lm) => lm?.id && Number.isFinite(lm.lat) && Number.isFinite(lm.lon));
+}
+const landmarkOrAdded = { get: (id) => landmarks.get(id) ?? addedLandmarks.find((a) => a.id === id) ?? null };
+const card = new HoverCard({ landmarks: landmarkOrAdded, search: searchData, isEditing: () => !!editor?.editing });
 editor = new PoiEditor({ places, landmarks, search: searchData, card, api: projection });
 const mapSearch = new MapSearch({ getLayer: () => layer, getPlaces: () => places.places, getLandmarks: () => drawnLandmarks(), data: searchData });
 
@@ -173,6 +193,44 @@ Hooks.once("init", () => {
     refreshTransit: (cityId) => refreshTransit(cityId),
     /** The city scene's flag, or null. */
     cityOf,
+    /**
+     * Add landmarks to city maps from another module: fn(cityFlag) returns (or resolves to) a list
+     * of landmark-like entries (see "Landmarks from other modules" above). Returns a function that
+     * removes them again. The current scene is redrawn with them.
+     */
+    addLandmarks(fn) {
+      landmarkSources.add(fn);
+      if (current) drawCity();
+      return () => { landmarkSources.delete(fn); if (current) drawCity(); };
+    },
+    /**
+     * A city scene of this city and era whose map covers the point, preferring the smallest (the
+     * core over the metro), or null.
+     */
+    sceneCovering(cityId, { lat, lon, era = "1980s" } = {}) {
+      const fits = game.scenes.filter((s) => {
+        const c = cityOf(s);
+        return c?.city === cityId && (c.era ?? "1980s") === era && c.bounds
+          && lat <= c.bounds.north && lat >= c.bounds.south && lon >= c.bounds.west && lon <= c.bounds.east;
+      });
+      const span = (s) => (cityOf(s).bounds.north - cityOf(s).bounds.south) * (cityOf(s).bounds.east - cityOf(s).bounds.west);
+      return fits.sort((a, b) => span(a) - span(b))[0] ?? null;
+    },
+    /**
+     * Make a city scene without the dialog: { era, year, area: "core" | "metro", name, view }.
+     * area "auto" picks the core when it covers the point { lat, lon } given, else the metro.
+     * Returns the scene, or null when it failed (the GM is told why).
+     */
+    async generateCity(cityId, { era = "1980s", year = 1986, area = "core", at = null, name, view = true } = {}) {
+      const city = (await loadCities()).find((c) => c.id === cityId);
+      if (!city) throw new Error(`KG Cities has no city "${cityId}"`);
+      if (area === "auto") {
+        const [lon, lat] = city.core.center, [w, h] = city.core.miles;
+        const dLat = (h * 1609.344) / 111320 / 2, dLon = (w * 1609.344) / (111320 * Math.cos((lat * Math.PI) / 180)) / 2;
+        area = at && Math.abs(at.lat - lat) <= dLat * 0.95 && Math.abs(at.lon - lon) <= dLon * 0.95 ? "core" : "metro";
+      }
+      return generateCity(city, { era, year, area, view, name: name ?? `${city.name}, ${year}${area === "metro" ? " (metro)" : ""}` });
+    },
     latLonToScene: (lat, lon) => (layer.frame ? latLonToScene(layer.frame, lat, lon) : null),
     sceneToLatLon: (x, y) => (layer.frame ? sceneToLatLon(layer.frame, { x, y }) : null),
     /** A lat/lon to scene projection for any city scene, drawn or not. */
@@ -213,6 +271,7 @@ async function drawCity() {
   current = { scene, city: c, pack, era };
   cityId = c.city;
   landmarks.seed = pack.landmarks ?? [];
+  addedLandmarks = await landmarksFromModules(c);
   if (searchData.url !== (files.search ?? null)) { searchData.url = files.search ?? null; searchData.data = null; }
   places.layer = layer;
   await layer.draw({
@@ -243,7 +302,11 @@ const inSceneYear = (x) => {
   const year = current?.city?.year;
   return year == null || ((x.from == null || year >= x.from) && (x.until == null || year < x.until));
 };
-const drawnLandmarks = () => landmarks.visible.filter(inSceneYear);
+/** A module's landmark takes the place of the city's own of the same name (Logan as an airport, not a pin). */
+const drawnLandmarks = () => {
+  const names = new Set(addedLandmarks.map((a) => a.name?.toLowerCase()));
+  return [...landmarks.visible.filter((lm) => !names.has(lm.name?.toLowerCase())), ...addedLandmarks].filter(inSceneYear);
+};
 
 function refreshPlaces() {
   if (current && places.raw.length) places.rebuild();

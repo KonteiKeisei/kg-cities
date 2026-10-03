@@ -80,6 +80,7 @@
 }
 .kgc-ui .badge.gold { color: var(--kgc-gold); background: rgba(255, 201, 74, 0.12); border: 1px solid rgba(255, 201, 74, 0.35); }
 .kgc-ui .badge.haven { color: var(--kgc-haven); background: rgba(76, 201, 255, 0.12); border: 1px solid rgba(76, 201, 255, 0.35); }
+.kgc-ui .badge.airport { color: #d3c4ff; background: rgba(177, 149, 255, 0.12); border: 1px solid rgba(177, 149, 255, 0.4); }
 .kgc-ui .badge.gm { color: #c9b6ff; background: rgba(160, 130, 255, 0.12); border: 1px solid rgba(160, 130, 255, 0.3); }
 
 .kgc-ui .btn {
@@ -116,6 +117,7 @@
 .kgc-card .body.top { padding-top: 14px; }
 .kgc-card h3 { margin: 0; border: 0; font-size: 21px; font-weight: 600; color: var(--kgc-gold-text); text-wrap: balance; }
 .kgc-card.haven h3 { color: var(--kgc-haven-text); }
+.kgc-card.airport h3 { color: #d3c4ff; }
 .kgc-card .sub { margin: 0 0 6px; color: var(--kgc-muted); font-size: 13px; font-style: italic; }
 .kgc-card p { margin: 0 0 8px; font-size: 13.5px; line-height: 1.5; color: #cfd8e3; }
 .kgc-card .meta { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 12.5px; color: var(--kgc-muted); }

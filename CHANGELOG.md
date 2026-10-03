@@ -1,5 +1,20 @@
 # KG Cities changelog
 
+## 0.7.0: airports (with KG Transit)
+
+- Other modules can add landmarks to a city's map: `api.addLandmarks(fn)`. KG Transit adds the
+  city's airports of 1986: terminals in violet (apart from gold and the safe havens' blue), the
+  airfield's edge dashed, the name in violet from far out, and a card saying "Airport". A
+  module's landmark takes the place of the city's own of the same name (Logan as an airport, not
+  a gold pin). Clicking an airport (the GM) books a flight in KG Transit.
+- The metro areas of San Francisco, Miami, Washington and Los Angeles reach their airports now
+  (San Jose, Fort Lauderdale, Dulles, Long Beach). A city whose saved map no longer covers its
+  metro area is downloaded again the next time it is generated or refreshed.
+- For travel modules: `api.generateCity(cityId, { era, year, area: "core" | "metro" | "auto", at,
+  view })` makes a city scene without the dialog (area "auto": the core when it covers `at`, else
+  the metro; `view: false` leaves the GM where they are), and `api.sceneCovering(cityId, { lat,
+  lon, era })` finds the smallest scene of a city whose map covers a point.
+
 ## 0.6.0: 1986 down to the station
 
 - Lines end where they ended in 1986. Extensions built since are cut at the old terminus, with

@@ -111,7 +111,7 @@ export class HoverCard {
   #show(lm, global) {
     this.last = global;
     const s = this.#summary(lm);
-    const haven = lm.tone === "haven";
+    const haven = lm.tone === "haven", airport = !!lm.airport;
     if (!this.el) {
       this.el = document.createElement("div");
       document.body.append(this.el);
@@ -125,8 +125,9 @@ export class HoverCard {
         address?.area ? `<span><i class="fa-solid fa-map"></i>${esc(address.area)}</span>` : "",
         distance ? `<span><i class="fa-solid fa-person-walking"></i>${esc(distance)} away</span>` : ""
       ].join("");
-      const badge = `<span class="badge ${haven ? "haven" : "gold"}"><i class="fa-solid ${haven ? "fa-house-chimney" : "fa-landmark"}"></i>${haven ? "Safe haven" : "Point of interest"}</span>`;
-      this.el.className = `kgc-ui kgc-panel kgc-card ${haven ? "haven" : ""} ${s.img ? "" : "small"}`;
+      const badge = airport ? `<span class="badge airport"><i class="fa-solid fa-plane"></i>Airport, ${esc(lm.airport.iata)}</span>`
+        : `<span class="badge ${haven ? "haven" : "gold"}"><i class="fa-solid ${haven ? "fa-house-chimney" : "fa-landmark"}"></i>${haven ? "Safe haven" : "Point of interest"}</span>`;
+      this.el.className = `kgc-ui kgc-panel kgc-card ${haven ? "haven" : ""} ${airport ? "airport" : ""} ${s.img ? "" : "small"}`;
       this.el.innerHTML = `
         ${s.img ? `<div class="art" style="background-image:url('${esc(foundry.utils.getRoute(s.img))}')">${badge}</div>` : ""}
         <div class="body ${s.img ? "" : "top"}">
@@ -149,6 +150,11 @@ export class HoverCard {
   }
 
   #foot(lm, s) {
+    // An airport: the GM books flights from it (a travel module answers the hook).
+    if (lm.airport) {
+      const flying = game.user.isGM && Hooks.events["kgCities.airport"]?.length;
+      return flying ? `<div class="foot"><span><i class="fa-solid fa-plane-departure"></i> Click to book a flight</span></div>` : "";
+    }
     const scene = game.user.isGM && lm.scene ? game.scenes.get(lm.scene) : null;
     const gm = game.user.isGM && lm.hidden ? `<span class="badge gm">Hidden from players</span>` : "";
     let text = "";
@@ -183,6 +189,10 @@ export class HoverCard {
     const lm = this.landmarks.get(id);
     if (!lm) return;
     this.hide();
+    if (lm.airport) {
+      if (game.user.isGM) Hooks.callAll("kgCities.airport", { airport: lm.airport, scene: canvas.scene });
+      return;
+    }
     const scene = game.user.isGM && lm.scene ? game.scenes.get(lm.scene) : null;
     if (scene && shift) return scene.view();
     if (scene) {

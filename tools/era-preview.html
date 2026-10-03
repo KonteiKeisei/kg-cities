@@ -37,7 +37,10 @@
 
   // As map-layer.mjs draw().
   const inYear = (x) => (x.from == null || year >= x.from) && (x.until == null || year < x.until);
-  const landmarks = (pack.landmarks ?? []).filter(inYear);
+  // ?airports: landmarks a module adds (KG Transit's airports), from .cache/airports-preview.json.
+  const added = q.has("airports") ? await (await fetch("../.cache/airports-preview.json")).json() : [];
+  const addedNames = new Set(added.map((a) => a.name.toLowerCase()));
+  const landmarks = [...(pack.landmarks ?? []).filter((l) => !addedNames.has(l.name.toLowerCase())), ...added].filter(inYear);
   const tall = await tallBuildings(getTile, box);
   const footprints = landmarks.filter((lm) => lm.buildings?.length).flatMap((lm) => [...lm.buildings, ...(lm.neighbours ?? [])].map((b) => b.rings[0]));
   const cleared = await buildingsInAreas(getTile, [...(era.hiddenAreas ?? []).filter(inYear).map((a) => a.ring), ...footprints]);

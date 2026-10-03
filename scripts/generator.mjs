@@ -244,7 +244,15 @@ async function deriveAndSave(city, { archive, mapUrl, packed = null, metro, sour
 
 /** Download (unless already here), derive and save a city's data. Returns its meta. */
 async function buildCityData(city, { refresh, note }) {
-  const have = refresh ? null : await existing(city.id);
+  let have = refresh ? null : await existing(city.id);
+  // A city whose metro area has grown since it was downloaded (San Francisco out to San Jose's
+  // airport) is downloaded again: the saved map stops short of it.
+  const want = boxAround(city.metro.center, city.metro.miles);
+  const covers = (b) => b && b.north >= want.north - 1e-4 && b.south <= want.south + 1e-4 && b.west <= want.west + 1e-4 && b.east >= want.east - 1e-4;
+  if (have && !covers(have.metro)) {
+    note.update(0, `${city.name}: its map area has grown, downloading it again…`);
+    have = null;
+  }
   if (have?.version === DATA_VERSION) return have;
   // Data from an older version: rebuild from the map already saved, without downloading. When
   // the saved map cannot be read, download the city fresh instead of failing.
@@ -342,7 +350,7 @@ export async function refreshTransit(cityId, { timeoutMs = 120000 } = {}) {
 }
 
 /** Generate: data (downloaded once per city), then a new gridless scene at real scale. */
-export async function generateCity(city, { era = "1980s", year = 1986, area = "core", name, refresh = false } = {}) {
+export async function generateCity(city, { era = "1980s", year = 1986, area = "core", name, refresh = false, view = true } = {}) {
   const note = progressNote(`${city.name}: preparing…`);
   try {
     const meta = await buildCityData(city, { refresh, note });
@@ -358,7 +366,7 @@ export async function generateCity(city, { era = "1980s", year = 1986, area = "c
       flags: { [MODULE_ID]: { city: city.id, era, year, area, bounds, metro: meta.metro, files: meta.files, version: DATA_VERSION } }
     });
     note.done(`${city.name}: scene "${scene.name}" created (${formatDistance((width * FEET_PER_PIXEL) / 3.28084)} across).`);
-    await scene.view();
+    if (view) await scene.view();
     return scene;
   } catch (err) {
     console.error(`${MODULE_ID} |`, err);

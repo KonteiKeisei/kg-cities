@@ -15,6 +15,9 @@ const SHARED = {
   /** Safe havens: the same, in a cyan-leaning blue. */
   havenWallDark: "#0c2a52", havenWallLit: "#2f86d6", havenTrimDark: "#7fb3e0", havenTrimLit: "#e3f3ff",
   havenRoof: "#42b4f5", havenRoofLit: "#9fe1ff", havenEdge: "#dff4ff", havenGlow: "#4cc9ff",
+  /** Airports: terminals and the airfield's edge in violet, apart from gold and the havens' blue. */
+  airportWallDark: "#2b1a5c", airportWallLit: "#8a68e8", airportTrimDark: "#b6a4ec", airportTrimLit: "#f1ebff",
+  airportRoof: "#a084f5", airportRoofLit: "#d3c4ff", airportEdge: "#efe8ff", airportGlow: "#b195ff",
   /** Search highlights. */
   flash: "#fffbe8", flashGlow: "#ffd166",
   editedLabel: "#f2a6d8", hiddenLabel: "#e0707a"
@@ -151,9 +154,8 @@ function leanLayers(P, lean, buildingFilter, between = []) {
     "wall", shade(P[`${pre}WallDark`], P[`${pre}WallLit`]),
     "trim", shade(P[`${pre}TrimDark`], P[`${pre}TrimLit`]),
     shade(P[`${pre}Roof`], P[`${pre}RoofLit`])];
-  const haven = ["==", ["get", "tone"], "haven"];
-  const gold = ["case", haven, tone("haven"), tone("gold")];
-  const edge = ["case", haven, P.havenEdge, P.goldEdge];
+  const gold = ["match", ["get", "tone"], "haven", tone("haven"), "airport", tone("airport"), tone("gold")];
+  const edge = byTone(P, "Edge");
   const isGold = ["to-boolean", ["get", "gold"]];
   return [
     ...slices,
@@ -182,11 +184,20 @@ function leanLayers(P, lean, buildingFilter, between = []) {
   ];
 }
 
-const GLOW = (P) => ["case", ["==", ["get", "tone"], "haven"], P.havenGlow, P.goldGlow];
+/** A palette colour by the feature's tone: gold (points of interest), haven or airport. */
+const byTone = (P, name) => ["match", ["get", "tone"], "haven", P[`haven${name}`], "airport", P[`airport${name}`], P[`gold${name}`]];
+const GLOW = (P) => byTone(P, "Glow");
 const part = (...parts) => ["in", ["get", "part"], ["literal", parts]];
 
 function landmarkGroundLayers(P) {
   return [
+    // An airport's airfield: a faint wash and a dashed edge, under its terminals.
+    { id: "airport-grounds", type: "fill", source: "landmarks", filter: part("grounds"), paint: { "fill-color": P.airportGlow, "fill-opacity": 0.07 } },
+    {
+      id: "airport-grounds-edge", type: "line", source: "landmarks", filter: part("grounds"),
+      layout: { "line-join": "round" },
+      paint: { "line-color": P.airportGlow, "line-opacity": 0.8, "line-width": exp([[9, 1], [13, 1.8], [16, 3], [19, 5]]), "line-dasharray": [3, 2] }
+    },
     {
       id: "landmark-glow", type: "line", source: "landmarks", filter: ["all", part("ground"), ["get", "glow"]],
       layout: { "line-join": "round" },
@@ -205,9 +216,9 @@ function landmarkPinLayers(P) {
     {
       id: "landmark-pins", type: "circle", source: "landmarks", filter: part("pin"),
       paint: {
-        "circle-color": ["case", ["==", ["get", "tone"], "haven"], P.havenRoofLit, P.goldRoofLit],
+        "circle-color": byTone(P, "RoofLit"),
         "circle-radius": exp([[11, 3.5], [15, 6], [19, 9]]),
-        "circle-stroke-color": ["case", ["==", ["get", "tone"], "haven"], P.havenWallDark, P.goldWallDark], "circle-stroke-width": 1.5
+        "circle-stroke-color": byTone(P, "WallDark"), "circle-stroke-width": 1.5
       }
     }
   ];
@@ -224,9 +235,11 @@ function landmarkLabelLayers(P, zoomAt) {
   };
   const tones = [
     { tone: "gold", glow: P.goldGlow, halo: "rgba(255, 201, 74, 0.55)", text: P.goldRoofLit, opacity: ["interpolate", ["linear"], ["zoom"], poiZoom - 0.3, 0, poiZoom, 1] },
-    { tone: "haven", glow: P.havenGlow, halo: "rgba(76, 201, 255, 0.55)", text: P.havenRoofLit, opacity: ["interpolate", ["linear"], ["zoom"], zoomAt(NIGHT_FULL_SCALE), 0, zoomAt(NIGHT_START_SCALE), 1] }
+    { tone: "haven", glow: P.havenGlow, halo: "rgba(76, 201, 255, 0.55)", text: P.havenRoofLit, opacity: ["interpolate", ["linear"], ["zoom"], zoomAt(NIGHT_FULL_SCALE), 0, zoomAt(NIGHT_START_SCALE), 1] },
+    // Airports are named from as far out as the havens: they are how the party leaves town.
+    { tone: "airport", glow: P.airportGlow, halo: "rgba(177, 149, 255, 0.55)", text: P.airportRoofLit, opacity: ["interpolate", ["linear"], ["zoom"], zoomAt(NIGHT_FULL_SCALE), 0, zoomAt(NIGHT_START_SCALE), 1] }
   ];
-  const filter = (tone) => ["all", part("label"), tone === "haven" ? ["==", ["get", "tone"], "haven"] : ["!=", ["get", "tone"], "haven"]];
+  const filter = (tone) => ["all", part("label"), tone === "gold" ? ["!", ["in", ["get", "tone"], ["literal", ["haven", "airport"]]]] : ["==", ["get", "tone"], tone]];
   return [
     ...tones.map((t) => ({
       id: `landmark-label-glow-${t.tone}`, type: "symbol", source: "landmarks", filter: filter(t.tone),
