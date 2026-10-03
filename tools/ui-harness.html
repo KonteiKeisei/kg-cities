@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>KG Cities UI Harness</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Signika:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../styles/cities.css">
+<style>
+  html, body { margin: 0; height: 100%; background: #2a3346 url("mockups/night-backdrop.jpg") center / cover; }
+  #sidebar { position: fixed; right: 0; top: 0; bottom: 0; width: 300px; background: #111722dd; }
+</style>
+</head>
+<body>
+<div id="sidebar"></div>
+<script type="module">
+  // The editor, menu, banner and search palette rendered outside Foundry, with stand-ins for
+  // Foundry's globals, to check them against tools/mockups/ui-mockup.html. ?view=editor|menu|search|haven
+  const q = new URLSearchParams(location.search);
+  const noop = () => {};
+  globalThis.foundry = {
+    utils: { escapeHTML: (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]), getRoute: (p) => p, randomID: () => Math.random().toString(36).slice(2, 18), deepClone: (o) => structuredClone(o) },
+    applications: { apps: { FilePicker: { implementation: class { render() {} } } }, api: { DialogV2: {} } }
+  };
+  const page = (name, sort) => ({ name, sort, uuid: `JournalEntry.x.JournalEntryPage.${name}` });
+  globalThis.game = {
+    user: { isGM: true, character: null },
+    journal: { contents: [{ name: "Boston Locations", pages: { size: 2, contents: [page("Old North Church", 1), page("Union Oyster House", 2)] } }] },
+    scenes: { contents: [{ id: "a", name: "Old North Church (interior)" }, { id: "b", name: "Docks" }] }
+  };
+  globalThis.ui = { notifications: { warn: console.warn, error: console.error, info: console.log }, controls: { render: noop } };
+  globalThis.canvas = { app: { view: document.body, renderer: { screen: { width: 1200, height: 800 } } }, stage: { on: noop, off: noop, scale: { x: 1 } }, tokens: { controlled: [] }, dimensions: { sceneRect: { x: 0, y: 0, width: 100, height: 100 } } };
+
+  const { PoiEditor } = await import("../scripts/ui-editor.mjs");
+  const lm = { id: "seed:onc", name: "Old North Church", tone: q.get("view") === "haven" ? "haven" : "gold", page: "JournalEntry.x.JournalEntryPage.Old North Church", lat: 42.36632, lon: -71.05443, glow: true, hidden: false, model: q.get("model") ? "old-north-church" : undefined, buildings: [{ id: 1, h: 53, rings: [[[0, 0]]] }], summary: "Christ Church, 1723: the two lanterns hung in its steeple on the night of April 18, 1775." };
+  const places = { places: [{ kind: "restaurant" }, { kind: "church" }, { kind: "park" }], byId: new Map(), covers: new Map(), save: async () => {} };
+  const landmarks = { list: [lm], get: (id) => (id === lm.id ? lm : null), save: async () => {} };
+  const search = { addressAt: async () => ({ text: "193 Salem Street", area: "North End" }) };
+  const layer = { setEditing: noop, landmarkAt: () => null, placeAt: () => null, buildingAt: () => null, buildingsNear: () => [] };
+  const editor = new PoiEditor({ places, landmarks, search, card: { hide: noop }, api: { sceneToLatLon: () => ({ lat: 42.36, lon: -71.05 }), latLonToScene: () => ({ x: 0, y: 0 }) } });
+  editor.attach(layer);
+  editor.setEditing(true);
+  const view = q.get("view") ?? "editor";
+  if (view === "editor" || view === "haven") editor.open({ lm, place: null });
+  if (view === "menu") editor.open; // the menu is shown from a click; drawn below by hand
+  if (view === "menu") {
+    const el = document.createElement("div");
+    document.body.append(el);
+    editor["menuDemo"] = true;
+  }
+  window.editor = editor;
+</script>
+</body>
+</html>

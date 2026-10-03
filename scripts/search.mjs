@@ -130,7 +130,7 @@ function score(query, name) {
  * Results for a query, best first. "193 Salem St" also finds house number 193 on every Salem
  * Street on the map (findAddress from addressFinder).
  */
-export function search(entries, query, { limit = 12, findAddress = null } = {}) {
+export function search(entries, query, { limit = 12, findAddress = null, near = null } = {}) {
   const q = normalize(query);
   if (!q) return [];
   const results = [];
@@ -148,7 +148,14 @@ export function search(entries, query, { limit = 12, findAddress = null } = {}) 
     const s = score(q, e.norm);
     if (s > 0) results.push({ ...e, s });
   }
-  results.sort((a, b) => b.s - a.s || TYPE_RANK[a.type] - TYPE_RANK[b.type] || a.name.localeCompare(b.name));
+  // Equal matches (Beacon Street in a dozen towns) nearest first, from near: [lon, lat].
+  const far = (r) => {
+    if (!near) return 0;
+    const [lon, lat] = r.point ?? (r.box ? [(r.box[0] + r.box[2]) / 2, (r.box[1] + r.box[3]) / 2] : near);
+    return Math.hypot((lon - near[0]) * Math.cos((near[1] * Math.PI) / 180), lat - near[1]);
+  };
+  for (const r of results) r.d = far(r);
+  results.sort((a, b) => b.s - a.s || TYPE_RANK[a.type] - TYPE_RANK[b.type] || a.d - b.d || a.name.localeCompare(b.name));
   // The same street name in several towns is several results; one place name in one spot is one.
   const seen = new Set();
   return results.filter((r) => {

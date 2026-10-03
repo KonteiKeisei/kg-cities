@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>KG Cities Era Preview</title>
+<style>
+  html, body, #map { margin: 0; height: 100%; background: #000; }
+  #hud { position: absolute; top: 6px; left: 6px; z-index: 2; font: 12px sans-serif; color: #fff; background: #0008; padding: 3px 6px; }
+</style>
+</head>
+<body>
+<div id="map"></div><div id="hud">loading…</div>
+<script type="module">
+  // A city's era drawn as Foundry draws it (map-layer.mjs): leaning tall buildings, the era's
+  // cleared areas, closed streets and period buildings, and the pack's landmarks. Live tiles.
+  // ?city=new-york ?year=1986 ?look=night|day ?lean=0.5 ?lon ?lat ?z ?miles=1.2 (box loaded)
+  import * as maplibregl from "../lib/maplibre/maplibre-gl.mjs";
+  import { buildStyle, clearedStreetsFilter } from "../scripts/style.mjs";
+  import { tallBuildings, buildingsInAreas } from "../scripts/derive.mjs";
+  import { hiddenBuildingIds, leanFeatures, shadowFeatures } from "../scripts/lean.mjs";
+  import { landmarkBuildingIds, landmarkFeatures, landmarkItems, landmarkNeighbours } from "../scripts/landmarks.mjs";
+  import { boxAround } from "../scripts/geo.mjs";
+  const q = new URLSearchParams(location.search);
+  const hud = document.getElementById("hud");
+  const cities = await (await fetch("../data/cities/index.json")).json();
+  const city = cities.find((c) => c.id === (q.get("city") ?? "new-york"));
+  const pack = city.pack ? await (await fetch(`../data/cities/${city.id}.json`)).json() : { landmarks: [], eras: {} };
+  const year = Number(q.get("year") ?? 1986), lean = Number(q.get("lean") ?? Math.tan((17 * Math.PI) / 180));
+  const era = pack.eras?.["1980s"]?.map ?? {};
+  const centre = [Number(q.get("lon") ?? -74.0131), Number(q.get("lat") ?? 40.7116)];
+  const box = boxAround(centre, [Number(q.get("miles") ?? 1.2), Number(q.get("miles") ?? 1.2)]);
+  const template = (await (await fetch("https://tiles.openfreemap.org/planet")).json()).tiles[0];
+  const getTile = async (z, x, y) => {
+    const res = await fetch(template.replace("{z}", z).replace("{x}", x).replace("{y}", y));
+    return res.ok ? new Uint8Array(await res.arrayBuffer()) : null;
+  };
+
+  // As map-layer.mjs draw().
+  const inYear = (x) => (x.from == null || year >= x.from) && (x.until == null || year < x.until);
+  const landmarks = (pack.landmarks ?? []).filter(inYear);
+  const tall = await tallBuildings(getTile, box);
+  const footprints = landmarks.filter((lm) => lm.buildings?.length).flatMap((lm) => [...lm.buildings, ...(lm.neighbours ?? [])].map((b) => b.rings[0]));
+  const cleared = await buildingsInAreas(getTile, [...(era.hiddenAreas ?? []).filter(inYear).map((a) => a.ring), ...footprints]);
+  const closed = (era.closedStreets ?? []).filter(inYear).map((a) => [a.ring]);
+  const closedRoads = closed.length ? ["within", { type: "MultiPolygon", coordinates: closed }] : null;
+  const hiddenRoads = era.hiddenRoads && closedRoads ? ["any", era.hiddenRoads, closedRoads] : (era.hiddenRoads ?? closedRoads ?? undefined);
+  const periodBuildings = (era.extraBuildings ?? []).filter(inYear).map(({ from, until, name, ...b }) => b);
+  const unbuilt = era.towers || era.zones ? hiddenBuildingIds(tall, { towers: era.towers ?? [], zones: era.zones ?? [] }) : [];
+  const hidden = new Set([...(era.hiddenBuildings ?? []), ...cleared, ...unbuilt, ...landmarkBuildingIds(landmarks)]);
+  const drawn = [...tall.filter((b) => !hidden.has(b.id)), ...periodBuildings, ...landmarkNeighbours(landmarks)];
+  const leanData = leanFeatures(drawn, { lean, extra: landmarkItems(landmarks, { lean }) });
+  window.debug = { tall, cleared, hidden, drawn };
+
+  const base = new URL("..", location.href).href;
+  const k = 1 / (2.5 * 0.3048) * 40075016 * Math.cos((city.center[1] * Math.PI) / 180);
+  const zoomAt = (s) => Math.log2((s * k) / 512);
+  const style = buildStyle({ tiles: template, glyphs: `${base}data/fonts/{fontstack}/{range}.pbf`, look: q.get("look") ?? "night", lean, zoomAt,
+    era: { ...era, hiddenBuildings: [...hidden], hiddenRoads,
+      clearedStreets: clearedStreetsFilter((era.hiddenAreas ?? []).filter(inYear).map((a) => a.ring)),
+      clearedGround: { type: "FeatureCollection", features: (era.hiddenAreas ?? []).filter(inYear).map((a) => ({ type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [a.ring] } })) }, hiddenLabels: cleared.length ? ["within", { type: "MultiPolygon", coordinates: (era.hiddenAreas ?? []).filter(inYear).map((a) => [a.ring]) }] : undefined },
+    attribution: "© OpenFreeMap © OpenStreetMap" });
+  style.sources.osm.maxzoom = 14; // live tiles stop at 14, as the saved map does
+  style.sources.lean.data = leanData;
+  style.sources.shadows.data = shadowFeatures([...drawn.filter((b) => !b.near), ...landmarks.flatMap((lm) => lm.buildings ?? [])], { cleared: (era.hiddenAreas ?? []).filter(inYear).map((a) => a.ring) });
+  style.sources.landmarks.data = landmarkFeatures(landmarks, { lean });
+  const map = new maplibregl.Map({ container: "map", style, center: centre, zoom: Number(q.get("z") ?? 15.6), bearing: 0, pitch: 0 });
+  window.map = map;
+  map.on("error", (e) => console.warn(e.error?.message ?? e));
+  const show = () => { hud.textContent = `${city.name} ${year}  tall ${tall.length}, cleared ${cleared.length}, drawn ${drawn.length}  z ${map.getZoom().toFixed(2)}`; };
+  map.on("move", show); show();
+</script>
+</body>
+</html>

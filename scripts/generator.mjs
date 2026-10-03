@@ -13,7 +13,7 @@ export const FEET_PER_PIXEL = 2.5;
  */
 export const GRID = { size: 100, distance: 250, units: "ft" };
 /** Bumped when the generated files change shape, so old cities are offered a rebuild. */
-export const DATA_VERSION = 4;
+export const DATA_VERSION = 5;
 export const ERAS = {
   "1980s": { label: "1980s", year: 1986, ready: true },
   modern: { label: "Modern", year: null, ready: false }

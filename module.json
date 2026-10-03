@@ -2,7 +2,7 @@
   "id": "kg-cities",
   "title": "KG Cities",
   "description": "Generate a styled, real-world US city as a gridless scene at real scale (feet and miles): Boston, New York, Washington, Philadelphia, Baltimore, Atlanta, St. Louis, Detroit, Chicago, San Francisco, Los Angeles, Las Vegas, Austin and Miami. Only the city you pick is downloaded. Day and night looks, leaning buildings, 1980s eras, landmarks, and the city at night from orbit when zoomed far out.",
-  "version": "0.2.2",
+  "version": "0.6.0",
   "compatibility": {
     "minimum": "13",
     "verified": "13",

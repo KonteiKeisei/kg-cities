@@ -1,0 +1,189 @@
+{
+  "about": "San Francisco's preconfigured landmarks, written as of 1986.",
+  "landmarks": [
+    {
+      "name": "Golden Gate Bridge",
+      "find": "Golden Gate Bridge",
+      "pin": true,
+      "text": "The International Orange suspension bridge over the Golden Gate, its towers often lost in the fog. Next May it turns fifty, and the city plans to close it to cars for a walk across."
+    },
+    {
+      "name": "Alcatraz",
+      "find": "Alcatraz Island",
+      "pin": true,
+      "text": "The island prison in the bay, closed in 1963 and occupied by Native American activists until 1971. Now a national park: the boat leaves from Pier 41 and the tour ends in the cells."
+    },
+    {
+      "name": "Coit Tower",
+      "find": "Coit Tower",
+      "text": "The fluted concrete tower on Telegraph Hill, its base painted with Depression-era murals of California workers. The Filbert Steps climb to it through hillside gardens."
+    },
+    {
+      "name": "Transamerica Pyramid",
+      "find": "Transamerica Pyramid",
+      "from": 1972,
+      "text": "The 853-foot white pyramid at the foot of Columbus Avenue, the tallest building in San Francisco. A redwood grove grows at its base."
+    },
+    {
+      "name": "Fisherman's Wharf",
+      "find": "Fisherman's Wharf, San Francisco",
+      "pin": true,
+      "text": "Crab pots steaming on the sidewalk, sourdough bread and souvenir shops along Jefferson Street. The fishing boats still unload at dawn before the tourists come."
+    },
+    {
+      "name": "Pier 39",
+      "find": "Pier 39",
+      "pin": true,
+      "from": 1978,
+      "text": "The two-level wooden shopping pier with a carousel and street performers, the busiest tourist stop in the city. The sea lions have not found it yet."
+    },
+    {
+      "name": "Ghirardelli Square",
+      "find": "Ghirardelli Square",
+      "text": "The old brick chocolate factory above Aquatic Park, its big lit sign over shops and restaurants. Hot fudge sundaes at the soda fountain."
+    },
+    {
+      "name": "Lombard Street",
+      "find": "Lombard Street, Russian Hill",
+      "pin": true,
+      "text": "The block of Lombard on Russian Hill that zigzags down eight hairpin turns between hydrangeas. Cars queue at the top all summer."
+    },
+    {
+      "name": "Cable Car Barn",
+      "find": "Cable Car Museum",
+      "text": "The brick powerhouse at Washington and Mason where the great wheels pull every cable under the city. The cable cars came back in 1984 after a two-year rebuild."
+    },
+    {
+      "name": "Chinatown Gate",
+      "find": "Dragon Gate, San Francisco",
+      "pin": true,
+      "text": "The green-tiled gate at Grant Avenue and Bush Street into the oldest Chinatown in North America. Herbalists, dim sum and fortune cookie bakeries lie beyond."
+    },
+    {
+      "name": "San Francisco City Hall",
+      "find": "San Francisco City Hall",
+      "text": "The Beaux-Arts city hall with a dome taller than the Capitol's, on Civic Center plaza. Mayor Moscone and Supervisor Harvey Milk were shot inside in 1978."
+    },
+    {
+      "name": "Palace of Fine Arts",
+      "find": "Palace of Fine Arts",
+      "text": "Maybeck's dreamlike Roman rotunda by a lagoon in the Marina, rebuilt in concrete from the 1915 World's Fair. The Exploratorium science museum fills the hall behind it."
+    },
+    {
+      "name": "Golden Gate Park",
+      "find": "Golden Gate Park",
+      "pin": true,
+      "text": "Three miles of park from the Haight to Ocean Beach, with the Conservatory of Flowers, the bison paddock and the Dutch windmills. Free concerts in the Polo Fields."
+    },
+    {
+      "name": "de Young Museum",
+      "find": "de Young Museum",
+      "text": "The Spanish-style museum in Golden Gate Park, with American paintings and the Asian Art Museum sharing its wings. The Japanese Tea Garden is next door."
+    },
+    {
+      "name": "California Academy of Sciences",
+      "find": "California Academy of Sciences",
+      "text": "The natural history museum, aquarium and Morrison Planetarium on the park's Music Concourse. The Steinhart Aquarium's alligator swamp and the dioramas of African animals are school-trip favourites."
+    },
+    {
+      "name": "Haight-Ashbury",
+      "find": "Haight-Ashbury",
+      "pin": true,
+      "text": "The Summer of Love's corner, now head shops, vintage clothes and runaways who arrived twenty years late. The Grateful Dead's old house is at 710 Ashbury."
+    },
+    {
+      "name": "Candlestick Park",
+      "at": [
+        37.7136,
+        -122.3863
+      ],
+      "pin": true,
+      "from": 1960,
+      "until": 2014,
+      "text": "The Giants' and 49ers' windswept stadium on Candlestick Point, where the wind can blow a pitcher off the mound. Joe Montana's Niners, Super Bowl champions in January 1985, play here."
+    },
+    {
+      "name": "Embarcadero Center",
+      "find": "Embarcadero Center",
+      "text": "Four concrete office towers and a Hyatt with a dizzying seventeen-storey atrium, linked by bridges full of shops. The Embarcadero Freeway runs right in front of it."
+    },
+    {
+      "name": "Ferry Building",
+      "find": "Ferry Building, San Francisco",
+      "text": "The clock-towered ferry terminal at the foot of Market Street, cut off from the city by the double-decker Embarcadero Freeway. A few commuter ferries still run to Marin."
+    },
+    {
+      "name": "Bank of America Center",
+      "find": "555 California Street",
+      "text": "The dark red granite tower of 1969, the bank's world headquarters, with a black granite sculpture locals call the Banker's Heart. The Carnelian Room is on the 52nd floor."
+    },
+    {
+      "name": "Fairmont Hotel",
+      "find": "Fairmont San Francisco",
+      "text": "The grand hotel on top of Nob Hill, where the UN Charter was drafted in 1945. The Tonga Room's tropical rainstorm and floating band are downstairs."
+    },
+    {
+      "name": "Top of the Mark",
+      "find": "InterContinental Mark Hopkins San Francisco",
+      "text": "The Mark Hopkins Hotel's glass-walled bar on the 19th floor of Nob Hill, where sailors toasted the city before shipping out in the war. Still the classic place for a drink with a view."
+    },
+    {
+      "name": "Grace Cathedral",
+      "find": "Grace Cathedral, San Francisco",
+      "text": "The Gothic cathedral on Nob Hill, finished only in 1964, with gilded doors cast from Ghiberti's in Florence. Its stained glass includes Albert Einstein."
+    },
+    {
+      "name": "Castro Theatre",
+      "find": "Castro Theatre",
+      "text": "The 1922 movie palace with its towering neon sign at the heart of the Castro, a gay community grieving through the AIDS epidemic. The Wurlitzer organ plays before every show."
+    },
+    {
+      "name": "Mission Dolores",
+      "find": "Mission San Francisco de Asís",
+      "text": "The 1776 adobe mission, the oldest building in the city, with a basilica beside it and a cemetery from the Gold Rush days. Hitchcock filmed Vertigo in its graveyard."
+    },
+    {
+      "name": "Twin Peaks",
+      "find": "Twin Peaks, San Francisco",
+      "pin": true,
+      "text": "The two bald hills in the middle of the city, with the whole bay spread below. The Sutro TV tower straddles the ridge behind them."
+    },
+    {
+      "name": "The Presidio",
+      "find": "Presidio of San Francisco",
+      "pin": true,
+      "text": "The Army's headquarters for the West at the Golden Gate, 1,400 acres of eucalyptus, barracks and officers' row. Military police patrol the gates."
+    },
+    {
+      "name": "City Lights Bookstore",
+      "text": "Lawrence Ferlinghetti's bookshop on Columbus Avenue, publisher of Ginsberg's Howl and home of the Beat writers. Vesuvio bar is across Jack Kerouac Alley.",
+      "at": [
+        37.79763,
+        -122.40654
+      ],
+      "height": 10
+    },
+    {
+      "name": "Cliff House",
+      "find": "Cliff House, San Francisco",
+      "text": "The restaurant above Seal Rocks at the edge of the Pacific, beside the ruins of the Sutro Baths. Fog rolls in off Ocean Beach every summer afternoon."
+    },
+    {
+      "name": "Sather Tower",
+      "find": "Sather Tower",
+      "text": "The 'Campanile' over the University of California at Berkeley, home of the Free Speech Movement and still the most political campus in America. Divestment protesters are camped on Sproul Plaza."
+    },
+    {
+      "name": "Oakland Coliseum",
+      "find": "Oakland Coliseum",
+      "pin": true,
+      "text": "The A's concrete stadium beside the Nimitz Freeway and the Warriors' arena next to it. The Raiders left for Los Angeles in 1982."
+    },
+    {
+      "name": "Cow Palace",
+      "find": "Cow Palace",
+      "pin": true,
+      "text": "The great livestock barn and arena on the southern edge of the city, home of the Grand National Rodeo. The Beatles and the Republicans both played here."
+    }
+  ]
+}

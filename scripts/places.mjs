@@ -129,6 +129,22 @@ function tierOf(kind, kept) {
 export function buildPlaces(osm, corrections, gm = {}, { businesses = "generic" } = {}) {
   const out = [];
   const edits = gm.edits ?? {};
+  // An edit whose place id is not in this map data (made on other data, such as KG Boston
+  // Map's, or before the city's data was refreshed) finds its place again by the name the map
+  // data gave it, kept in the edit as base. Every place of that name takes it.
+  const ids = new Set(osm.map((p) => p.id));
+  const norm = (s) => String(s ?? "").toLowerCase().normalize("NFKD").replace(/[^\w\s&]/g, "").replace(/\s+/g, " ").trim();
+  const orphans = new Map();
+  for (const [key, e] of Object.entries(edits)) {
+    if (ids.has(key)) continue;
+    const baseName = typeof e.base === "string" ? e.base : e.base?.name;
+    if (baseName && !orphans.has(norm(baseName))) orphans.set(norm(baseName), key);
+  }
+  const editFor = (p) => {
+    if (edits[p.id]) return [edits[p.id], p.id];
+    const key = orphans.get(norm(p.name));
+    return key ? [edits[key], key] : [null, null];
+  };
 
   const decide = (p, { custom = false } = {}) => {
     let name = p.name, kind = p.kind, hidden = false, kept = !!custom, why = custom ? "1986 list" : "map data", note = p.note ?? "";
@@ -162,7 +178,7 @@ export function buildPlaces(osm, corrections, gm = {}, { businesses = "generic" 
       }
     }
 
-    const edit = edits[p.id];
+    const [edit, editKey] = custom ? [edits[p.id] ?? null, p.id] : editFor(p);
     if (edit) {
       if (edit.name) { name = edit.name; kept = true; }
       if (edit.kind) kind = edit.kind;
@@ -175,7 +191,8 @@ export function buildPlaces(osm, corrections, gm = {}, { businesses = "generic" 
     out.push({
       id: p.id, name, kind, lat: p.lat, lon: p.lon, tier: tierOf(kind, kept), hidden,
       minZoom: p.minZoom ?? null, base: { name: p.name, kind: p.kind }, why, note, confidence,
-      edited: !!edit, custom
+      // editKey: where its edit is kept (another id when it was found again by name).
+      edited: !!edit, custom, ...(edit && editKey !== p.id ? { editKey } : {})
     });
   };
 

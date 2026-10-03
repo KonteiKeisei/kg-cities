@@ -1,0 +1,1073 @@
+{
+ "id": "st-louis",
+ "landmarks": [
+  {
+   "id": "pack:gateway-arch",
+   "name": "Gateway Arch",
+   "lat": 38.624507,
+   "lon": -90.185683,
+   "glow": true,
+   "summary": "Eero Saarinen's 630-foot stainless steel arch on the riverfront, the Gateway to the West. Egg-shaped tram cars ride up inside each leg to a window at the top."
+  },
+  {
+   "id": "pack:busch-stadium",
+   "name": "Busch Stadium",
+   "lat": 38.6226,
+   "lon": -90.1928,
+   "glow": true,
+   "summary": "The round downtown stadium of the Cardinals and the football Cardinals, its rim lined with arches echoing the Gateway. Whitey Herzog's speedsters win on the artificial turf.",
+   "from": 1966,
+   "until": 2005
+  },
+  {
+   "id": "pack:anheuser-busch-brewery",
+   "name": "Anheuser-Busch Brewery",
+   "lat": 38.596377,
+   "lon": -90.210294,
+   "glow": true,
+   "summary": "The largest brewery in the world in Soulard, with the Clydesdales in their Victorian stable. The free tour ends in the hospitality room."
+  },
+  {
+   "id": "pack:union-station",
+   "name": "Union Station",
+   "lat": 38.628122,
+   "lon": -90.208026,
+   "glow": true,
+   "summary": "The great Romanesque station, once the busiest in the world, reopened last year as a hotel and shopping mall. Its Grand Hall's whispering arch still works.",
+   "buildings": [
+    {
+     "id": 4814627742,
+     "h": 70,
+     "base": 0,
+     "rings": [
+      [
+       [
+        -90.2069217,
+        38.6291419
+       ],
+       [
+        -90.2068841,
+        38.6292341
+       ],
+       [
+        -90.2067769,
+        38.6292089
+       ],
+       [
+        -90.206809,
+        38.6291167
+       ],
+       [
+        -90.2069217,
+        38.6291419
+       ]
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "pack:forest-park",
+   "name": "Forest Park",
+   "lat": 38.638192,
+   "lon": -90.284703,
+   "glow": true,
+   "summary": "The 1,300-acre park of the 1904 World's Fair, larger than Central Park, with the zoo, the art museum and the Muny outdoor theatre. Families come for the free museums."
+  },
+  {
+   "id": "pack:saint-louis-art-museum",
+   "name": "Saint Louis Art Museum",
+   "lat": 38.639468,
+   "lon": -90.294403,
+   "glow": true,
+   "summary": "Cass Gilbert's Palace of Fine Arts from the 1904 World's Fair, on Art Hill in Forest Park. Sledders take over the hill in winter."
+  },
+  {
+   "id": "pack:saint-louis-zoo",
+   "name": "Saint Louis Zoo",
+   "lat": 38.635173,
+   "lon": -90.290909,
+   "glow": true,
+   "summary": "The free zoo in Forest Park with the 1904 Flight Cage and a miniature railroad. Its chimpanzee show is famous."
+  },
+  {
+   "id": "pack:old-courthouse",
+   "name": "Old Courthouse",
+   "lat": 38.625727,
+   "lon": -90.189348,
+   "glow": true,
+   "summary": "The domed courthouse where Dred Scott sued for his freedom in 1847, framed by the Arch. Slaves were once sold on its steps.",
+   "buildings": [
+    {
+     "id": 2413612950,
+     "h": 59,
+     "base": 0,
+     "rings": [
+      [
+       [
+        -90.1893318,
+        38.625718
+       ],
+       [
+        -90.1893049,
+        38.6257264
+       ],
+       [
+        -90.1892781,
+        38.6257096
+       ],
+       [
+        -90.1892889,
+        38.6256761
+       ],
+       [
+        -90.189321,
+        38.6256761
+       ],
+       [
+        -90.1893318,
+        38.6256845
+       ],
+       [
+        -90.1893371,
+        38.6257096
+       ],
+       [
+        -90.1893318,
+        38.625718
+       ]
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "pack:eads-bridge",
+   "name": "Eads Bridge",
+   "lat": 38.628911,
+   "lon": -90.17887,
+   "glow": true,
+   "summary": "The 1874 steel arch bridge over the Mississippi, the first of its kind in the world. Trains rumble along its lower deck."
+  },
+  {
+   "id": "pack:fabulous-fox-theatre",
+   "name": "Fabulous Fox Theatre",
+   "lat": 38.639122,
+   "lon": -90.232384,
+   "glow": true,
+   "summary": "The 1929 Siamese Byzantine movie palace on Grand Boulevard, reopened in 1982 after a lavish restoration. Broadway tours and rock concerts play under its gilded dome.",
+   "buildings": [
+    {
+     "id": 2024194282,
+     "h": 35,
+     "base": 0,
+     "rings": [
+      [
+       [
+        -90.2317214,
+        38.6390396
+       ],
+       [
+        -90.2319628,
+        38.6387002
+       ],
+       [
+        -90.232805,
+        38.6390648
+       ],
+       [
+        -90.2327836,
+        38.6390899
+       ],
+       [
+        -90.2329552,
+        38.6391653
+       ],
+       [
+        -90.2327192,
+        38.639488
+       ],
+       [
+        -90.2326602,
+        38.6394628
+       ],
+       [
+        -90.2326119,
+        38.6395299
+       ],
+       [
+        -90.2319682,
+        38.6392449
+       ],
+       [
+        -90.231995,
+        38.639203
+       ],
+       [
+        -90.2319789,
+        38.6391947
+       ],
+       [
+        -90.2319843,
+        38.6391528
+       ],
+       [
+        -90.2317214,
+        38.6390396
+       ]
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "pack:cathedral-basilica",
+   "name": "Cathedral Basilica",
+   "lat": 38.642533,
+   "lon": -90.254638,
+   "glow": true,
+   "summary": "The Romanesque cathedral on Lindell Boulevard, its interior covered in the largest mosaic collection in the world. The tiles are still being installed.",
+   "buildings": [
+    {
+     "id": 4779851972,
+     "h": 22,
+     "base": 0,
+     "rings": [
+      [
+       [
+        -90.2548259,
+        38.6427017
+       ],
+       [
+        -90.2547508,
+        38.6429405
+       ],
+       [
+        -90.2546865,
+        38.6429238
+       ],
+       [
+        -90.2546704,
+        38.642974
+       ],
+       [
+        -90.2546006,
+        38.6429615
+       ],
+       [
+        -90.2545953,
+        38.642974
+       ],
+       [
+        -90.2545631,
+        38.6429992
+       ],
+       [
+        -90.2545148,
+        38.6430076
+       ],
+       [
+        -90.2544665,
+        38.6429992
+       ],
+       [
+        -90.2544451,
+        38.642974
+       ],
+       [
+        -90.2544451,
+        38.642928
+       ],
+       [
+        -90.2543592,
+        38.6429112
+       ],
+       [
+        -90.2543753,
+        38.6428609
+       ],
+       [
+        -90.2543163,
+        38.6428442
+       ],
+       [
+        -90.2543968,
+        38.6426095
+       ],
+       [
+        -90.2543378,
+        38.6425844
+       ],
+       [
+        -90.2543056,
+        38.6425425
+       ],
+       [
+        -90.2543002,
+        38.642488
+       ],
+       [
+        -90.2543056,
+        38.6424545
+       ],
+       [
+        -90.2543271,
+        38.6424294
+       ],
+       [
+        -90.2543753,
+        38.6423958
+       ],
+       [
+        -90.2544075,
+        38.6423875
+       ],
+       [
+        -90.2544773,
+        38.6423875
+       ],
+       [
+        -90.2545363,
+        38.6422157
+       ],
+       [
+        -90.2544826,
+        38.6422031
+       ],
+       [
+        -90.2545255,
+        38.642069
+       ],
+       [
+        -90.2550566,
+        38.6421822
+       ],
+       [
+        -90.2550137,
+        38.642312
+       ],
+       [
+        -90.2549601,
+        38.6423037
+       ],
+       [
+        -90.2549011,
+        38.6424754
+       ],
+       [
+        -90.2549708,
+        38.6425257
+       ],
+       [
+        -90.2549922,
+        38.6425634
+       ],
+       [
+        -90.2549869,
+        38.6426179
+       ],
+       [
+        -90.2549762,
+        38.642643
+       ],
+       [
+        -90.2549386,
+        38.6426766
+       ],
+       [
+        -90.2549118,
+        38.6426891
+       ],
+       [
+        -90.2548259,
+        38.6427017
+       ]
+      ]
+     ]
+    },
+    {
+     "id": 6171206210,
+     "h": 35,
+     "base": 0,
+     "rings": [
+      [
+       [
+        -90.2547026,
+        38.6428609
+       ],
+       [
+        -90.2546865,
+        38.6429196
+       ],
+       [
+        -90.2546114,
+        38.6429028
+       ],
+       [
+        -90.2546167,
+        38.6428903
+       ],
+       [
+        -90.2544665,
+        38.6428609
+       ],
+       [
+        -90.2544612,
+        38.6428735
+       ],
+       [
+        -90.2543861,
+        38.6428567
+       ],
+       [
+        -90.2544022,
+        38.6427981
+       ],
+       [
+        -90.2544183,
+        38.6427981
+       ],
+       [
+        -90.2544558,
+        38.6426766
+       ],
+       [
+        -90.2543968,
+        38.642664
+       ],
+       [
+        -90.2544183,
+        38.6426053
+       ],
+       [
+        -90.2544451,
+        38.6426095
+       ],
+       [
+        -90.2545094,
+        38.6424
+       ],
+       [
+        -90.254488,
+        38.6423958
+       ],
+       [
+        -90.2545041,
+        38.6423372
+       ],
+       [
+        -90.2545631,
+        38.6423498
+       ],
+       [
+        -90.254606,
+        38.6422241
+       ],
+       [
+        -90.2545953,
+        38.6422199
+       ],
+       [
+        -90.2546114,
+        38.6421654
+       ],
+       [
+        -90.2549225,
+        38.6422282
+       ],
+       [
+        -90.2549011,
+        38.6422911
+       ],
+       [
+        -90.2548903,
+        38.6422869
+       ],
+       [
+        -90.2548528,
+        38.6424084
+       ],
+       [
+        -90.2549064,
+        38.642421
+       ],
+       [
+        -90.254885,
+        38.6424796
+       ],
+       [
+        -90.2548635,
+        38.6424754
+       ],
+       [
+        -90.2547991,
+        38.6426808
+       ],
+       [
+        -90.2548206,
+        38.6426849
+       ],
+       [
+        -90.2547991,
+        38.6427478
+       ],
+       [
+        -90.2547294,
+        38.6427352
+       ],
+       [
+        -90.2546865,
+        38.6428609
+       ],
+       [
+        -90.2547026,
+        38.6428609
+       ]
+      ]
+     ]
+    },
+    {
+     "id": 6171206222,
+     "h": 39,
+     "base": 0,
+     "rings": [
+      [
+       [
+        -90.2548528,
+        38.6425173
+       ],
+       [
+        -90.2548099,
+        38.642643
+       ],
+       [
+        -90.2546811,
+        38.6427059
+       ],
+       [
+        -90.2545202,
+        38.6426724
+       ],
+       [
+        -90.2544558,
+        38.6425718
+       ],
+       [
+        -90.2544987,
+        38.6424335
+       ],
+       [
+        -90.2546275,
+        38.6423833
+       ],
+       [
+        -90.2547777,
+        38.6424126
+       ],
+       [
+        -90.2548528,
+        38.6425173
+       ]
+      ]
+     ]
+    },
+    {
+     "id": 6171206230,
+     "h": 47,
+     "base": 0,
+     "rings": [
+      [
+       [
+        -90.2550298,
+        38.6422576
+       ],
+       [
+        -90.254944,
+        38.6422408
+       ],
+       [
+        -90.2549708,
+        38.6421654
+       ],
+       [
+        -90.2550566,
+        38.6421822
+       ],
+       [
+        -90.2550298,
+        38.6422576
+       ]
+      ]
+     ]
+    },
+    {
+     "id": 6171206242,
+     "h": 64,
+     "base": 47,
+     "rings": [
+      [
+       [
+        -90.2544987,
+        38.6425634
+       ],
+       [
+        -90.2544987,
+        38.6425257
+       ],
+       [
+        -90.2545148,
+        38.642488
+       ],
+       [
+        -90.254547,
+        38.6424545
+       ],
+       [
+        -90.2545899,
+        38.6424335
+       ],
+       [
+        -90.2546436,
+        38.6424252
+       ],
+       [
+        -90.2546918,
+        38.6424294
+       ],
+       [
+        -90.2547348,
+        38.6424461
+       ],
+       [
+        -90.2547669,
+        38.6424754
+       ],
+       [
+        -90.2547884,
+        38.642509
+       ],
+       [
+        -90.2547991,
+        38.6425425
+       ],
+       [
+        -90.2547884,
+        38.6425802
+       ],
+       [
+        -90.2547669,
+        38.6426137
+       ],
+       [
+        -90.2547348,
+        38.6426389
+       ],
+       [
+        -90.2546918,
+        38.6426556
+       ],
+       [
+        -90.2546436,
+        38.6426598
+       ],
+       [
+        -90.2545953,
+        38.6426514
+       ],
+       [
+        -90.2545524,
+        38.6426347
+       ],
+       [
+        -90.2545202,
+        38.6426011
+       ],
+       [
+        -90.2544987,
+        38.6425634
+       ]
+      ]
+     ]
+    },
+    {
+     "id": 6171206252,
+     "h": 69,
+     "base": 0,
+     "rings": [
+      [
+       [
+        -90.2546382,
+        38.6425509
+       ],
+       [
+        -90.2546328,
+        38.6425341
+       ],
+       [
+        -90.2546436,
+        38.6425299
+       ],
+       [
+        -90.2546597,
+        38.6425341
+       ],
+       [
+        -90.2546597,
+        38.6425509
+       ],
+       [
+        -90.2546436,
+        38.6425551
+       ],
+       [
+        -90.2546382,
+        38.6425509
+       ]
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "pack:missouri-botanical-garden",
+   "name": "Missouri Botanical Garden",
+   "lat": 38.613395,
+   "lon": -90.259383,
+   "glow": true,
+   "summary": "Henry Shaw's garden of 1859, with the geodesic Climatron greenhouse and the largest Japanese garden in North America. The lanterns glow on summer nights."
+  },
+  {
+   "id": "pack:soulard-market",
+   "name": "Soulard Market",
+   "lat": 38.6105,
+   "lon": -90.212,
+   "glow": true,
+   "summary": "The 1779 farmers' market of the French and German neighbourhood south of downtown. Mardi Gras here is the second biggest in the country."
+  },
+  {
+   "id": "pack:lacledes-landing",
+   "name": "Laclede's Landing",
+   "lat": 38.630442,
+   "lon": -90.184152,
+   "glow": true,
+   "summary": "Nine blocks of cobbled streets and cast-iron warehouses beside the Eads Bridge, reborn as bars and restaurants. The only part of old riverfront St. Louis to survive the Arch."
+  },
+  {
+   "id": "pack:ss-admiral",
+   "name": "SS Admiral",
+   "lat": 38.6262,
+   "lon": -90.1855,
+   "glow": true,
+   "summary": "The streamlined Art Deco excursion boat moored on the levee, a fixture of the riverfront since 1940. Its dances and cruises are fading, and its future is uncertain."
+  },
+  {
+   "id": "pack:blueberry-hill",
+   "name": "Blueberry Hill",
+   "lat": 38.655758,
+   "lon": -90.304991,
+   "glow": true,
+   "summary": "The University City pub of jukeboxes and memorabilia on the Delmar Loop, where Chuck Berry drops in to visit. Its burgers are local legend.",
+   "buildings": [
+    {
+     "id": "blueberry-hill-outline",
+     "h": 25,
+     "base": 0,
+     "rings": [
+      [
+       [
+        -90.3052744,
+        38.6556032
+       ],
+       [
+        -90.3051875,
+        38.6555941
+       ],
+       [
+        -90.3051719,
+        38.6556851
+       ],
+       [
+        -90.3049635,
+        38.6556634
+       ],
+       [
+        -90.3049803,
+        38.6555654
+       ],
+       [
+        -90.3047719,
+        38.6555436
+       ],
+       [
+        -90.3047227,
+        38.6558307
+       ],
+       [
+        -90.3052264,
+        38.6558833
+       ],
+       [
+        -90.3052744,
+        38.6556032
+       ]
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "pack:ted-drewes-frozen-custard",
+   "name": "Ted Drewes Frozen Custard",
+   "lat": 38.589417,
+   "lon": -90.307626,
+   "glow": true,
+   "summary": "The custard stand on old Route 66, where the 'concrete' is so thick they hand it over upside down. Lines in the summer heat stretch to the street.",
+   "buildings": [
+    {
+     "id": "ted-drewes-frozen-custard-outline",
+     "h": 25,
+     "base": 0,
+     "rings": [
+      [
+       [
+        -90.3077888,
+        38.5894724
+       ],
+       [
+        -90.3075847,
+        38.5892514
+       ],
+       [
+        -90.307499,
+        38.5892929
+       ],
+       [
+        -90.3075616,
+        38.5893717
+       ],
+       [
+        -90.307517,
+        38.5893933
+       ],
+       [
+        -90.3076242,
+        38.5895523
+       ],
+       [
+        -90.3077888,
+        38.5894724
+       ]
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "pack:the-arena",
+   "name": "The Arena",
+   "lat": 38.6347,
+   "lon": -90.2959,
+   "glow": true,
+   "summary": "The barrel-roofed arena by Forest Park where the Blues play, called the Checkerdome for a few years by its pet-food sponsor. The organ plays 'When the Saints Go Marching In'.",
+   "from": 1929,
+   "until": 1999
+  }
+ ],
+ "eras": {
+  "1980s": {
+   "year": 1986,
+   "transitNote": "No rail transit: MetroLink opened in 1993.",
+   "map": {
+    "transit": {
+     "type": "FeatureCollection",
+     "features": [],
+     "lines": [],
+     "stations": []
+    },
+    "towers": [
+     {
+      "name": "Freddy's",
+      "built": 2024,
+      "lat": 38.50821,
+      "lon": -90.441683,
+      "radius": 19,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Domiciliary Offices",
+      "built": 2008,
+      "lat": 38.490963,
+      "lon": -90.27992,
+      "radius": 16,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Fisher House",
+      "built": 2010,
+      "lat": 38.492279,
+      "lon": -90.279217,
+      "radius": 32,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Main Gate House",
+      "built": 2003,
+      "lat": 38.505531,
+      "lon": -90.280334,
+      "radius": 15,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Joint Armed Forces Reserve Center",
+      "built": 2011,
+      "lat": 38.502954,
+      "lon": -90.282956,
+      "radius": 76,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Lowe's",
+      "built": 2000,
+      "lat": 38.561448,
+      "lon": -90.403099,
+      "radius": 104,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Leaf Pavilion",
+      "built": 2009,
+      "lat": 38.545646,
+      "lon": -90.41769,
+      "radius": 15,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Lowe's",
+      "built": 2006,
+      "lat": 38.555312,
+      "lon": -90.264542,
+      "radius": 120,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Lowe's",
+      "built": 1998,
+      "lat": 38.590434,
+      "lon": -89.987094,
+      "radius": 101,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Landscape St. Louis",
+      "built": 1987,
+      "lat": 38.613665,
+      "lon": -90.309321,
+      "radius": 15,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Lowe's",
+      "built": 2005,
+      "lat": 38.618275,
+      "lon": -90.330904,
+      "radius": 93,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Mid Campus Center",
+      "built": 2016,
+      "lat": 38.636207,
+      "lon": -90.261936,
+      "radius": 63,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Landscape St. Louis",
+      "built": 1987,
+      "lat": 38.613665,
+      "lon": -90.309321,
+      "radius": 15,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Casino Queen",
+      "built": 1993,
+      "lat": 38.625637,
+      "lon": -90.174077,
+      "radius": 116,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "CQ Hotel",
+      "built": 2000,
+      "lat": 38.62642,
+      "lon": -90.174976,
+      "radius": 44,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Costco",
+      "built": 2022,
+      "lat": 38.676465,
+      "lon": -90.359105,
+      "radius": 93,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Costco Gasoline",
+      "built": 2022,
+      "lat": 38.674528,
+      "lon": -90.359116,
+      "radius": 22,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Lowe's",
+      "built": 2000,
+      "lat": 38.788867,
+      "lon": -90.530306,
+      "radius": 116,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "building 1024742758",
+      "built": 1997,
+      "lat": 38.743275,
+      "lon": -90.366031,
+      "radius": 15,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Lowe's",
+      "built": 2023,
+      "lat": 38.746374,
+      "lon": -90.426345,
+      "radius": 110,
+      "minHeight": 25,
+      "source": "osm start_date"
+     }
+    ],
+    "hiddenAreas": []
+   }
+  }
+ }
+}

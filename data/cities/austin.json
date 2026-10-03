@@ -1,0 +1,1231 @@
+{
+ "id": "austin",
+ "landmarks": [
+  {
+   "id": "pack:texas-state-capitol",
+   "name": "Texas State Capitol",
+   "lat": 30.274691,
+   "lon": -97.740517,
+   "glow": true,
+   "summary": "The pink granite capitol of 1888, taller than the one in Washington, as every Texan will tell you. A new aluminium cast of the Goddess of Liberty was lifted onto its dome this June.",
+   "buildings": [
+    {
+     "id": 7346391310,
+     "h": 28,
+     "base": 0,
+     "rings": [
+      [
+       [
+        -97.7401578,
+        30.2744633
+       ],
+       [
+        -97.7400506,
+        30.2747505
+       ],
+       [
+        -97.7399808,
+        30.2747273
+       ],
+       [
+        -97.7399755,
+        30.2747366
+       ],
+       [
+        -97.7398252,
+        30.2746949
+       ],
+       [
+        -97.7398252,
+        30.2746856
+       ],
+       [
+        -97.7397394,
+        30.2746625
+       ],
+       [
+        -97.7397072,
+        30.2747505
+       ],
+       [
+        -97.7396375,
+        30.274732
+       ],
+       [
+        -97.7396321,
+        30.2747412
+       ],
+       [
+        -97.7395463,
+        30.2747134
+       ],
+       [
+        -97.7395463,
+        30.2747088
+       ],
+       [
+        -97.7394712,
+        30.2746856
+       ],
+       [
+        -97.7395141,
+        30.2745652
+       ],
+       [
+        -97.7394766,
+        30.2745559
+       ],
+       [
+        -97.7395624,
+        30.2743336
+       ],
+       [
+        -97.7395999,
+        30.2743428
+       ],
+       [
+        -97.7396429,
+        30.274227
+       ],
+       [
+        -97.739718,
+        30.2742502
+       ],
+       [
+        -97.7397233,
+        30.2742409
+       ],
+       [
+        -97.7398092,
+        30.2742641
+       ],
+       [
+        -97.7398038,
+        30.2742733
+       ],
+       [
+        -97.7398789,
+        30.2742919
+       ],
+       [
+        -97.7398467,
+        30.2743799
+       ],
+       [
+        -97.7400881,
+        30.2744401
+       ],
+       [
+        -97.7400827,
+        30.2744447
+       ],
+       [
+        -97.7401578,
+        30.2744633
+       ]
+      ]
+     ]
+    },
+    {
+     "id": 257584432,
+     "h": 35,
+     "base": 0,
+     "rings": [
+      [
+       [
+        -97.7402222,
+        30.2744818
+       ],
+       [
+        -97.7402812,
+        30.2743058
+       ],
+       [
+        -97.7406514,
+        30.2744077
+       ],
+       [
+        -97.7405763,
+        30.2745791
+       ],
+       [
+        -97.7408659,
+        30.2746532
+       ],
+       [
+        -97.7408606,
+        30.2746625
+       ],
+       [
+        -97.7409518,
+        30.2746856
+       ],
+       [
+        -97.740984,
+        30.2746023
+       ],
+       [
+        -97.7410537,
+        30.2746208
+       ],
+       [
+        -97.7410591,
+        30.2746115
+       ],
+       [
+        -97.7411449,
+        30.2746347
+       ],
+       [
+        -97.7411449,
+        30.274644
+       ],
+       [
+        -97.74122,
+        30.2746671
+       ],
+       [
+        -97.7411771,
+        30.2747783
+       ],
+       [
+        -97.74122,
+        30.2747922
+       ],
+       [
+        -97.7411771,
+        30.274908
+       ],
+       [
+        -97.7411342,
+        30.2750146
+       ],
+       [
+        -97.7410913,
+        30.2750053
+       ],
+       [
+        -97.7410483,
+        30.2751211
+       ],
+       [
+        -97.7409732,
+        30.2751026
+       ],
+       [
+        -97.7409679,
+        30.2751119
+       ],
+       [
+        -97.740882,
+        30.2750887
+       ],
+       [
+        -97.740882,
+        30.2750794
+       ],
+       [
+        -97.7408123,
+        30.2750563
+       ],
+       [
+        -97.7408445,
+        30.2749682
+       ],
+       [
+        -97.7407587,
+        30.2749451
+       ],
+       [
+        -97.7407533,
+        30.2749544
+       ],
+       [
+        -97.7404261,
+        30.2748524
+       ],
+       [
+        -97.7404153,
+        30.2748849
+       ],
+       [
+        -97.7404958,
+        30.274908
+       ],
+       [
+        -97.740469,
+        30.2749729
+       ],
+       [
+        -97.7404797,
+        30.2749729
+       ],
+       [
+        -97.7404422,
+        30.2750748
+       ],
+       [
+        -97.7404314,
+        30.2750748
+       ],
+       [
+        -97.74041,
+        30.2751397
+       ],
+       [
+        -97.7402866,
+        30.2751072
+       ],
+       [
+        -97.7402705,
+        30.2751489
+       ],
+       [
+        -97.7401793,
+        30.2751258
+       ],
+       [
+        -97.7400881,
+        30.275098
+       ],
+       [
+        -97.7401042,
+        30.2750563
+       ],
+       [
+        -97.7399808,
+        30.2750192
+       ],
+       [
+        -97.7400076,
+        30.2749544
+       ],
+       [
+        -97.7399969,
+        30.2749544
+       ],
+       [
+        -97.7400666,
+        30.2747876
+       ],
+       [
+        -97.7401417,
+        30.2748107
+       ],
+       [
+        -97.7401578,
+        30.2747783
+       ],
+       [
+        -97.7398252,
+        30.2746949
+       ],
+       [
+        -97.7398252,
+        30.2746856
+       ],
+       [
+        -97.7397394,
+        30.2746625
+       ],
+       [
+        -97.7397072,
+        30.2747505
+       ],
+       [
+        -97.7396375,
+        30.274732
+       ],
+       [
+        -97.7396321,
+        30.2747412
+       ],
+       [
+        -97.7395463,
+        30.2747134
+       ],
+       [
+        -97.7395463,
+        30.2747088
+       ],
+       [
+        -97.7394712,
+        30.2746856
+       ],
+       [
+        -97.7395141,
+        30.2745652
+       ],
+       [
+        -97.7394766,
+        30.2745559
+       ],
+       [
+        -97.7395624,
+        30.2743336
+       ],
+       [
+        -97.7395999,
+        30.2743428
+       ],
+       [
+        -97.7396429,
+        30.274227
+       ],
+       [
+        -97.739718,
+        30.2742502
+       ],
+       [
+        -97.7397233,
+        30.2742409
+       ],
+       [
+        -97.7398092,
+        30.2742641
+       ],
+       [
+        -97.7398038,
+        30.2742733
+       ],
+       [
+        -97.7398789,
+        30.2742919
+       ],
+       [
+        -97.7398467,
+        30.2743799
+       ],
+       [
+        -97.7400881,
+        30.2744401
+       ],
+       [
+        -97.7400827,
+        30.2744447
+       ],
+       [
+        -97.7402222,
+        30.2744818
+       ]
+      ]
+     ]
+    },
+    {
+     "id": 7346391370,
+     "h": 35,
+     "base": 0,
+     "rings": [
+      [
+       [
+        -97.74041,
+        30.2751397
+       ],
+       [
+        -97.7399808,
+        30.2750192
+       ],
+       [
+        -97.7400076,
+        30.2749544
+       ],
+       [
+        -97.7399969,
+        30.2749544
+       ],
+       [
+        -97.7400666,
+        30.2747876
+       ],
+       [
+        -97.7401417,
+        30.2748107
+       ],
+       [
+        -97.7401578,
+        30.2747783
+       ],
+       [
+        -97.7400506,
+        30.2747505
+       ],
+       [
+        -97.7401578,
+        30.2744633
+       ],
+       [
+        -97.7402222,
+        30.2744818
+       ],
+       [
+        -97.7402812,
+        30.2743058
+       ],
+       [
+        -97.7406514,
+        30.2744077
+       ],
+       [
+        -97.7405763,
+        30.2745791
+       ],
+       [
+        -97.7406299,
+        30.2745976
+       ],
+       [
+        -97.7405226,
+        30.2748802
+       ],
+       [
+        -97.7404261,
+        30.2748524
+       ],
+       [
+        -97.7404153,
+        30.2748849
+       ],
+       [
+        -97.7404958,
+        30.274908
+       ],
+       [
+        -97.740469,
+        30.2749729
+       ],
+       [
+        -97.7404797,
+        30.2749729
+       ],
+       [
+        -97.7404422,
+        30.2750748
+       ],
+       [
+        -97.7404314,
+        30.2750748
+       ],
+       [
+        -97.74041,
+        30.2751397
+       ]
+      ]
+     ]
+    },
+    {
+     "id": 5161876252,
+     "h": 75,
+     "base": 0,
+     "rings": [
+      [
+       [
+        -97.74019,
+        30.2746717
+       ],
+       [
+        -97.7402008,
+        30.2746208
+       ],
+       [
+        -97.740249,
+        30.2745652
+       ],
+       [
+        -97.7402973,
+        30.274542
+       ],
+       [
+        -97.7403563,
+        30.2745328
+       ],
+       [
+        -97.7404153,
+        30.2745467
+       ],
+       [
+        -97.7404636,
+        30.2745791
+       ],
+       [
+        -97.7404958,
+        30.2746208
+       ],
+       [
+        -97.7405065,
+        30.2746717
+       ],
+       [
+        -97.7404958,
+        30.2747227
+       ],
+       [
+        -97.7404636,
+        30.2747644
+       ],
+       [
+        -97.7403992,
+        30.2748015
+       ],
+       [
+        -97.7403402,
+        30.2748107
+       ],
+       [
+        -97.7402812,
+        30.2747968
+       ],
+       [
+        -97.7402329,
+        30.2747644
+       ],
+       [
+        -97.7402008,
+        30.2747227
+       ],
+       [
+        -97.74019,
+        30.2746717
+       ]
+      ]
+     ]
+    },
+    {
+     "id": 13647207612,
+     "h": 92,
+     "base": 0,
+     "rings": [
+      [
+       [
+        -97.7403295,
+        30.2746532
+       ],
+       [
+        -97.740351,
+        30.2746486
+       ],
+       [
+        -97.7403778,
+        30.2746625
+       ],
+       [
+        -97.7403831,
+        30.2746764
+       ],
+       [
+        -97.7403724,
+        30.2746949
+       ],
+       [
+        -97.7403563,
+        30.2746995
+       ],
+       [
+        -97.7403241,
+        30.2746949
+       ],
+       [
+        -97.7403188,
+        30.2746671
+       ],
+       [
+        -97.7403295,
+        30.2746532
+       ]
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "pack:ut-tower",
+   "name": "UT Tower",
+   "lat": 30.2861,
+   "lon": -97.7394,
+   "glow": true,
+   "summary": "The 307-foot tower over the University of Texas, lit orange when the Longhorns win. A sniper shot 46 people from its observation deck in 1966; the deck has been closed since 1975.",
+   "buildings": [
+    {
+     "id": 15479141092,
+     "h": 72,
+     "base": 0,
+     "rings": [
+      [
+       [
+        -97.7394605,
+        30.286355
+       ],
+       [
+        -97.739262,
+        30.2863411
+       ],
+       [
+        -97.7392781,
+        30.2861929
+       ],
+       [
+        -97.7394766,
+        30.2862068
+       ],
+       [
+        -97.7394605,
+        30.286355
+       ]
+      ]
+     ]
+    },
+    {
+     "id": 15479141112,
+     "h": 78,
+     "base": 0,
+     "rings": [
+      [
+       [
+        -97.739439,
+        30.2863087
+       ],
+       [
+        -97.739439,
+        30.2863318
+       ],
+       [
+        -97.7392995,
+        30.2863226
+       ],
+       [
+        -97.7393103,
+        30.2862114
+       ],
+       [
+        -97.7394497,
+        30.2862253
+       ],
+       [
+        -97.739439,
+        30.2863087
+       ]
+      ]
+     ]
+    },
+    {
+     "id": 3432627810,
+     "h": 81,
+     "base": 0,
+     "rings": [
+      [
+       [
+        -97.7394015,
+        30.2863411
+       ],
+       [
+        -97.7393317,
+        30.2863318
+       ],
+       [
+        -97.7393317,
+        30.2862994
+       ],
+       [
+        -97.7392888,
+        30.2862948
+       ],
+       [
+        -97.7392942,
+        30.2862346
+       ],
+       [
+        -97.7393425,
+        30.2862392
+       ],
+       [
+        -97.7393478,
+        30.2862114
+       ],
+       [
+        -97.7394122,
+        30.286216
+       ],
+       [
+        -97.7394122,
+        30.2862392
+       ],
+       [
+        -97.7394551,
+        30.2862438
+       ],
+       [
+        -97.7394497,
+        30.2863087
+       ],
+       [
+        -97.7394068,
+        30.286304
+       ],
+       [
+        -97.7394015,
+        30.2863411
+       ]
+      ]
+     ]
+    },
+    {
+     "id": 15479141122,
+     "h": 94,
+     "base": 0,
+     "rings": [
+      [
+       [
+        -97.7393907,
+        30.2863318
+       ],
+       [
+        -97.7393425,
+        30.2863272
+       ],
+       [
+        -97.7393478,
+        30.2862994
+       ],
+       [
+        -97.7393317,
+        30.2862809
+       ],
+       [
+        -97.7393049,
+        30.2862763
+       ],
+       [
+        -97.7393049,
+        30.2862485
+       ],
+       [
+        -97.7393425,
+        30.2862485
+       ],
+       [
+        -97.7393532,
+        30.2862392
+       ],
+       [
+        -97.7393585,
+        30.286216
+       ],
+       [
+        -97.7394015,
+        30.2862207
+       ],
+       [
+        -97.7394015,
+        30.2862392
+       ],
+       [
+        -97.7394122,
+        30.2862531
+       ],
+       [
+        -97.7394336,
+        30.2862531
+       ],
+       [
+        -97.7394283,
+        30.2862902
+       ],
+       [
+        -97.7394122,
+        30.2862902
+       ],
+       [
+        -97.7393961,
+        30.286304
+       ],
+       [
+        -97.7393907,
+        30.2863318
+       ]
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "pack:congress-avenue-bridge",
+   "name": "Congress Avenue Bridge",
+   "lat": 30.261393,
+   "lon": -97.745292,
+   "glow": true,
+   "summary": "The bridge over Town Lake whose rebuilt crevices have drawn more than a million Mexican free-tailed bats. The city is trying to get rid of them; they pour out at dusk."
+  },
+  {
+   "id": "pack:sixth-street",
+   "name": "Sixth Street",
+   "lat": 30.266645,
+   "lon": -97.737729,
+   "glow": true,
+   "summary": "Old Pecan Street's Victorian storefronts, packed with live music bars and blues clubs. Thursday to Saturday nights it is closed to cars and full of students."
+  },
+  {
+   "id": "pack:barton-springs-pool",
+   "name": "Barton Springs Pool",
+   "lat": 30.263845,
+   "lon": -97.770143,
+   "glow": true,
+   "summary": "A spring-fed pool in Zilker Park, 68 degrees all year and swum in since long before the city. Topless sunbathing is a local custom and a local argument."
+  },
+  {
+   "id": "pack:zilker-park",
+   "name": "Zilker Park",
+   "lat": 30.267685,
+   "lon": -97.766892,
+   "glow": true,
+   "summary": "The city's big park along Barton Creek, with the Zilker moonlight tower that becomes a Christmas tree of lights every December. Kite festivals and frisbee all year."
+  },
+  {
+   "id": "pack:driskill-hotel",
+   "name": "Driskill Hotel",
+   "lat": 30.268138,
+   "lon": -97.741707,
+   "glow": true,
+   "summary": "The 1886 Romanesque cattle-baron hotel on Sixth Street, where LBJ waited for his election results. Its mezzanine bar is thick with lobbyists when the legislature sits.",
+   "buildings": [
+    {
+     "id": "driskill-hotel-outline",
+     "h": 25,
+     "base": 0,
+     "rings": [
+      [
+       [
+        -97.7420387,
+        30.2679787
+       ],
+       [
+        -97.7420117,
+        30.2679425
+       ],
+       [
+        -97.7416289,
+        30.2678383
+       ],
+       [
+        -97.7415487,
+        30.2678552
+       ],
+       [
+        -97.7414034,
+        30.2682582
+       ],
+       [
+        -97.7414311,
+        30.2682964
+       ],
+       [
+        -97.74184,
+        30.2683964
+       ],
+       [
+        -97.7418746,
+        30.2683805
+       ],
+       [
+        -97.7420387,
+        30.2679787
+       ]
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "pack:threadgills",
+   "name": "Threadgill's",
+   "lat": 30.33234,
+   "lon": -97.72263,
+   "glow": true,
+   "summary": "The old gas station on North Lamar where Kenneth Threadgill's Wednesday hootenannies launched Janis Joplin. Chicken-fried steak and vegetables by the plate now."
+  },
+  {
+   "id": "pack:austin-city-limits-studio",
+   "name": "Austin City Limits Studio",
+   "lat": 30.2891,
+   "lon": -97.7409,
+   "glow": true,
+   "summary": "Studio 6A on the UT campus, where KLRU tapes Austin City Limits in front of a painted skyline backdrop. Stevie Ray Vaughan and Willie Nelson are regulars."
+  },
+  {
+   "id": "pack:lbj-library",
+   "name": "LBJ Library",
+   "lat": 30.285895,
+   "lon": -97.729285,
+   "glow": true,
+   "summary": "The windowless travertine monument to Lyndon Johnson on the UT campus, with a replica of his Oval Office. Lady Bird keeps an office upstairs.",
+   "buildings": [
+    {
+     "id": 1260309060,
+     "h": 37,
+     "base": 0,
+     "rings": [
+      [
+       [
+        -97.7291822,
+        30.2855953
+       ],
+       [
+        -97.729547,
+        30.2856787
+       ],
+       [
+        -97.7293915,
+        30.2861929
+       ],
+       [
+        -97.7290267,
+        30.2861141
+       ],
+       [
+        -97.7291822,
+        30.2855953
+       ]
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "pack:mount-bonnell",
+   "name": "Mount Bonnell",
+   "lat": 30.320767,
+   "lon": -97.773347,
+   "glow": true,
+   "summary": "The limestone lookout above Lake Austin, 102 steps up to the best sunset in town. A favourite of couples and legends."
+  },
+  {
+   "id": "pack:treaty-oak",
+   "name": "Treaty Oak",
+   "lat": 30.271466,
+   "lon": -97.755462,
+   "glow": true,
+   "summary": "The 500-year-old live oak where Stephen F. Austin is said to have signed a treaty with the Comanche and Tonkawa. The last of a grove called the Council Oaks."
+  },
+  {
+   "id": "pack:robert-mueller-municipal-airport",
+   "name": "Robert Mueller Municipal Airport",
+   "lat": 30.2992,
+   "lon": -97.7045,
+   "glow": true,
+   "summary": "Austin's small airport, with jets landing low over East Austin's houses. A fight over building a bigger one somewhere else goes on.",
+   "until": 1999
+  },
+  {
+   "id": "pack:frank-erwin-center",
+   "name": "Frank Erwin Center",
+   "lat": 30.276919,
+   "lon": -97.732202,
+   "glow": true,
+   "summary": "UT's round arena by I-35, called 'the Drum', where the Longhorns play basketball and the big tours stop. Graduation fills it every May.",
+   "until": 2023
+  },
+  {
+   "id": "pack:texas-memorial-stadium",
+   "name": "Texas Memorial Stadium",
+   "lat": 30.283841,
+   "lon": -97.732623,
+   "glow": true,
+   "summary": "The Longhorns' football stadium on campus, where 80,000 burnt-orange fans fill the stands. Saturday afternoons in the fall stop the whole city."
+  }
+ ],
+ "eras": {
+  "1980s": {
+   "year": 1986,
+   "transitNote": "No rail transit: MetroRail opened in 2010.",
+   "map": {
+    "transit": {
+     "type": "FeatureCollection",
+     "features": [],
+     "lines": [],
+     "stations": []
+    },
+    "towers": [
+     {
+      "name": "Austin Fire Station 53 / EMS 42",
+      "built": 2024,
+      "lat": 30.144656,
+      "lon": -97.748703,
+      "radius": 34,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Bank of America",
+      "built": 2005,
+      "lat": 30.200865,
+      "lon": -97.876455,
+      "radius": 23,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "New Horizons Children's Center",
+      "built": 1999,
+      "lat": 30.210942,
+      "lon": -97.875742,
+      "radius": 38,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Lowe's",
+      "built": 2005,
+      "lat": 30.303206,
+      "lon": -97.940031,
+      "radius": 119,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Four Seasons Residences",
+      "built": 2010,
+      "lat": 30.262099,
+      "lon": -97.741669,
+      "radius": 59,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "In-N-Out Burger",
+      "built": 2013,
+      "lat": 30.304337,
+      "lon": -97.715666,
+      "radius": 18,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Hyatt Centric Congress Avenue Austin",
+      "built": 2022,
+      "lat": 30.269652,
+      "lon": -97.741761,
+      "radius": 29,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Sno.Co Flattop Shaved Ice",
+      "built": 2016,
+      "lat": 30.284433,
+      "lon": -97.71749,
+      "radius": 15,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Texas Municipal Retirement System",
+      "built": 20201,
+      "lat": 30.318331,
+      "lon": -97.753936,
+      "radius": 65,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Moody Center",
+      "built": 2022,
+      "lat": 30.280975,
+      "lon": -97.730652,
+      "radius": 108,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Hilton Garden Inn",
+      "built": 2021,
+      "lat": 30.279339,
+      "lon": -97.741627,
+      "radius": 27,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Richard A. Moya Eastside Bus Plaza",
+      "built": 2021,
+      "lat": 30.251675,
+      "lon": -97.697911,
+      "radius": 18,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Frost Bank",
+      "built": 2025,
+      "lat": 30.348852,
+      "lon": -97.964416,
+      "radius": 43,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Costco",
+      "built": 2001,
+      "lat": 30.396777,
+      "lon": -97.743604,
+      "radius": 110,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Lowe's",
+      "built": 1998,
+      "lat": 30.467705,
+      "lon": -97.792694,
+      "radius": 109,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "iFLY Austin",
+      "built": 2013,
+      "lat": 30.443791,
+      "lon": -97.784798,
+      "radius": 20,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Lowe's",
+      "built": 2003,
+      "lat": 30.415614,
+      "lon": -97.675481,
+      "radius": 114,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Lowe's",
+      "built": 2000,
+      "lat": 30.485583,
+      "lon": -97.677792,
+      "radius": 102,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Rooms To Go",
+      "built": 2017,
+      "lat": 30.471634,
+      "lon": -97.670369,
+      "radius": 81,
+      "minHeight": 25,
+      "source": "osm start_date"
+     },
+     {
+      "name": "Bellrock La Frontera Leasing Office",
+      "built": 2022,
+      "lat": 30.474665,
+      "lon": -97.689065,
+      "radius": 37,
+      "minHeight": 25,
+      "source": "osm start_date"
+     }
+    ],
+    "hiddenAreas": []
+   }
+  }
+ }
+}

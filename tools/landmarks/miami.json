@@ -1,0 +1,127 @@
+{
+  "about": "Miami's preconfigured landmarks, written as of 1986.",
+  "landmarks": [
+    {
+      "name": "Ocean Drive",
+      "find": "Ocean Drive, Miami Beach",
+      "pin": true,
+      "text": "South Beach's row of pastel Art Deco hotels facing the sand, full of retirees on the porches and the camera crews of Miami Vice. The district is listed but half of it is boarded up."
+    },
+    {
+      "name": "Fontainebleau Hilton",
+      "find": "Fontainebleau Miami Beach",
+      "text": "Morris Lapidus's curving resort on Collins Avenue where Sinatra and Elvis played, its wall mural of the hotel blocking the Eden Roc's view. The pool deck is where deals are made."
+    },
+    {
+      "name": "Vizcaya",
+      "find": "Vizcaya Museum and Gardens",
+      "text": "James Deering's Italian Renaissance villa on Biscayne Bay, with a stone barge in its harbour and formal gardens. Society weddings and galas fill its gardens."
+    },
+    {
+      "name": "Freedom Tower",
+      "find": "Freedom Tower, Miami",
+      "text": "The Spanish Revival tower on Biscayne Boulevard where Cuban refugees were processed in the 1960s. Empty and decaying since 1974."
+    },
+    {
+      "name": "Orange Bowl",
+      "at": [
+        25.7781,
+        -80.2197
+      ],
+      "pin": true,
+      "from": 1937,
+      "until": 2008,
+      "text": "The Dolphins' stadium in Little Havana, where Dan Marino throws to the Marks Brothers and the Hurricanes play their home games. The Orange Bowl Classic every New Year's Night."
+    },
+    {
+      "name": "Southeast Financial Center",
+      "find": "Southeast Financial Center",
+      "from": 1984,
+      "text": "The tallest building in Florida, its stepped glass tower over Biscayne Boulevard and a plaza of royal palms. Drug money is rumoured to fill the banks around it."
+    },
+    {
+      "name": "Calle Ocho",
+      "find": "Calle Ocho, Little Havana",
+      "pin": true,
+      "text": "Southwest Eighth Street, the heart of Little Havana: cafecito windows, cigar rollers and old men playing dominoes in Máximo Gómez Park. The March carnival is the biggest street party in the country."
+    },
+    {
+      "name": "Versailles Restaurant",
+      "text": "The mirrored Cuban restaurant on Calle Ocho, the unofficial capitol of the exile community. Politics are argued over cafecito at the walk-up window.",
+      "at": [
+        25.76505,
+        -80.2527
+      ],
+      "height": 6
+    },
+    {
+      "name": "Coconut Grove",
+      "find": "Coconut Grove",
+      "pin": true,
+      "text": "The bohemian bayside village of sidewalk cafés, sailboats and banyan trees. Its playhouse and bars fill up after dark."
+    },
+    {
+      "name": "Biltmore Hotel",
+      "find": "The Biltmore Hotel, Coral Gables",
+      "text": "The Mediterranean Revival hotel of 1926 with its tower copied from Seville's Giralda, a veterans' hospital for decades and now empty, its restoration under way. Al Capone's gang ran a speakeasy on its 13th floor."
+    },
+    {
+      "name": "Venetian Pool",
+      "find": "Venetian Pool",
+      "text": "A swimming pool carved from a coral rock quarry in Coral Gables, with caves, waterfalls and Venetian bridges. Spring water refills it every night."
+    },
+    {
+      "name": "Miami Seaquarium",
+      "find": "Miami Seaquarium",
+      "pin": true,
+      "text": "The marine park on Virginia Key where Flipper was filmed and Lolita the killer whale performs. The Rickenbacker Causeway takes you past it to Key Biscayne."
+    },
+    {
+      "name": "The Atlantis",
+      "text": "The Brickell Avenue condominium with a square hole through its middle, complete with a palm tree and a red spiral staircase. Every episode of Miami Vice opens with it.",
+      "at": [
+        25.752,
+        -80.1914
+      ],
+      "height": 70
+    },
+    {
+      "name": "Joe's Stone Crab",
+      "find": "Joe's Stone Crab",
+      "text": "The South Beach restaurant serving stone crab claws and key lime pie since 1913. No reservations; the maître d' decides who waits."
+    },
+    {
+      "name": "Hialeah Park",
+      "find": "Hialeah Park Race Track",
+      "text": "The grand racetrack of 1925 with flamingos in its infield lake. The winter season is fading but the clubhouse is still beautiful."
+    },
+    {
+      "name": "Miami International Airport",
+      "find": "Miami International Airport",
+      "pin": true,
+      "text": "The gateway to Latin America, busier with freight than with passengers. Customs agents and cocaine smugglers play cat and mouse on its runways."
+    },
+    {
+      "name": "Cape Florida Lighthouse",
+      "find": "Cape Florida Light",
+      "pin": true,
+      "text": "The 1825 brick lighthouse at the tip of Key Biscayne, the oldest structure in South Florida. Seminoles burned it in 1836."
+    },
+    {
+      "name": "Metromover",
+      "find": "Government Center station, Miami",
+      "pin": true,
+      "from": 1986,
+      "text": "The new driverless people-mover circling downtown above the streets, opened this April. Critics call it the 'Metro-mistake' for its empty cars."
+    },
+    {
+      "name": "Omni International Mall",
+      "pin": true,
+      "text": "The mall and hotel on Biscayne Boulevard with a carousel inside, at the edge of the run-down district north of downtown. Jordan Marsh and JCPenney anchor it.",
+      "at": [
+        25.7942,
+        -80.189
+      ]
+    }
+  ]
+}

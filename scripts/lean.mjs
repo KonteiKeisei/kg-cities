@@ -7,6 +7,7 @@
 // stacked slices by their height.
 
 import { metres } from "./geo.mjs";
+import { DEFAULT_LEAN } from "./style.mjs";
 
 const M_PER_DEG_LAT = 111320;
 
@@ -21,14 +22,37 @@ export function hiddenBuildingIds(buildings, rules) {
   const hidden = new Set();
   const towers = rules.towers ?? [];
   const zones = rules.zones ?? [];
+  // Towers bucketed in cells of about 1 km, so a city with thousands of later towers (New York)
+  // checks each building only against the towers near it. Radii are at most 120 m.
+  const CELL = 0.01;
+  const buckets = new Map();
+  for (const t of towers) {
+    const key = `${Math.floor(t.lat / CELL)},${Math.floor(t.lon / CELL)}`;
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push(t);
+  }
+  const near = (c) => {
+    const i = Math.floor(c.lat / CELL), j = Math.floor(c.lon / CELL), out = [];
+    for (let di = -1; di <= 1; di++) for (let dj = -1; dj <= 1; dj++) out.push(...(buckets.get(`${i + di},${j + dj}`) ?? []));
+    return out;
+  };
   for (const b of buildings) {
     const c = centre(b);
-    const tower = towers.some((t) => b.h >= (t.minHeight ?? 60) && metres(c, t) <= (t.radius ?? 50));
+    const tower = near(c).some((t) => b.h >= (t.minHeight ?? 60) && metres(c, t) <= (t.radius ?? 50));
     const zone = !tower && zones.some((z) => b.h >= (z.minHeight ?? 20)
       && c.lat <= z.box.north && c.lat >= z.box.south && c.lon >= z.box.west && c.lon <= z.box.east);
     if (tower || zone) hidden.add(b.id);
   }
   return hidden;
+}
+
+function insideRing([x, y], ring) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i], [xj, yj] = ring[j];
+    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
 }
 
 const signedArea = (ring) => {
@@ -50,6 +74,59 @@ function polygons(rings) {
 }
 
 /**
+ * Drawing depth of a footprint: its centre's latitude, less a little for height (0.02 m per
+ * metre), so the painter's order puts the nearer (more southern) building in front.
+ */
+export function depthOf(rings, h = 0) {
+  const outer = rings[0];
+  const lat = outer.reduce((s, p) => s + p[1], 0) / outer.length;
+  return lat - ((h ?? 0) * 0.02) / M_PER_DEG_LAT;
+}
+
+/** Convex hull of [x, y] points (monotone chain), counter-clockwise, closed. */
+function hull(pts) {
+  const p = [...pts].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const half = (list) => {
+    const out = [];
+    for (const q of list) {
+      while (out.length >= 2 && cross(out[out.length - 2], out[out.length - 1], q) <= 0) out.pop();
+      out.push(q);
+    }
+    return out;
+  };
+  const lower = half(p), upper = half(p.reverse());
+  const ring = [...lower.slice(0, -1), ...upper.slice(0, -1)];
+  ring.push(ring[0]);
+  return ring;
+}
+
+/**
+ * Ground shadows of the leaning buildings: each footprint swept toward the east-north-east by
+ * its height (light from the south-west, as the walls are shaded), so a tower stands apart from
+ * what is behind it. One convex shape per building, drawn under every building.
+ */
+export function shadowFeatures(buildings, { length = 0.42, hidden = new Set(), cleared = [] } = {}) {
+  const features = [];
+  for (const b of buildings) {
+    if (hidden.has(b.id) || !b.rings?.length || !(b.h > 0)) continue;
+    const outer = b.rings[0];
+    // Standing on a cleared site (the World Trade Center): its shadow is drawn over the site's
+    // bare ground, not under it.
+    const c = centre(b);
+    const over = cleared.some((r) => insideRing([c.lon, c.lat], r));
+    const lat = outer[0][1];
+    const k = Math.cos((lat * Math.PI) / 180);
+    const reach = b.h * length;
+    const dx = (reach * 0.92) / (M_PER_DEG_LAT * k), dy = (reach * 0.38) / M_PER_DEG_LAT;
+    // Hull in a locally square frame (longitude scaled), then back.
+    const pts = outer.flatMap(([x, y]) => [[x * k, y], [(x + dx) * k, y + dy]]);
+    features.push({ type: "Feature", properties: { h: b.h, over }, geometry: { type: "Polygon", coordinates: [hull(pts).map(([x, y]) => [x / k, y])] } });
+  }
+  return { type: "FeatureCollection", features };
+}
+
+/**
  * GeoJSON for the leaning buildings: per building its visible walls (shade 0..1 by the way
  * they face) then its roof, ordered back (north) to front (south) for the painter's algorithm.
  */
@@ -58,12 +135,16 @@ function polygons(rings) {
  * features already ordered among themselves. A building with near: true (beside a landmark) is
  * marked so the style can draw it see-through over the landmark.
  */
-export function leanFeatures(buildings, { lean = 0.5, hidden = new Set(), extra = [] } = {}) {
+export function leanFeatures(buildings, { lean = DEFAULT_LEAN, hidden = new Set(), extra = [] } = {}) {
   const features = [];
   if (lean <= 0 && !extra.length) return { type: "FeatureCollection", features };
+  // Back to front by the footprint's centre, not its southernmost corner: on a tilted street grid
+  // (Manhattan's is 29 degrees off) a long building across the street reaches further south at
+  // one end than a tower in front of it, and was drawn over the tower. Of two footprints sharing
+  // a centre (a tower on its podium), the taller is drawn later.
   const order = buildings
     .filter((b) => !hidden.has(b.id) && b.rings.length)
-    .map((b) => ({ b, south: Math.min(...b.rings.map((r) => Math.min(...r.map((p) => p[1])))) }))
+    .map((b) => ({ b, south: depthOf(b.rings, b.h) }))
     .concat(extra)
     .sort((p, q) => q.south - p.south);
 

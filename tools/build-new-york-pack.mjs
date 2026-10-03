@@ -40,6 +40,22 @@ const towers = {
     "work here; the PATH trains and the E and the 1 run beneath the plaza."
 };
 
+// The Empire State Building on its lot (the map data's outline of the building, id 346338542):
+// centre and angle of the lot's long side, along 34th Street toward Fifth Avenue.
+const empireState = {
+  id: "empire-state-building",
+  name: "Empire State Building",
+  lat: 40.7484437, lon: -73.9856565,
+  model: "empire-state-building", angle: -29.07,
+  from: 1931,
+  glow: true,
+  buildings: [{ id: "empire-state-lot", h: 381, base: 0, rings: [[[-73.9864987, 40.7484924], [-73.9861554, 40.7489598], [-73.9848143, 40.7483949], [-73.9851576, 40.7479275], [-73.9864987, 40.7484924]]] }],
+  summary: "102 storeys of limestone and Art Deco steel at Fifth Avenue and 34th Street, 1,250 feet to " +
+    "the roof and 1,454 to the tip of its television mast. The open-air deck on the 86th floor and " +
+    "the glassed-in one on the 102nd draw a million visitors a year; at night the top floors are " +
+    "floodlit in colours for the season."
+};
+
 const extraBuildings = [
   { id: "wtc-3", name: "Vista International Hotel (3 World Trade Center)", h: 73, from: 1981, until: 2001, rings: [rect(-145, -115, -108, 12)] },
   { id: "wtc-4", name: "4 World Trade Center", h: 36, from: 1975, until: 2001, rings: [ring([[40, -108], [190, -108], [190, -15], [145, -15], [145, -60], [40, -60]])] },
@@ -51,7 +67,7 @@ const extraBuildings = [
 
 const pack = {
   id: "new-york",
-  landmarks: [towers],
+  landmarks: [towers, empireState],
   eras: {
     "1980s": {
       year: 1986,
@@ -60,12 +76,22 @@ const pack = {
         // the Oculus, the new towers), the 7 WTC block, and Liberty Park over the Bankers Trust site.
         hiddenAreas: [
           { name: "World Trade Center superblock", ring: rect(-152, 192, -110, 176) },
-          { name: "7 World Trade Center block", ring: rect(-12, 64, 190, 250) },
+          { name: "7 World Trade Center block (Washington Street angles across it)", ring: rect(-45, 64, 190, 252) },
           { name: "Bankers Trust block", ring: rect(-45, 60, -205, -123) }
         ],
         // Greenwich and Fulton Streets did not run through the superblock until after 2001.
         closedStreets: [{ name: "World Trade Center superblock", ring: rect(-145, 186, -104, 170) }],
-        extraBuildings
+        extraBuildings,
+        // Bridges and tunnels by their 1980s names (renamed 2008 to 2017).
+        roadNames: {
+          "Robert F. Kennedy Bridge": "Triborough Bridge",
+          "Ed Koch Queensboro Bridge": "Queensboro Bridge",
+          "Ed Koch Queensboro Bridge Upper Level": "Queensboro Bridge",
+          "Ed Koch Queensboro Bridge Lower Level": "Queensboro Bridge",
+          "Hugh L. Carey Tunnel": "Brooklyn-Battery Tunnel",
+          "Governor Mario M. Cuomo Bridge": "Tappan Zee Bridge",
+          "Mario M. Cuomo Bridge": "Tappan Zee Bridge"
+        }
       },
       places: {
         rules: [

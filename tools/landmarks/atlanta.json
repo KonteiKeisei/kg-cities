@@ -1,0 +1,126 @@
+{
+  "about": "Atlanta's preconfigured landmarks, written as of 1986.",
+  "landmarks": [
+    {
+      "name": "Westin Peachtree Plaza",
+      "find": "Westin Peachtree Plaza",
+      "from": 1976,
+      "text": "John Portman's mirrored glass cylinder, the tallest hotel in the world when it opened, with a revolving restaurant on top. Its lobby has a half-acre lake."
+    },
+    {
+      "name": "CNN Center",
+      "pin": true,
+      "text": "Ted Turner's headquarters of the round-the-clock Cable News Network and Superstation WTBS. Visitors watch the anchors through the studio glass.",
+      "at": [
+        33.7582,
+        -84.3947
+      ]
+    },
+    {
+      "name": "The Omni",
+      "at": [
+        33.7573,
+        -84.3963
+      ],
+      "pin": true,
+      "from": 1972,
+      "until": 1997,
+      "text": "The rusting steel arena of the Hawks, where Dominique Wilkins, 'the Human Highlight Film', dunks over everyone. Its weathering steel was meant to rust; the roof was not meant to leak."
+    },
+    {
+      "name": "Atlanta-Fulton County Stadium",
+      "at": [
+        33.74,
+        -84.3893
+      ],
+      "pin": true,
+      "from": 1965,
+      "until": 1997,
+      "text": "The round stadium of the Braves and Falcons, where Hank Aaron hit his 715th home run in 1974. 'The Launching Pad' for its thin air and short fences."
+    },
+    {
+      "name": "Underground Atlanta",
+      "find": "Underground Atlanta",
+      "pin": true,
+      "text": "The old street-level shopping and nightlife district beneath the viaducts, closed and shuttered since 1982. The city is planning to reopen it."
+    },
+    {
+      "name": "Fox Theatre",
+      "find": "Fox Theatre, Atlanta",
+      "text": "The 1929 Moorish movie palace on Peachtree Street with a ceiling of twinkling stars, saved from demolition by a public campaign. Concerts and touring Broadway fill it now."
+    },
+    {
+      "name": "Georgia State Capitol",
+      "find": "Georgia State Capitol",
+      "text": "The 1889 capitol whose dome is covered in gold leaf from Dahlonega, where America's first gold rush began. The legislature sits each winter."
+    },
+    {
+      "name": "Martin Luther King Jr. Center",
+      "text": "The memorial and centre on Auburn Avenue where Dr. King lies in a tomb in a reflecting pool. His first federal holiday was celebrated this January.",
+      "at": [
+        33.75545,
+        -84.3727
+      ],
+      "height": 10
+    },
+    {
+      "name": "Ebenezer Baptist Church",
+      "find": "Ebenezer Baptist Church",
+      "text": "The church on Auburn Avenue where Martin Luther King Jr., his father and grandfather all preached. Sweet Auburn, around it, was the richest Black street in America."
+    },
+    {
+      "name": "The Varsity",
+      "find": "The Varsity, North Avenue",
+      "text": "The world's largest drive-in, serving chili dogs and frosted oranges to Georgia Tech since 1928. 'What'll ya have?' is shouted at every customer."
+    },
+    {
+      "name": "Stone Mountain",
+      "find": "Stone Mountain",
+      "pin": true,
+      "text": "The giant granite dome east of the city, carved with Confederate generals on horseback. A laser show plays across the carving on summer nights."
+    },
+    {
+      "name": "Coca-Cola Headquarters",
+      "text": "The tower of the world's most famous soft drink on North Avenue. Last year's New Coke disaster is still being lived down.",
+      "at": [
+        33.7708,
+        -84.3979
+      ],
+      "height": 90
+    },
+    {
+      "name": "Piedmont Park",
+      "find": "Piedmont Park",
+      "pin": true,
+      "text": "The city's big park, laid out for the 1895 Cotton States Exposition, with Lake Clara Meer and views of the Midtown skyline. The Arts Festival fills it every September."
+    },
+    {
+      "name": "Georgia Tech",
+      "find": "Georgia Institute of Technology",
+      "pin": true,
+      "text": "The 'Rambling Wreck' engineering school on North Avenue, its Tech Tower spelling T-E-C-H in lights. Students keep stealing the T."
+    },
+    {
+      "name": "Hartsfield Atlanta International Airport",
+      "find": "Hartsfield-Jackson Atlanta International Airport",
+      "pin": true,
+      "text": "The busiest airport in the South, with its underground train between concourses. Whether you're going to heaven or hell, you change planes in Atlanta."
+    },
+    {
+      "name": "Margaret Mitchell's apartment",
+      "find": "Margaret Mitchell House",
+      "pin": true,
+      "text": "The run-down Tudor house on Peachtree where Margaret Mitchell wrote Gone With the Wind in a cramped ground-floor flat she called 'the Dump'. Abandoned now and threatened by developers."
+    },
+    {
+      "name": "High Museum of Art",
+      "find": "High Museum of Art",
+      "text": "Richard Meier's gleaming white museum of 1983 on Peachtree Street, its atrium a ramp curving up like the Guggenheim's. The Woodruff Arts Center beside it holds the Atlanta Symphony."
+    },
+    {
+      "name": "Hyatt Regency Atlanta",
+      "find": "Hyatt Regency Atlanta",
+      "text": "John Portman's hotel with the first great atrium lobby of its kind and a blue flying-saucer revolving restaurant on top. Glass elevators climb the inside of its 22 storeys."
+    }
+  ]
+}

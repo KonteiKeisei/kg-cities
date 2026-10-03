@@ -46,12 +46,16 @@ with flavor text, and per-era data.
    Shape choice is Building or Pin. Custom models (hand-built in code, like Old North Church)
    exist only for their own landmark: shown locked and greyed, "This is a custom model and
    cannot be changed."
-3. **1980s eras.** For each city: towers to hide, roads, place names, period transit data.
-   Landmark list and flavor text for each city.
-4. **Boston migration.** Boston's 1986 data (Big Dig roads, corrections, T lines, landmarks)
-   becomes the Boston pack; the campaign's edits move over; KG Boston MBTA reads stations from
-   KG Cities; KG Boston Map retired.
-5. **Modern era.**
+3. **Landmarks and Boston 1986 (done, 0.4.0).** A landmark list for every city (10 to 50,
+   two-sentence texts, tools/landmarks/<city>.json); custom models for marquee landmarks
+   (World Trade Center, Empire State Building from a mesh, Rockefeller Center as one POI);
+   Boston's 1986 pack from KG Boston Map's data; label edits re-matched by name.
+4. **Boston conversion (separate tool, not shipped).** A one-time script for the GM's own
+   campaign world: KG Boston Map's scene flags and settings into KG Cities, nothing removed.
+   KG Boston MBTA is retired in favour of KG Transit, which reads api.transit().
+5. **1980s eras for the other cities.** Towers not yet built and sites since rebuilt (the
+   Las Vegas Strip especially), period roads and place names, period transit lines.
+6. **Modern era.**
 
 ## Day and night
 

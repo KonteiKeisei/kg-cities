@@ -1,0 +1,154 @@
+{
+  "about": "Philadelphia's preconfigured landmarks, written as of 1986.",
+  "landmarks": [
+    {
+      "name": "Independence Hall",
+      "find": "Independence Hall",
+      "text": "The brick Pennsylvania State House where the Declaration of Independence and the Constitution were signed. The Rising Sun chair still stands in the Assembly Room."
+    },
+    {
+      "name": "Liberty Bell Pavilion",
+      "find": "Liberty Bell Center",
+      "from": 1976,
+      "text": "The cracked bell in its glass pavilion of 1976 on Independence Mall, open day and night. Park rangers tell its story every few minutes."
+    },
+    {
+      "name": "Philadelphia City Hall",
+      "find": "Philadelphia City Hall",
+      "text": "The largest city hall in America, a Second Empire mountain of stone with William Penn on top. By gentlemen's agreement no building rises above his hat, though One Liberty Place is about to break it."
+    },
+    {
+      "name": "Philadelphia Museum of Art",
+      "find": "Philadelphia Museum of Art",
+      "text": "The golden-columned temple at the end of the Parkway, where everyone runs up the steps like Rocky. Duchamp's strange Étant donnés hides behind a wooden door inside."
+    },
+    {
+      "name": "Reading Terminal Market",
+      "find": "Reading Terminal Market",
+      "text": "The market hall under the old Reading Railroad train shed, with Amish farmers, roast pork sandwiches and Bassetts ice cream. The trains overhead stopped running in 1984, and the shed sits empty above the stalls."
+    },
+    {
+      "name": "Elfreth's Alley",
+      "find": "Elfreth's Alley",
+      "pin": true,
+      "text": "The oldest continuously lived-in street in America, a narrow lane of brick houses from the 1700s near the river. Residents open their doors one weekend in June."
+    },
+    {
+      "name": "Betsy Ross House",
+      "find": "Betsy Ross House",
+      "text": "The tiny brick house on Arch Street where the upholsterer is said to have sewn the first Stars and Stripes. She is buried in the courtyard."
+    },
+    {
+      "name": "Carpenters' Hall",
+      "find": "Carpenters' Hall",
+      "text": "The Georgian guild hall where the First Continental Congress met in 1774. Still owned by the carpenters' company that built it."
+    },
+    {
+      "name": "Franklin Institute",
+      "text": "The science museum on Logan Circle with a giant walk-through heart and a Baldwin locomotive. Ben Franklin's statue sits in the rotunda.",
+      "at": [
+        39.9582,
+        -75.17313
+      ],
+      "height": 30
+    },
+    {
+      "name": "Eastern State Penitentiary",
+      "find": "Eastern State Penitentiary",
+      "text": "The castle-walled prison of 1829, its wagon-wheel cellblocks abandoned since 1971 and overrun by trees and stray cats. Al Capone did time in its most comfortable cell."
+    },
+    {
+      "name": "Boathouse Row",
+      "find": "Boathouse Row",
+      "pin": true,
+      "text": "The Victorian rowing club houses along the Schuylkill, outlined in lights at night. Scullers race past from dawn."
+    },
+    {
+      "name": "30th Street Station",
+      "find": "30th Street Station",
+      "text": "The great Art Deco station across the Schuylkill, with its coffered ceiling and the bronze Angel of the Resurrection. Witness was filmed here last year."
+    },
+    {
+      "name": "Veterans Stadium",
+      "at": [
+        39.907,
+        -75.1716
+      ],
+      "pin": true,
+      "from": 1971,
+      "until": 2004,
+      "text": "The concrete 'cookie-cutter' stadium of the Phillies and Eagles in South Philly, with a courtroom and jail in the basement for unruly Eagles fans. The turf is notoriously hard."
+    },
+    {
+      "name": "The Spectrum",
+      "at": [
+        39.9046,
+        -75.1685
+      ],
+      "pin": true,
+      "from": 1967,
+      "until": 2010,
+      "text": "The arena of the 76ers and the Flyers, the 'Broad Street Bullies'. Kate Smith's God Bless America still brings the house down."
+    },
+    {
+      "name": "Wanamaker's",
+      "find": "Wanamaker Building",
+      "text": "The great department store on Market Street with a bronze eagle in its court and the world's largest working pipe organ. 'Meet me at the eagle' is a Philadelphia phrase."
+    },
+    {
+      "name": "Rodin Museum",
+      "find": "Rodin Museum, Philadelphia",
+      "text": "The largest Rodin collection outside Paris, with The Thinker in the courtyard on the Parkway. The Gates of Hell frame the entrance."
+    },
+    {
+      "name": "Pat's King of Steaks",
+      "find": "Pat's King of Steaks",
+      "text": "The corner stand at Ninth and Passyunk where the cheesesteak was invented, open around the clock. Geno's glares at it from across the street."
+    },
+    {
+      "name": "Italian Market",
+      "find": "9th Street Italian Market",
+      "pin": true,
+      "text": "Ninth Street's open-air market of awnings, butchers, cheese shops and fires in barrels on winter mornings. Rocky trained running through it."
+    },
+    {
+      "name": "Penn's Landing",
+      "find": "Penn's Landing",
+      "pin": true,
+      "text": "The Delaware riverfront where William Penn came ashore, cut off from the city by I-95. The old cruiser Olympia and the submarine Becuna are moored here."
+    },
+    {
+      "name": "Christ Church",
+      "find": "Christ Church, Philadelphia",
+      "text": "The 1744 Georgian church whose steeple was the tallest structure in America for decades. Washington and Franklin worshipped here; Franklin lies in its burial ground."
+    },
+    {
+      "name": "Academy of Music",
+      "find": "Academy of Music, Philadelphia",
+      "text": "The oldest opera house in America still in use, on Broad Street, home of the Philadelphia Orchestra. Its crystal chandelier is famous."
+    },
+    {
+      "name": "LOVE Park",
+      "find": "LOVE Park",
+      "pin": true,
+      "text": "John F. Kennedy Plaza with Robert Indiana's LOVE sculpture and a fountain facing City Hall. Skateboarders have just discovered its granite ledges."
+    },
+    {
+      "name": "Rittenhouse Square",
+      "find": "Rittenhouse Square",
+      "pin": true,
+      "text": "The most elegant of Penn's squares, surrounded by fine apartment houses. Old Philadelphians walk their dogs on its paths every morning."
+    },
+    {
+      "name": "Mütter Museum",
+      "find": "Mütter Museum",
+      "text": "The College of Physicians' museum of medical oddities, with skulls, preserved organs and a woman whose body turned to soap. Not for the squeamish."
+    },
+    {
+      "name": "University of Pennsylvania",
+      "find": "College Hall, University of Pennsylvania",
+      "pin": true,
+      "text": "Franklin's university in West Philadelphia, with its Ivy League quad and Locust Walk. ENIAC, the first electronic computer, was built here."
+    }
+  ]
+}

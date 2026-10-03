@@ -1,0 +1,123 @@
+{
+  "about": "St. Louis's preconfigured landmarks, written as of 1986.",
+  "landmarks": [
+    {
+      "name": "Gateway Arch",
+      "find": "Gateway Arch",
+      "pin": true,
+      "text": "Eero Saarinen's 630-foot stainless steel arch on the riverfront, the Gateway to the West. Egg-shaped tram cars ride up inside each leg to a window at the top."
+    },
+    {
+      "name": "Busch Stadium",
+      "at": [
+        38.6226,
+        -90.1928
+      ],
+      "pin": true,
+      "from": 1966,
+      "until": 2005,
+      "text": "The round downtown stadium of the Cardinals and the football Cardinals, its rim lined with arches echoing the Gateway. Whitey Herzog's speedsters win on the artificial turf."
+    },
+    {
+      "name": "Anheuser-Busch Brewery",
+      "find": "Anheuser-Busch Brewery, St. Louis",
+      "pin": true,
+      "text": "The largest brewery in the world in Soulard, with the Clydesdales in their Victorian stable. The free tour ends in the hospitality room."
+    },
+    {
+      "name": "Union Station",
+      "find": "St. Louis Union Station",
+      "text": "The great Romanesque station, once the busiest in the world, reopened last year as a hotel and shopping mall. Its Grand Hall's whispering arch still works."
+    },
+    {
+      "name": "Forest Park",
+      "find": "Forest Park, St. Louis",
+      "pin": true,
+      "text": "The 1,300-acre park of the 1904 World's Fair, larger than Central Park, with the zoo, the art museum and the Muny outdoor theatre. Families come for the free museums."
+    },
+    {
+      "name": "Saint Louis Art Museum",
+      "find": "Saint Louis Art Museum",
+      "text": "Cass Gilbert's Palace of Fine Arts from the 1904 World's Fair, on Art Hill in Forest Park. Sledders take over the hill in winter."
+    },
+    {
+      "name": "Saint Louis Zoo",
+      "find": "Saint Louis Zoo",
+      "pin": true,
+      "text": "The free zoo in Forest Park with the 1904 Flight Cage and a miniature railroad. Its chimpanzee show is famous."
+    },
+    {
+      "name": "Old Courthouse",
+      "find": "Old Courthouse, St. Louis",
+      "text": "The domed courthouse where Dred Scott sued for his freedom in 1847, framed by the Arch. Slaves were once sold on its steps."
+    },
+    {
+      "name": "Eads Bridge",
+      "find": "Eads Bridge",
+      "pin": true,
+      "text": "The 1874 steel arch bridge over the Mississippi, the first of its kind in the world. Trains rumble along its lower deck."
+    },
+    {
+      "name": "Fabulous Fox Theatre",
+      "find": "Fabulous Fox Theatre",
+      "text": "The 1929 Siamese Byzantine movie palace on Grand Boulevard, reopened in 1982 after a lavish restoration. Broadway tours and rock concerts play under its gilded dome."
+    },
+    {
+      "name": "Cathedral Basilica",
+      "find": "Cathedral Basilica of Saint Louis",
+      "text": "The Romanesque cathedral on Lindell Boulevard, its interior covered in the largest mosaic collection in the world. The tiles are still being installed."
+    },
+    {
+      "name": "Missouri Botanical Garden",
+      "find": "Missouri Botanical Garden",
+      "pin": true,
+      "text": "Henry Shaw's garden of 1859, with the geodesic Climatron greenhouse and the largest Japanese garden in North America. The lanterns glow on summer nights."
+    },
+    {
+      "name": "Soulard Market",
+      "text": "The 1779 farmers' market of the French and German neighbourhood south of downtown. Mardi Gras here is the second biggest in the country.",
+      "at": [
+        38.6105,
+        -90.212
+      ],
+      "height": 10
+    },
+    {
+      "name": "Laclede's Landing",
+      "find": "Laclede's Landing",
+      "pin": true,
+      "text": "Nine blocks of cobbled streets and cast-iron warehouses beside the Eads Bridge, reborn as bars and restaurants. The only part of old riverfront St. Louis to survive the Arch."
+    },
+    {
+      "name": "SS Admiral",
+      "find": "Admiral riverboat, St. Louis",
+      "at": [
+        38.6262,
+        -90.1855
+      ],
+      "pin": true,
+      "text": "The streamlined Art Deco excursion boat moored on the levee, a fixture of the riverfront since 1940. Its dances and cruises are fading, and its future is uncertain."
+    },
+    {
+      "name": "Blueberry Hill",
+      "find": "Blueberry Hill, Delmar Boulevard",
+      "text": "The University City pub of jukeboxes and memorabilia on the Delmar Loop, where Chuck Berry drops in to visit. Its burgers are local legend."
+    },
+    {
+      "name": "Ted Drewes Frozen Custard",
+      "find": "Ted Drewes Frozen Custard, Chippewa Street",
+      "text": "The custard stand on old Route 66, where the 'concrete' is so thick they hand it over upside down. Lines in the summer heat stretch to the street."
+    },
+    {
+      "name": "The Arena",
+      "at": [
+        38.6347,
+        -90.2959
+      ],
+      "pin": true,
+      "from": 1929,
+      "until": 1999,
+      "text": "The barrel-roofed arena by Forest Park where the Blues play, called the Checkerdome for a few years by its pet-food sponsor. The organ plays 'When the Saints Go Marching In'."
+    }
+  ]
+}

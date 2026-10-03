@@ -1,0 +1,192 @@
+{
+  "about": "Los Angeles's preconfigured landmarks, written as of 1986.",
+  "landmarks": [
+    {
+      "name": "Hollywood Sign",
+      "find": "Hollywood Sign",
+      "pin": true,
+      "text": "The 45-foot white letters on Mount Lee, rebuilt in steel in 1978 with money from Hugh Hefner and Alice Cooper. Climbing up to them is forbidden and done every week."
+    },
+    {
+      "name": "Mann's Chinese Theatre",
+      "find": "TCL Chinese Theatre",
+      "text": "Grauman's pagoda movie palace on Hollywood Boulevard, renamed for its owner Ted Mann, with the stars' handprints in the forecourt cement. Premieres still roll out the red carpet here."
+    },
+    {
+      "name": "Hollywood Walk of Fame",
+      "find": "Hollywood Walk of Fame",
+      "pin": true,
+      "text": "Brass stars set in the sidewalks of Hollywood Boulevard and Vine Street, past the souvenir shops, runaways and hustlers. The glamour is mostly in the pavement now."
+    },
+    {
+      "name": "Griffith Observatory",
+      "find": "Griffith Observatory",
+      "text": "The Art Deco observatory on Mount Hollywood, where James Dean fought in Rebel Without a Cause. Free telescopes at night and the whole basin glittering below."
+    },
+    {
+      "name": "Capitol Records Building",
+      "find": "Capitol Records Building",
+      "text": "The round tower like a stack of records on Vine Street, its rooftop light blinking 'Hollywood' in Morse code. Sinatra and the Beach Boys recorded in the studios underneath."
+    },
+    {
+      "name": "Hollywood Bowl",
+      "find": "Hollywood Bowl",
+      "text": "The open-air amphitheatre in the hills with its concentric arches, summer home of the Philharmonic. Picnics and wine on the benches under the stars."
+    },
+    {
+      "name": "Dodger Stadium",
+      "find": "Dodger Stadium",
+      "text": "The Dodgers' stadium in Chavez Ravine, with palm trees beyond the outfield and the downtown towers behind home plate. Fernando-mania still fills it."
+    },
+    {
+      "name": "Los Angeles Memorial Coliseum",
+      "find": "Los Angeles Memorial Coliseum",
+      "text": "The great stadium in Exposition Park that hosted the Olympics in 1932 and again in 1984, with the Olympic torch over its peristyle. The Raiders and USC play here."
+    },
+    {
+      "name": "The Forum",
+      "find": "Kia Forum",
+      "text": "The 'Fabulous Forum' in Inglewood, a Roman temple of red columns where Magic Johnson's Showtime Lakers and the Kings play. Celebrities sit courtside."
+    },
+    {
+      "name": "Union Station",
+      "find": "Los Angeles Union Station",
+      "text": "The 1939 Mission Revival station by Olvera Street, the last of the great American train stations. Its waiting room of leather armchairs and tiled floors is in every detective film."
+    },
+    {
+      "name": "Los Angeles City Hall",
+      "find": "Los Angeles City Hall",
+      "text": "The white tower of 1928 that was the only building allowed above 150 feet until the 1950s. It is the Daily Planet on television."
+    },
+    {
+      "name": "Bradbury Building",
+      "find": "Bradbury Building",
+      "text": "An ordinary brick office block outside, with a skylit Victorian court of wrought iron and open cage elevators inside. Blade Runner was shot here."
+    },
+    {
+      "name": "Olvera Street",
+      "find": "Olvera Street",
+      "pin": true,
+      "text": "The brick lane at the old pueblo's plaza, lined with Mexican market stalls and the 1818 Avila Adobe, the oldest house in the city. Taquitos and mariachis on weekends."
+    },
+    {
+      "name": "Watts Towers",
+      "find": "Watts Towers",
+      "text": "Simon Rodia's soaring spires of steel, cement and broken tile, built by hand over 33 years in his Watts backyard. They have survived earthquakes, riots and the city's attempts to tear them down."
+    },
+    {
+      "name": "Venice Boardwalk",
+      "find": "Venice Beach Boardwalk",
+      "pin": true,
+      "text": "Ocean Front Walk in Venice: roller skaters, chainsaw jugglers, palm readers and the bodybuilders of Muscle Beach. Gangs and dealers work the side streets at night."
+    },
+    {
+      "name": "Santa Monica Pier",
+      "find": "Santa Monica Pier",
+      "pin": true,
+      "text": "The 1909 pier at the end of Route 66 with its carousel, its halves rebuilt after the 1983 storms tore it apart. Fishermen at the far end, arcades near the shore."
+    },
+    {
+      "name": "Los Angeles County Museum of Art",
+      "find": "Los Angeles County Museum of Art",
+      "from": 1965,
+      "text": "The museum on Wilshire's Miracle Mile, beside the La Brea Tar Pits where mammoths still seem to bubble up. The new Anderson building opens this year."
+    },
+    {
+      "name": "Rodeo Drive",
+      "find": "Rodeo Drive",
+      "pin": true,
+      "text": "Beverly Hills' three blocks of the most expensive shops in the world: Gucci, Giorgio and Bijan, by appointment only. Rolls-Royces double-park outside."
+    },
+    {
+      "name": "Beverly Hills Hotel",
+      "find": "Beverly Hills Hotel",
+      "text": "The 'Pink Palace' on Sunset Boulevard, its Polo Lounge the place where deals are made over breakfast. The bungalows have seen every scandal Hollywood ever kept quiet."
+    },
+    {
+      "name": "Chateau Marmont",
+      "find": "Chateau Marmont",
+      "text": "The castle-like hotel above the Sunset Strip where stars go to misbehave in private. John Belushi died in bungalow 3 in 1982."
+    },
+    {
+      "name": "Whisky a Go Go",
+      "find": "Whisky a Go Go",
+      "text": "The Sunset Strip club where the Doors were the house band, now the home of hair metal on a Friday night. Mötley Crüe, Ratt and the next big thing all play here."
+    },
+    {
+      "name": "The Roxy",
+      "find": "The Roxy Theatre, West Hollywood",
+      "text": "The intimate club on the Strip beside the Rainbow Bar and Grill, where everyone from Bob Marley to Prince has played. The Rainbow next door is the after-party."
+    },
+    {
+      "name": "The Troubadour",
+      "find": "Troubadour, West Hollywood",
+      "text": "The Santa Monica Boulevard folk club turned metal stage, where Elton John played his first American show. Guns N' Roses are regulars on the bill."
+    },
+    {
+      "name": "Paramount Pictures",
+      "find": "Paramount Pictures, Melrose Avenue",
+      "text": "The last major studio still in Hollywood itself, behind its famous Bronson Gate on Melrose Avenue. Star Trek films and Cheers are shot on its lots."
+    },
+    {
+      "name": "Universal Studios Hollywood",
+      "find": "Universal Studios Hollywood",
+      "pin": true,
+      "text": "The studio tour of Universal City, where the tram is attacked by Jaws and King Kong debuts this year. The backlots are working film sets."
+    },
+    {
+      "name": "LAX Theme Building",
+      "find": "Theme Building",
+      "text": "The flying-saucer arches at the centre of Los Angeles International Airport, with a restaurant up top. The jets come in over it from the sea."
+    },
+    {
+      "name": "Queen Mary",
+      "pin": true,
+      "text": "The great Cunard liner, permanently moored in Long Beach as a hotel since 1971. Next to her, the Spruce Goose sleeps under its giant dome.",
+      "at": [
+        33.7529,
+        -118.1903
+      ]
+    },
+    {
+      "name": "Farmers Market",
+      "find": "Original Farmers Market",
+      "text": "The open-air market at Third and Fairfax since 1934, with its clock tower and stalls of fruit, gumbo and coffee. TV writers from CBS next door hold court at the tables."
+    },
+    {
+      "name": "Pink's Hot Dogs",
+      "find": "Pink's Hot Dogs",
+      "text": "The chili dog stand on La Brea since 1939, with a line down the block at midnight. Orson Welles once ate eighteen in one sitting."
+    },
+    {
+      "name": "Musso & Frank Grill",
+      "find": "Musso & Frank Grill",
+      "text": "Hollywood's oldest restaurant, red leather booths and martinis since 1919. Chaplin, Fitzgerald and Chandler drank here; the waiters seem to date from then too."
+    },
+    {
+      "name": "Hollywood Roosevelt Hotel",
+      "find": "Hollywood Roosevelt Hotel",
+      "text": "The Spanish Colonial hotel on Hollywood Boulevard where the first Academy Awards were held in 1929. Faded, half-empty, and said to be haunted by Marilyn Monroe."
+    },
+    {
+      "name": "Westin Bonaventure",
+      "find": "Westin Bonaventure Hotel",
+      "text": "Five mirrored cylinders downtown with glass elevators sliding up their outsides. The revolving cocktail lounge on top is the best view in town; the lobby is a famous maze."
+    },
+    {
+      "name": "Biltmore Hotel",
+      "find": "Millennium Biltmore Hotel Los Angeles",
+      "text": "The 1923 grand hotel on Pershing Square, with painted ceilings and ballrooms where the Oscars were once held. The Kennedy campaign of 1960 was run from its suites."
+    },
+    {
+      "name": "Bullocks Wilshire",
+      "find": "Bullocks Wilshire",
+      "text": "The Art Deco department store on Wilshire built for the first shoppers who came by car, with its copper-topped tower. Its tea room still serves the old money of Hancock Park."
+    },
+    {
+      "name": "Pantages Theatre",
+      "find": "Pantages Theatre, Hollywood",
+      "text": "The Art Deco movie palace at Hollywood and Vine, now a Broadway house for touring musicals. The Oscars were held here through the 1950s."
+    }
+  ]
+}

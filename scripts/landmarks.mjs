@@ -10,6 +10,10 @@
 // z up, in metres) is drawn at (x, y + z * lean). Faces turned away from that view are culled,
 // and faces are drawn far to near.
 
+import { EMPIRE_STATE_TIERS } from "./models/empire-state.mjs";
+import { depthOf } from "./lean.mjs";
+import { DEFAULT_LEAN } from "./style.mjs";
+
 const M_PER_DEG_LAT = 111320;
 /** Height for a landmark building the data gives none for. */
 const DEFAULT_HEIGHT = 12;
@@ -118,6 +122,14 @@ export const MODELS = {
       ...prism(square(33.7, -51.8, 13), 415, 419, "trim")
     ];
   } },
+
+  // The Empire State Building (1931): sliced from a detailed mesh into its tiers
+  // (tools/build-model-from-obj.mjs): the five-storey base on the whole lot, the setbacks, the
+  // shaft, the lit crown, the mooring mast and the antenna to 443 m. u runs along 34th Street
+  // toward Fifth Avenue; placed by point and angle (orient "fixed").
+  "empire-state-building": { orient: "fixed", angle: -29.07, build: () => EMPIRE_STATE_TIERS.flatMap(([base, top, ring]) =>
+    // The crown above the 86th-floor deck is lit at night: trim.
+    prism(ring, base, top, base >= 309 ? "trim" : "wall")) },
 
   // USS Constitution (1797) at Pier 1, Charlestown Navy Yard: her hull on the outline the map
   // data gives, three masts (main to 62 m above the water), three yards on each with the sails
@@ -233,7 +245,7 @@ export function landmarkFaces(lm) {
  * GeoJSON for the landmarks at this lean: faces (role wall | trim | roof, shade 0..1, key for
  * drawing order), ground outlines for the glow, and pins.
  */
-export function landmarkFeatures(landmarks, { lean = 0.5 } = {}) {
+export function landmarkFeatures(landmarks, { lean = DEFAULT_LEAN } = {}) {
   const features = [];
   const view = [0, -lean, 1];
   const light = (() => { const l = [-0.45, -0.6, 0.66], n = Math.hypot(...l); return l.map((v) => v / n); })();
@@ -273,7 +285,7 @@ export function landmarkFeatures(landmarks, { lean = 0.5 } = {}) {
  * back-to-front order as the buildings, so a building in front (south) of a landmark covers its
  * base, and one behind it is covered.
  */
-export function landmarkItems(landmarks, { lean = 0.5 } = {}) {
+export function landmarkItems(landmarks, { lean = DEFAULT_LEAN } = {}) {
   const fc = landmarkFeatures(landmarks, { lean });
   const byId = new Map();
   for (const f of fc.features) {
@@ -284,7 +296,8 @@ export function landmarkItems(landmarks, { lean = 0.5 } = {}) {
   }
   return [...byId.entries()].map(([id, features]) => {
     const lm = landmarks.find((l) => l.id === id);
-    const south = Math.min(...lm.buildings.flatMap((b) => b.rings[0].map((p) => p[1])));
+    // Ordered with the buildings by its footprints' centre (lean.mjs depthOf).
+    const south = depthOf([lm.buildings.flatMap((b) => b.rings[0])], Math.max(...lm.buildings.map((b) => b.h ?? 0)));
     return { south, features };
   });
 }

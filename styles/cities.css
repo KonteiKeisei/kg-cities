@@ -51,6 +51,10 @@
   backdrop-filter: blur(10px);
 }
 
+.kgc-ui, .kgc-ui *, .kgc-ui *::before, .kgc-ui *::after { box-sizing: border-box; }
+.kgc-ui { scrollbar-color: rgba(255, 255, 255, 0.18) transparent; scrollbar-width: thin; }
+.kgc-editor .scroll { overflow-x: hidden; }
+
 .kgc-ui .kbd {
   display: inline-block;
   min-width: 20px;

@@ -1,11 +1,11 @@
 import { createMapRoot, screenInScene } from "./canvas-util.mjs";
 import { TILE_SIZE, makeFrame, sceneToLatLon, sceneToWorld } from "./geo.mjs";
-import { leanFeatures } from "./lean.mjs";
+import { hiddenBuildingIds, leanFeatures, shadowFeatures } from "./lean.mjs";
 import { landmarkAt, landmarkBuildingIds, landmarkFeatures, landmarkItems, landmarkNeighbours } from "./landmarks.mjs";
 import { Archive } from "./pmtiles.mjs";
 import { buildingsInAreas } from "./derive.mjs";
 import { ATTRIBUTION } from "./download.mjs";
-import { NIGHT_GROUPS, NIGHT_START_SCALE, SLICE_COUNT, buildStyle, nightFade, twinkle } from "./style.mjs";
+import { DEFAULT_LEAN, NIGHT_GROUPS, NIGHT_START_SCALE, SLICE_COUNT, buildStyle, clearedStreetsFilter, nightFade, twinkle } from "./style.mjs";
 
 /** Render this much extra on each side so short pans never show an empty edge. */
 const MARGIN = 0.15;
@@ -211,6 +211,7 @@ export class CityLayer {
       night: o.look === "night" && this.nightLights ? { image: o.files.night, bounds: o.metro, lights: this.nightLights } : null
     });
     style.sources.lean.data = this.leanData;
+    if (style.sources.shadows) style.sources.shadows.data = this.shadowData;
     style.sources.landmarks.data = this.landmarks;
     if (this.places) style.sources.places.data = this.places;
     return style;
@@ -224,7 +225,7 @@ export class CityLayer {
     this.destroy();
     const generation = this.generation;
     this.options = { ...options };
-    const { bounds, files, lean = 0.5, landmarks = [], era = {} } = options;
+    const { bounds, files, lean = DEFAULT_LEAN, landmarks = [], era = {} } = options;
     this.frame = makeFrame(bounds, canvas.dimensions.sceneRect);
     this.zoomAt = (scale) => Math.log2((scale * this.frame.k) / (TILE_SIZE * 2));
 
@@ -251,9 +252,13 @@ export class CityLayer {
     const year = options.year ?? null;
     const inYear = (x) => year === null || ((x.from == null || year >= x.from) && (x.until == null || year < x.until));
     const cleared = (era.hiddenAreas ?? []).filter(inYear).map((a) => a.ring);
+    // A landmark building drawn in gold replaces whatever the map data has on its footprint (by
+    // shape, not id: landmarks saved from other map data, such as KG Boston Map's, have other ids).
+    const footprints = landmarks.filter((lm) => !lm.hidden && lm.buildings?.length)
+      .flatMap((lm) => [...lm.buildings, ...(lm.neighbours ?? [])].map((b) => b.rings[0]));
     let clearedIds = [];
     try {
-      clearedIds = await buildingsInAreas((z, x, y) => archives.get(options.key).tile(z, x, y), cleared);
+      clearedIds = await buildingsInAreas((z, x, y) => archives.get(options.key).tile(z, x, y), [...cleared, ...footprints]);
     } catch (err) {
       console.warn("kg-cities | era areas", err);
     }
@@ -265,12 +270,18 @@ export class CityLayer {
 
     // Landmark buildings are drawn in gold, so they leave the ordinary ones; their neighbours are
     // drawn with them, in one back-to-front order.
-    const hidden = new Set([...(era.hiddenBuildings ?? []), ...clearedIds, ...landmarkBuildingIds(landmarks)]);
+    // Towers not yet built in the era (by point and height), and zones cleared of tall ones.
+    const unbuilt = era.towers || era.zones ? hiddenBuildingIds(tall, { towers: era.towers ?? [], zones: era.zones ?? [] }) : [];
+    const hidden = new Set([...(era.hiddenBuildings ?? []), ...clearedIds, ...unbuilt, ...landmarkBuildingIds(landmarks)]);
     // The era's own coloured lines when it has them, else today's track from the map data.
-    this.options.era = { ...era, hiddenBuildings: [...hidden], hiddenRoads, transit: era.transit ?? this.transitToday ?? undefined };
+    const hiddenLabels = cleared.length ? ["within", { type: "MultiPolygon", coordinates: cleared.map((r) => [r]) }] : undefined;
+    const clearedGround = { type: "FeatureCollection", features: cleared.map((r) => ({ type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [r] } })) };
+    this.options.era = { ...era, hiddenBuildings: [...hidden], hiddenRoads, hiddenLabels, clearedGround, clearedStreets: clearedStreetsFilter(cleared), transit: era.transit ?? this.transitToday ?? undefined };
     const drawn = [...tall.filter((b) => !hidden.has(b.id)), ...periodBuildings, ...landmarkNeighbours(landmarks)];
     this.leanById = new Map(drawn.map((b) => [b.id, b]));
     this.leanData = leanFeatures(drawn, { lean, extra: landmarkItems(landmarks, { lean }) });
+    // Shadows of the towers and the landmark buildings (not the see-through ones beside a landmark).
+    this.shadowData = shadowFeatures([...drawn.filter((b) => !b.near), ...landmarks.filter((lm) => !lm.hidden).flatMap((lm) => lm.buildings ?? [])], { cleared });
     this.landmarks = landmarkFeatures(landmarks, { lean });
     this.nightLights = lights ? {
       type: "FeatureCollection",

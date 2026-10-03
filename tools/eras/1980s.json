@@ -1,0 +1,760 @@
+{
+  "about": "The 1980s era for each city (Boston's is built from KG Boston Map's research by tools/build-boston-pack.mjs). transit: the lines (by ref in data/transit/<city>.json) that ran in 1986, or [] for a city with no rail transit then. cuts: extensions built since, cut off a kept line at its old end (tools/build-eras.mjs cutExtensions); laterStations: stations opened since on track that ran. sites: Las Vegas resort grounds cleared, found in OpenStreetMap by name or traced by hand (ring). towers: buildings dated 1987 or later are found in OpenStreetMap by tools/build-eras.mjs.",
+  "year": 1986,
+  "cities": {
+    "new-york": {
+      "transit": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "<6>",
+        "7",
+        "<7>",
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "<F>",
+        "G",
+        "J",
+        "L",
+        "M",
+        "N",
+        "Q",
+        "R",
+        "S",
+        "W",
+        "Z",
+        "SIR",
+        "NLR",
+        "HOB–33",
+        "HOB–WTC",
+        "JSQ–33",
+        "JSQ–33 via HOB",
+        "NWK–WTC"
+      ],
+      "note": "The subway, PATH, the Staten Island Railway and the Newark City Subway. The JFK and Newark AirTrains (2003, 1996) and Hudson-Bergen Light Rail (2000) came later.",
+      "cuts": [
+        {
+          "lines": [
+            "Q"
+          ],
+          "at": [
+            40.764881,
+            -73.980507
+          ],
+          "toward": [
+            40.784,
+            -73.9472
+          ],
+          "note": "Second Avenue Subway, 2017; the Q via 63rd Street, 1989"
+        },
+        {
+          "lines": [
+            "F",
+            "<F>",
+            "M"
+          ],
+          "at": [
+            40.764017,
+            -73.977423
+          ],
+          "toward": "Roosevelt Island",
+          "note": "63rd Street line (1989) and its connector to Queens Boulevard (2001)",
+          "also": [
+            [
+              40.752039,
+              -73.928781
+            ]
+          ],
+          "radius": 500
+        },
+        {
+          "lines": [
+            "7",
+            "<7>"
+          ],
+          "at": [
+            40.7553,
+            -73.9871
+          ],
+          "toward": "34th Street–Hudson Yards",
+          "note": "7 to Hudson Yards, 2015"
+        },
+        {
+          "lines": [
+            "7",
+            "NLR"
+          ],
+          "at": "Newark Penn Station",
+          "toward": "Broad Street Station (Arrival)",
+          "note": "Newark Light Rail to Broad Street, 2006",
+          "radius": 550
+        },
+        {
+          "lines": [
+            "J",
+            "Z"
+          ],
+          "at": "121st Street",
+          "toward": "Jamaica Center–Parsons/Archer",
+          "note": "Archer Avenue line, 1988"
+        },
+        {
+          "lines": [
+            "E"
+          ],
+          "at": "Briarwood",
+          "toward": "Jamaica–Van Wyck",
+          "note": "Archer Avenue line, 1988"
+        }
+      ],
+      "laterStations": [
+        "NJPAC/Center Street",
+        "Atlantic Street",
+        "Riverfront Stadium",
+        "Broad Street Station (Arrival)",
+        "Broad Street Station (Departure)",
+        "34th Street–Hudson Yards"
+      ]
+    },
+    "washington": {
+      "transit": [
+        "R",
+        "B",
+        "O",
+        "Y",
+        "Dirksen-Hart Line Northbound",
+        "Dirksen-Hart Line Southbound",
+        "Rayburn Line Northbound",
+        "Rayburn Line Southbound",
+        "Russell Line Northbound",
+        "Russell Line Southbound"
+      ],
+      "note": "Metrorail's Red, Blue, Orange and Yellow lines and the Capitol subways. The Green Line opened in 1991, the Silver in 2014.",
+      "cuts": [
+        {
+          "lines": [
+            "R"
+          ],
+          "at": "Silver Spring",
+          "toward": "Forest Glen",
+          "note": "Wheaton 1990, Glenmont 1998"
+        },
+        {
+          "lines": [
+            "B"
+          ],
+          "at": "King Street–Old Town",
+          "toward": "Van Dorn Street",
+          "note": "Van Dorn Street 1991, Franconia–Springfield 1997"
+        },
+        {
+          "lines": [
+            "B"
+          ],
+          "at": [
+            38.8867,
+            -76.8936
+          ],
+          "toward": "Downtown Largo",
+          "note": "Addison Road to Largo, 2004"
+        },
+        {
+          "lines": [
+            "Y"
+          ],
+          "at": "Gallery Place",
+          "toward": "Mount Vernon Square",
+          "note": "the Yellow Line north of Gallery Place, on the Green Line's track (1991)"
+        }
+      ],
+      "laterStations": [
+        "NoMa–Gallaudet U",
+        "Potomac Yard"
+      ]
+    },
+    "chicago": {
+      "transit": [
+        "Red",
+        "Blue",
+        "Brown",
+        "Green",
+        "Purple",
+        "Yellow",
+        "Pink"
+      ],
+      "note": "The 'L' as it ran in 1986 (the Pink Line's Douglas branch was part of the West-Northwest route). The Orange Line to Midway opened in 1993; the O'Hare people mover in 1993.",
+      "laterStations": [
+        "Oakton-Skokie",
+        "Washington/Wabash",
+        "Morgan",
+        "Cermak-McCormick Place"
+      ]
+    },
+    "san-francisco": {
+      "transit": [
+        "Red",
+        "Orange",
+        "Yellow",
+        "Green",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "C",
+        "PH",
+        "PM"
+      ],
+      "note": "BART's original network, Muni Metro and the cable cars. BART's Dublin line (1997), the T Third (2007), the F historic streetcars (1995) and the airport trains came later.",
+      "cuts": [
+        {
+          "lines": [
+            "Yellow"
+          ],
+          "at": "Concord",
+          "toward": "North Concord/Martinez",
+          "note": "North Concord 1995, Pittsburg/Bay Point 1996, Antioch 2018"
+        },
+        {
+          "lines": [
+            "Yellow",
+            "Red"
+          ],
+          "at": "Daly City",
+          "toward": "Colma",
+          "note": "Colma 1996, SFO and Millbrae 2003"
+        },
+        {
+          "lines": [
+            "Orange",
+            "Green"
+          ],
+          "at": "Fremont",
+          "toward": "Warm Springs/South Fremont",
+          "note": "Warm Springs 2017, Berryessa 2020"
+        },
+        {
+          "lines": [
+            "N"
+          ],
+          "at": "Embarcadero",
+          "toward": "King Street & 4th Street",
+          "radius": 200,
+          "note": "the N along the Embarcadero to Caltrain, 1998"
+        },
+        {
+          "lines": [
+            "J"
+          ],
+          "at": "Church Street & 30th Street",
+          "toward": "Balboa Park",
+          "note": "the J to Balboa Park, 1991"
+        }
+      ]
+    },
+    "philadelphia": {
+      "transit": [
+        "B1",
+        "B2",
+        "B3",
+        "L",
+        "M",
+        "D1",
+        "D2",
+        "G",
+        "T1",
+        "T2",
+        "T3",
+        "T4",
+        "T5",
+        "PATCO"
+      ],
+      "note": "The Broad Street and Market-Frankford lines, the Norristown High Speed Line, the trolleys and PATCO. The River Line opened in 2004."
+    },
+    "atlanta": {
+      "transit": [
+        "Blue",
+        "Green",
+        "Red",
+        "Gold",
+        "The Plane Train: Concourse F → Domestic Baggage Claim",
+        "The Plane Train: Domestic Baggage Claim → Concourse F"
+      ],
+      "note": "MARTA's East-West and North-South lines (shorter than today's) and the airport's Plane Train. The Atlanta Streetcar (2014) and SkyTrain (2009) came later.",
+      "cuts": [
+        {
+          "lines": [
+            "Red",
+            "Gold"
+          ],
+          "at": "East Point",
+          "toward": "College Park",
+          "note": "College Park and the Airport, 1988"
+        },
+        {
+          "lines": [
+            "Red"
+          ],
+          "at": "Lindbergh Center",
+          "toward": "Buckhead",
+          "note": "the North Springs branch, 1996-2000"
+        },
+        {
+          "lines": [
+            "Gold"
+          ],
+          "at": "Brookhaven",
+          "toward": "Chamblee",
+          "note": "Chamblee 1987, Doraville 1992"
+        },
+        {
+          "lines": [
+            "Blue"
+          ],
+          "at": "Avondale",
+          "toward": "Kensington",
+          "note": "Kensington and Indian Creek, 1993"
+        },
+        {
+          "lines": [
+            "Green"
+          ],
+          "at": "Ashby",
+          "toward": "Bankhead",
+          "note": "the Proctor Creek branch, 1992"
+        }
+      ]
+    },
+    "baltimore": {
+      "transit": [
+        "M"
+      ],
+      "note": "The Metro Subway, opened 1983. Light rail opened in 1992.",
+      "cuts": [
+        {
+          "lines": [
+            "M"
+          ],
+          "at": "Reisterstown Plaza",
+          "toward": "Old Court",
+          "note": "to Owings Mills, 1987",
+          "radius": 400
+        },
+        {
+          "lines": [
+            "M"
+          ],
+          "at": "Charles Center",
+          "toward": "Shot Tower/Market Place",
+          "note": "to Johns Hopkins Hospital, 1995"
+        }
+      ]
+    },
+    "miami": {
+      "transit": [
+        "Green",
+        "2"
+      ],
+      "note": "Metrorail's line of 1984, Dadeland South to Okeechobee, and the Metromover's downtown loop, opened April 1986. The Omni and Brickell legs (1994), Palmetto (2003) and the airport line (2012) came later.",
+      "cuts": [
+        {
+          "lines": [
+            "Green"
+          ],
+          "at": "Okeechobee",
+          "toward": "Palmetto",
+          "note": "to Palmetto, 2003"
+        }
+      ],
+      "laterStations": [
+        "Tri-Rail"
+      ]
+    },
+    "los-angeles": {
+      "transit": [],
+      "note": "No rail transit: the Blue Line opened in 1990, the Red Line subway in 1993."
+    },
+    "st-louis": {
+      "transit": [],
+      "note": "No rail transit: MetroLink opened in 1993."
+    },
+    "las-vegas": {
+      "transit": [],
+      "note": "No rail transit: the Monorail opened in 2004.",
+      "sitesBox": [
+        36.075,
+        -115.215,
+        36.165,
+        -115.14
+      ],
+      "sites": [
+        {
+          "osm": "^(The )?Mirage",
+          "name": "The Mirage outline",
+          "built": 1989
+        },
+        {
+          "osm": "^Excalibur",
+          "name": "Excalibur",
+          "built": 1990
+        },
+        {
+          "osm": "^Rio (All|Hotel|Las Vegas)",
+          "name": "Rio",
+          "built": 1990
+        },
+        {
+          "osm": "^Luxor",
+          "name": "Luxor",
+          "built": 1993
+        },
+        {
+          "osm": "^MGM Grand",
+          "name": "MGM Grand",
+          "built": 1993
+        },
+        {
+          "osm": "^Treasure Island",
+          "name": "Treasure Island",
+          "built": 1993
+        },
+        {
+          "osm": "^Virgin Hotels",
+          "name": "Hard Rock Hotel",
+          "built": 1995
+        },
+        {
+          "osm": "^(The )?(STRAT|Stratosphere)",
+          "name": "Stratosphere",
+          "built": 1996
+        },
+        {
+          "osm": "^Park MGM",
+          "name": "Monte Carlo",
+          "built": 1996
+        },
+        {
+          "osm": "^New York.New York",
+          "name": "New York-New York",
+          "built": 1997
+        },
+        {
+          "osm": "^Bellagio",
+          "name": "Bellagio",
+          "built": 1998,
+          "hull": true
+        },
+        {
+          "osm": "^Mandalay Bay",
+          "name": "Mandalay Bay",
+          "built": 1999
+        },
+        {
+          "osm": "^(The )?Venetian",
+          "name": "The Venetian outline",
+          "built": 1999
+        },
+        {
+          "osm": "^Paris Las Vegas",
+          "name": "Paris Las Vegas",
+          "built": 1999
+        },
+        {
+          "osm": "^Planet Hollywood",
+          "name": "Planet Hollywood",
+          "built": 2000
+        },
+        {
+          "osm": "^(The )?Palms",
+          "name": "Palms",
+          "built": 2001
+        },
+        {
+          "osm": "^Wynn",
+          "name": "Wynn Las Vegas outline",
+          "built": 2005
+        },
+        {
+          "osm": "^(The )?Palazzo",
+          "name": "The Palazzo",
+          "built": 2007
+        },
+        {
+          "osm": "^Encore",
+          "name": "Encore",
+          "built": 2008
+        },
+        {
+          "osm": "^Aria( Resort)?",
+          "name": "Aria",
+          "built": 2009
+        },
+        {
+          "osm": "^Vdara",
+          "name": "Vdara",
+          "built": 2009
+        },
+        {
+          "osm": "^(The )?Cosmopolitan",
+          "name": "The Cosmopolitan",
+          "built": 2010
+        },
+        {
+          "osm": "^(The )?LINQ Promenade",
+          "name": "The LINQ Promenade",
+          "built": 2014
+        },
+        {
+          "osm": "^T-Mobile Arena",
+          "name": "T-Mobile Arena",
+          "built": 2016
+        },
+        {
+          "osm": "^Allegiant Stadium",
+          "name": "Allegiant Stadium",
+          "built": 2020
+        },
+        {
+          "osm": "^Resorts World",
+          "name": "Resorts World Las Vegas",
+          "built": 2021
+        },
+        {
+          "osm": "^Fontainebleau",
+          "name": "Fontainebleau Las Vegas",
+          "built": 2023
+        },
+        {
+          "osm": "^Sphere",
+          "name": "Sphere outline",
+          "built": 2023
+        },
+        {
+          "name": "The Mirage",
+          "built": 1989,
+          "note": "the Castaways and open ground, Spring Mountain Road to Caesars",
+          "ring": [
+            [
+              -115.17955,
+              36.125231
+            ],
+            [
+              -115.169753,
+              36.125231
+            ],
+            [
+              -115.171091,
+              36.123151
+            ],
+            [
+              -115.172606,
+              36.120091
+            ],
+            [
+              -115.172732,
+              36.119785
+            ],
+            [
+              -115.17955,
+              36.119785
+            ],
+            [
+              -115.17955,
+              36.125231
+            ]
+          ]
+        },
+        {
+          "name": "The Venetian",
+          "built": 1999,
+          "note": "the Sands' grounds",
+          "ring": [
+            [
+              -115.169554,
+              36.125354
+            ],
+            [
+              -115.167901,
+              36.125073
+            ],
+            [
+              -115.166595,
+              36.123902
+            ],
+            [
+              -115.16587,
+              36.122847
+            ],
+            [
+              -115.16442,
+              36.122379
+            ],
+            [
+              -115.164275,
+              36.12027
+            ],
+            [
+              -115.167901,
+              36.120317
+            ],
+            [
+              -115.171439,
+              36.120575
+            ],
+            [
+              -115.169554,
+              36.125354
+            ]
+          ]
+        },
+        {
+          "name": "Wynn Las Vegas",
+          "built": 2005,
+          "note": "the Desert Inn's frontage",
+          "ring": [
+            [
+              -115.169003,
+              36.125495
+            ],
+            [
+              -115.167378,
+              36.128353
+            ],
+            [
+              -115.16413,
+              36.128353
+            ],
+            [
+              -115.16413,
+              36.126596
+            ],
+            [
+              -115.16384,
+              36.123667
+            ],
+            [
+              -115.16384,
+              36.122613
+            ],
+            [
+              -115.16442,
+              36.122449
+            ],
+            [
+              -115.16587,
+              36.122847
+            ],
+            [
+              -115.166595,
+              36.123902
+            ],
+            [
+              -115.167901,
+              36.125073
+            ],
+            [
+              -115.169003,
+              36.125495
+            ]
+          ]
+        },
+        {
+          "name": "Sphere",
+          "built": 2023,
+          "note": "the whole block, its drive and plaza",
+          "ring": [
+            [
+              -115.163927,
+              36.122144
+            ],
+            [
+              -115.159634,
+              36.122144
+            ],
+            [
+              -115.159634,
+              36.118864
+            ],
+            [
+              -115.163927,
+              36.118864
+            ],
+            [
+              -115.163927,
+              36.122144
+            ]
+          ]
+        },
+        {
+          "name": "Monte Carlo, New York-New York and CityCenter grounds",
+          "built": 1996,
+          "note": "open ground and the small Boardwalk, Harmon to Tropicana Avenue",
+          "ring": [
+            [
+              -115.179556,
+              36.10895
+            ],
+            [
+              -115.17332,
+              36.10895
+            ],
+            [
+              -115.17332,
+              36.101162
+            ],
+            [
+              -115.179556,
+              36.101162
+            ],
+            [
+              -115.179556,
+              36.10895
+            ]
+          ]
+        },
+        {
+          "name": "Excalibur and Luxor grounds",
+          "built": 1990,
+          "note": "open ground, Tropicana Avenue to the Hacienda",
+          "ring": [
+            [
+              -115.179556,
+              36.100599
+            ],
+            [
+              -115.17332,
+              36.100599
+            ],
+            [
+              -115.17332,
+              36.094865
+            ],
+            [
+              -115.179556,
+              36.094865
+            ],
+            [
+              -115.179556,
+              36.100599
+            ]
+          ]
+        }
+      ]
+    },
+    "austin": {
+      "transit": [],
+      "note": "No rail transit: MetroRail opened in 2010."
+    },
+    "detroit": {
+      "transit": [],
+      "note": "No rail transit: the People Mover opened in 1987, the QLine in 2017."
+    }
+  }
+}

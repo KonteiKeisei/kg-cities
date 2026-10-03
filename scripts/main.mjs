@@ -1,11 +1,14 @@
 import { latLonToScene, makeFrame, sceneToLatLon } from "./geo.mjs";
 import { CityLayer } from "./map-layer.mjs";
 import { DATA_VERSION, isUpdating, loadCities, loadCityPack, openGenerator, refreshTransit, updateCityData } from "./generator.mjs";
-import { buildPlaces, compileCorrections, minZoomForRank, toGeoJSON } from "./places.mjs";
-import { NIGHT_MIN_SCALE } from "./style.mjs";
+import { DEFAULT_TILT, NIGHT_MIN_SCALE, leanFor } from "./style.mjs";
+import { LandmarkStore, PlaceStore, SearchData } from "./city-stores.mjs";
+import { HoverCard } from "./ui-card.mjs";
+import { MapSearch } from "./ui-search.mjs";
+import { PoiEditor } from "./ui-editor.mjs";
 
 const MODULE_ID = "kg-cities";
-const SETTINGS = { look: "look", lean: "lean", highDpi: "highDpi", businesses: "businesses", dayStart: "dayStart", nightStart: "nightStart" };
+const SETTINGS = { look: "look", lean: "tilt", highDpi: "highDpi", businesses: "businesses", dayStart: "dayStart", nightStart: "nightStart" };
 const LOOKS = { auto: "auto", night: "night", day: "day" };
 
 const layer = new CityLayer();
@@ -17,6 +20,36 @@ let current = null; // { scene, city, pack, places }
 /** Cities the GM was already asked about (update prompt) or already repaired, this session. */
 const asked = new Set();
 const repaired = new Set();
+
+/* ---------------------------------------- */
+/*  The city's points of interest            */
+/* ---------------------------------------- */
+
+// Landmarks and label edits are world settings holding every city, keyed by city id, so all of
+// a city's scenes share them and a campaign can travel between cities.
+let cityId = null;
+const ofCity = (key) => (game.settings.get(MODULE_ID, key) ?? {})[cityId] ?? null;
+async function setOfCity(key, value) {
+  const all = foundry.utils.deepClone(game.settings.get(MODULE_ID, key) ?? {});
+  all[cityId] = value;
+  await game.settings.set(MODULE_ID, key, all);
+}
+const searchData = new SearchData();
+const landmarks = new LandmarkStore({ getSaved: () => ofCity("landmarks"), setSaved: (v) => setOfCity("landmarks", v) });
+const places = new PlaceStore({
+  getEdits: () => ofCity("placeEdits") ?? { edits: {}, added: {} },
+  setEdits: (v) => setOfCity("placeEdits", v),
+  getBusinessMode: () => setting(SETTINGS.businesses),
+  getLandmarks: () => landmarks.list
+});
+const projection = {
+  sceneToLatLon: (x, y) => (layer.frame ? sceneToLatLon(layer.frame, { x, y }) : null),
+  latLonToScene: (lat, lon) => (layer.frame ? latLonToScene(layer.frame, lat, lon) : null)
+};
+let editor = null;
+const card = new HoverCard({ landmarks, search: searchData, isEditing: () => !!editor?.editing });
+editor = new PoiEditor({ places, landmarks, search: searchData, card, api: projection });
+const mapSearch = new MapSearch({ getLayer: () => layer, getPlaces: () => places.places, getLandmarks: () => drawnLandmarks(), data: searchData });
 
 /* ---------------------------------------- */
 /*  Day and night                            */
@@ -59,9 +92,9 @@ Hooks.once("init", () => {
     scope: "world", config: true, type: Number, default: 19, range: { min: 0, max: 23, step: 1 }, onChange: () => layer.setLook(currentLook())
   });
   register(SETTINGS.lean, {
-    name: "Leaning buildings",
-    hint: "Buildings lean up-screen by their height, so the city reads in 3D while every footprint stays in place. 0 is a flat map.",
-    scope: "client", config: true, type: Number, default: 0.5, range: { min: 0, max: 1, step: 0.05 }, onChange: redraw
+    name: "Building tilt",
+    hint: "How far the view tilts from straight down, in degrees: buildings lean up-screen by their height, so the city reads in 3D while every footprint stays in place. 0 is a flat map; 17 is the standard.",
+    scope: "client", config: true, type: Number, default: DEFAULT_TILT, range: { min: 0, max: 35, step: 1 }, onChange: redraw
   });
   register(SETTINGS.highDpi, {
     name: "Sharp map on high-DPI screens", hint: "Draws the map at your screen's full resolution when its scaling is 150% or more.",
@@ -73,6 +106,25 @@ Hooks.once("init", () => {
     scope: "world", config: true, type: String, default: "generic",
     choices: { generic: "By type only (Restaurant, Bank, Package Store)", hide: "Hidden", show: "Today's names, minus chains that arrived later" },
     onChange: () => refreshPlaces()
+  });
+
+  // { [city]: { list, removed } } once the GM edits a city's landmarks; until then the pack's seed.
+  register("landmarks", {
+    scope: "world", config: false, type: Object, default: {},
+    onChange: () => { card.refresh(); if (current) drawCity(); }
+  });
+  // { [city]: { edits: { placeId: {...} }, added: { id: {...} } } }: the GM's label edits.
+  register("placeEdits", { scope: "world", config: false, type: Object, default: {}, onChange: () => refreshPlaces() });
+
+  game.keybindings.register(MODULE_ID, "search", {
+    name: "Search the map",
+    hint: "Find a place, landmark, street or address on a city map.",
+    editable: [{ key: "KeyF", modifiers: ["Control"] }],
+    onDown: () => {
+      if (!cityOf(canvas.scene)) return false;
+      mapSearch.toggle();
+      return true;
+    }
   });
 
   layer.onError = (err) => {
@@ -105,6 +157,18 @@ Hooks.once("init", () => {
     generate: () => openGenerator(),
     /** Rebuild a city's data and update its scenes (no new scene); refresh: download it fresh. */
     updateData: (cityId, { refresh = false } = {}) => updateCityData(cityId, { refresh }),
+    /**
+     * A city's rapid transit for an era, for transit modules: { features (track, coloured, with
+     * tunnel/elevated flags), lines: [{ ref, name, color, colorNight, mode }], stations? }. The
+     * era's own network when its city pack has one (Boston 1986), else today's from OpenStreetMap.
+     */
+    async transit(cityId, era = "1980s") {
+      const pack = await loadCityPack(cityId);
+      const own = pack.eras?.[era]?.map?.transit;
+      if (own) return own;
+      const res = await fetch(foundry.utils.getRoute(`modules/${MODULE_ID}/data/transit/${cityId}.json`));
+      return res.ok ? res.json() : null;
+    },
     /** Fetch a city's transit lines fresh from Overpass into its data, e.g. refreshTransit("new-york"). */
     refreshTransit: (cityId) => refreshTransit(cityId),
     /** The city scene's flag, or null. */
@@ -127,8 +191,7 @@ Hooks.once("init", () => {
 /* ---------------------------------------- */
 
 async function drawCity() {
-  layer.destroy();
-  current = null;
+  teardown();
   const scene = canvas.scene;
   const c = cityOf(scene);
   if (!canvas.ready || !c) return;
@@ -147,42 +210,83 @@ async function drawCity() {
   const info = (await loadCities()).find((x) => x.id === c.city);
   const era = pack.eras?.[c.era] ?? {};
   const files = Object.fromEntries(Object.entries(c.files).map(([k, v]) => [k, url(v)]));
-  current = { scene, city: c, pack, era, places: null };
+  current = { scene, city: c, pack, era };
+  cityId = c.city;
+  landmarks.seed = pack.landmarks ?? [];
+  if (searchData.url !== (files.search ?? null)) { searchData.url = files.search ?? null; searchData.data = null; }
+  places.layer = layer;
   await layer.draw({
     // The key goes into tile addresses (kgcities://key/z/x/y), so it must not contain a slash.
     key: `${c.city}-${c.stamp ?? c.version}`, files, bounds: c.bounds, metro: c.metro,
-    look: currentLook(), lean: setting(SETTINGS.lean), era: era.map ?? {}, year: c.year ?? null,
+    look: currentLook(), lean: leanFor(setting(SETTINGS.lean)), era: era.map ?? {}, year: c.year ?? null,
     sharp: setting(SETTINGS.highDpi) && window.devicePixelRatio >= 1.5,
-    // The city pack's landmarks that stood in the scene's year (the World Trade Center before 2001).
-    landmarks: (pack.landmarks ?? []).filter((lm) => c.year == null || ((lm.from == null || c.year >= lm.from) && (lm.until == null || c.year < lm.until))),
+    // The city's landmarks (the pack's, kept up to date, and the GM's) that stood in the scene's
+    // year: the World Trade Center before 2001.
+    landmarks: drawnLandmarks(),
     // The city's own name is not labelled on its own map.
     cityNames: [info?.name, ...(info?.aliases ?? [])].filter(Boolean)
   });
   if (current?.scene !== scene) return;
   try {
-    const raw = await (await fetch(files.places, { cache: "no-cache" })).json();
-    current.places = raw.map((p) => ({ id: p.id, name: p.name, kind: p.kind, lat: p.lat, lon: p.lon, minZoom: minZoomForRank(p.rank) }));
-    refreshPlaces();
+    await places.load(files.places, era.places ?? {});
+    places.rebuild();
   } catch (err) {
     console.warn(`${MODULE_ID} | places`, err);
   }
+  card.attach(layer);
+  editor.attach(layer);
+  if (editor.editing) layer.setEditing(true);
 }
 
+/** In the scene's year: from (built) up to until (gone). */
+const inSceneYear = (x) => {
+  const year = current?.city?.year;
+  return year == null || ((x.from == null || year >= x.from) && (x.until == null || year < x.until));
+};
+const drawnLandmarks = () => landmarks.visible.filter(inSceneYear);
+
 function refreshPlaces() {
-  if (!current?.places) return;
-  const corrections = compileCorrections(current.era.places ?? {});
-  const places = buildPlaces(current.places, corrections, {}, { businesses: setting(SETTINGS.businesses) });
-  layer.setPlaces(toGeoJSON(places));
+  if (current && places.raw.length) places.rebuild();
+}
+
+function teardown() {
+  card.detach();
+  editor.detach();
+  mapSearch.close();
+  layer.destroy();
+  current = null;
 }
 
 Hooks.on("canvasReady", () => drawCity());
-Hooks.on("canvasTearDown", () => { layer.destroy(); current = null; });
+Hooks.on("canvasTearDown", () => teardown());
 Hooks.on("canvasPan", () => layer.update());
 Hooks.on("updateScene", (scene, changes) => {
   if (scene === canvas.scene && foundry.utils.hasProperty(changes, `flags.${MODULE_ID}`)) drawCity();
 });
 Hooks.on("updateWorldTime", () => {
   if (setting(SETTINGS.look) === LOOKS.auto) layer.setLook(currentLook());
+});
+
+/* ---------------------------------------- */
+/*  Scene controls                           */
+/* ---------------------------------------- */
+
+Hooks.on("getSceneControlButtons", (controls) => {
+  if (!cityOf(canvas.scene)) return;
+  // Search is for everyone, on the token controls players always have.
+  if (controls.tokens) {
+    controls.tokens.tools.kgCitiesSearch = {
+      name: "kgCitiesSearch", title: "Search the map (Ctrl+F)", icon: "fa-solid fa-magnifying-glass-location",
+      order: 100, button: true, onChange: () => mapSearch.toggle()
+    };
+  }
+  if (controls.notes && game.user.isGM) {
+    controls.notes.tools.kgCitiesEdit = {
+      name: "kgCitiesEdit", title: "Edit points of interest (click a label, landmark or building; shift-click for a pin)",
+      icon: "fa-solid fa-landmark", order: 110, toggle: true, active: editor.editing,
+      onChange: (event, active) => editor.setEditing(active)
+    };
+  }
 });
 
 /* ---------------------------------------- */

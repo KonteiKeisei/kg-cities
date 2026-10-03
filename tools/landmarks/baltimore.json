@@ -1,0 +1,122 @@
+{
+  "about": "Baltimore's preconfigured landmarks, written as of 1986.",
+  "landmarks": [
+    {
+      "name": "Harborplace",
+      "find": "Harborplace",
+      "from": 1980,
+      "text": "The two glass pavilions of shops and restaurants on the Inner Harbor that turned the rotting waterfront into the city's front porch. Paddle boats and street performers in summer."
+    },
+    {
+      "name": "National Aquarium",
+      "find": "National Aquarium, Baltimore",
+      "from": 1981,
+      "text": "The pyramid-topped aquarium on Pier 3 with its rooftop rainforest and a ring tank of sharks you walk down through. Mayor Schaefer swam in its seal pool when it opened late."
+    },
+    {
+      "name": "USS Constellation",
+      "find": "USS Constellation",
+      "pin": true,
+      "text": "The old sloop-of-war at the Inner Harbor, long believed to be the 1797 frigate, rotting quietly at her pier. Her real age is the subject of a bitter argument."
+    },
+    {
+      "name": "Fort McHenry",
+      "find": "Fort McHenry",
+      "text": "The star-shaped brick fort whose defence against the British fleet in 1814 inspired 'The Star-Spangled Banner'. A replica of the great flag flies over it."
+    },
+    {
+      "name": "Memorial Stadium",
+      "at": [
+        39.3289,
+        -76.6013
+      ],
+      "pin": true,
+      "from": 1950,
+      "until": 2001,
+      "text": "The Orioles' and Colts' horseshoe stadium on 33rd Street, still mourning the Colts, who left for Indianapolis in the night two years ago. Wild Bill Hagy leads the O-R-I-O-L-E-S chant from section 34."
+    },
+    {
+      "name": "Washington Monument",
+      "find": "Washington Monument, Mount Vernon Place",
+      "text": "The first monument to George Washington, a marble column of 1829 at the centre of Mount Vernon Place's squares. 228 steps to a view over the city."
+    },
+    {
+      "name": "Lexington Market",
+      "find": "Lexington Market",
+      "text": "The great covered market since 1782, with Faidley's crab cakes and stalls of everything else. The streets around it are rough."
+    },
+    {
+      "name": "Edgar Allan Poe House",
+      "text": "The narrow brick house on Amity Street where Poe lived in the 1830s, in a neighbourhood of public housing. Every January 19th a stranger leaves roses and cognac at his grave.",
+      "at": [
+        39.29165,
+        -76.6338
+      ],
+      "height": 8
+    },
+    {
+      "name": "Bromo-Seltzer Tower",
+      "find": "Bromo-Seltzer Arts Tower",
+      "text": "The 1911 clock tower modelled on the Palazzo Vecchio, its clock faces spelling B-R-O-M-O S-E-L-T-Z-E-R. A giant blue bottle once revolved on top."
+    },
+    {
+      "name": "World Trade Center Baltimore",
+      "find": "World Trade Center Baltimore",
+      "text": "The tallest equilateral pentagonal building in the world, on the Inner Harbor's edge. The Top of the World observation level is on the 27th floor."
+    },
+    {
+      "name": "Fells Point",
+      "find": "Fells Point",
+      "pin": true,
+      "text": "The old shipbuilding port of cobbled streets, rowhouses and more bars per block than anywhere in the city. Homicide detectives drink here after shift."
+    },
+    {
+      "name": "Johns Hopkins Hospital",
+      "text": "The domed Billings Building of the great teaching hospital in East Baltimore, with a marble Christ in its rotunda. The best medicine in the world, in one of the city's poorest neighbourhoods.",
+      "at": [
+        39.29715,
+        -76.59195
+      ],
+      "height": 40
+    },
+    {
+      "name": "Shot Tower",
+      "find": "Phoenix Shot Tower",
+      "text": "The 234-foot brick tower of 1828 where molten lead was dropped down the shaft to make musket balls. Charles Carroll laid its cornerstone."
+    },
+    {
+      "name": "Babe Ruth Birthplace",
+      "text": "The rowhouse on Emory Street where George Herman Ruth was born in 1895. It sits a few blocks from where the Orioles want a new ballpark.",
+      "at": [
+        39.2852,
+        -76.62575
+      ],
+      "height": 8
+    },
+    {
+      "name": "Little Italy",
+      "find": "Little Italy, Baltimore",
+      "pin": true,
+      "text": "A dozen blocks of rowhouses and red-sauce restaurants between the harbour and Fells Point. Neighbours sit on their marble steps; outdoor movies in the summer."
+    },
+    {
+      "name": "Baltimore Museum of Art",
+      "find": "Baltimore Museum of Art",
+      "text": "John Russell Pope's columned museum by Johns Hopkins' Homewood campus, with the Cone sisters' Matisses. The new sculpture garden is being planned."
+    },
+    {
+      "name": "Walters Art Gallery",
+      "find": "Walters Art Museum",
+      "text": "The palazzo of a railroad family's collection on Mount Vernon Place, from Egyptian mummies to Fabergé eggs. Free on Wednesdays."
+    },
+    {
+      "name": "Domino Sugars Sign",
+      "pin": true,
+      "text": "The giant red neon sign over the sugar refinery across the harbour, a landmark since 1951. The smell of molasses drifts over Federal Hill.",
+      "at": [
+        39.2738,
+        -76.6039
+      ]
+    }
+  ]
+}

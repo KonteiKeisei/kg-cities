@@ -57,7 +57,9 @@ export async function tallBuildings(getTile, bounds, onProgress) {
     for (let i = 0; layer && i < layer.length; i++) {
       const f = layer.feature(i);
       const h = f.properties.render_height ?? DEFAULT_HEIGHT;
-      if (f.type !== 3 || h < TALL || f.id === undefined) continue;
+      // hide_3d: the outline of a building mapped in parts (the Empire State's whole lot, at the
+      // full height). Its parts carry the real shape; raised, the outline is a slab over them.
+      if (f.type !== 3 || h < TALL || f.id === undefined || f.properties.hide_3d) continue;
       const rings = f.loadGeometry().map((r) => r.map((p) => toLonLat(p, layer)));
       const c = rings[0][0];
       if (c[1] > bounds.north || c[1] < bounds.south || c[0] < bounds.west || c[0] > bounds.east) continue;
@@ -84,19 +86,34 @@ const insideRing = ([x, y], ring) => {
  */
 export async function buildingsInAreas(getTile, areas) {
   if (!areas?.length) return [];
-  const pts = areas.flat();
-  const bounds = { west: Math.min(...pts.map((p) => p[0])), east: Math.max(...pts.map((p) => p[0])), south: Math.min(...pts.map((p) => p[1])), north: Math.max(...pts.map((p) => p[1])) };
+  // Only the tiles each area covers (areas can be scattered across the city: landmark footprints).
+  const boxes = areas.map((a) => ({
+    ring: a,
+    west: Math.min(...a.map((p) => p[0])), east: Math.max(...a.map((p) => p[0])),
+    south: Math.min(...a.map((p) => p[1])), north: Math.max(...a.map((p) => p[1]))
+  }));
+  const tiles = new Map();
+  for (const b of boxes) for (const [x, y] of detailTiles(b)) tiles.set(`${x},${y}`, [x, y]);
+  const n = 2 ** DETAIL_ZOOM;
   const ids = new Set();
-  await eachTile(getTile, bounds, (vt, { toLonLat }) => {
-    const layer = vt.layers.building;
+  for (const [x, y] of tiles.values()) {
+    const bytes = await getTile(DETAIL_ZOOM, x, y);
+    if (!bytes) continue;
+    const layer = new VectorTile(new PbfReader(bytes)).layers.building;
     for (let i = 0; layer && i < layer.length; i++) {
       const f = layer.feature(i);
       if (f.type !== 3 || f.id === undefined || ids.has(f.id)) continue;
-      const ring = f.loadGeometry()[0].map((p) => toLonLat(p, layer));
+      const ring = f.loadGeometry()[0].map((p) => {
+        const ll = fromWorld((x + p.x / layer.extent) / n, (y + p.y / layer.extent) / n);
+        return [ll.lon, ll.lat];
+      });
       const c = [ring.reduce((s, p) => s + p[0], 0) / ring.length, ring.reduce((s, p) => s + p[1], 0) / ring.length];
-      if (areas.some((a) => insideRing(c, a))) ids.add(f.id);
+      const inBox = (b, p) => p[0] >= b.west && p[0] <= b.east && p[1] >= b.south && p[1] <= b.north && insideRing(p, b.ring);
+      // Its centre inside, or most of its corners (a sprawling casino podium's centre can fall
+      // in its own courtyard or lake).
+      if (boxes.some((b) => inBox(b, c) || ring.filter((p) => inBox(b, p)).length * 2 > ring.length)) ids.add(f.id);
     }
-  });
+  }
   return [...ids];
 }
 

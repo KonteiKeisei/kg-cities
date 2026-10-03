@@ -1,0 +1,355 @@
+{
+  "about": "Boston's preconfigured landmarks, written as of 1986. Ids starting seed: are KG Boston Map's, so a converted campaign's saved landmarks merge onto these instead of doubling.",
+  "landmarks": [
+    {
+      "id": "seed:GSblbNOXMBm3gGlu",
+      "name": "Boston Common",
+      "find": "Boston Common",
+      "pin": true,
+      "text": "America's oldest public park, fifty acres of lawn and elms under the gold dome of the State House. Frog Pond, the bandstand and the Park Street Station steps, where everyone in town meets."
+    },
+    {
+      "id": "seed:EQttPTLm3gOWNgdc",
+      "name": "Faneuil Hall",
+      "find": "Faneuil Hall",
+      "from": 1742,
+      "text": "The 'Cradle of Liberty', a market and meeting hall since 1742 with its gilded grasshopper weathervane. Shops downstairs, the great hall upstairs, and the Ancient and Honorable Artillery Company's armoury in the attic."
+    },
+    {
+      "id": "seed:foSUgRqG36wHkBTk",
+      "name": "Paul Revere House",
+      "find": "Paul Revere House",
+      "from": 1680,
+      "text": "The silversmith's wooden house of about 1680 on North Square, the oldest building downtown. He set out from here on the night of April 18, 1775."
+    },
+    {
+      "id": "seed:yvLjYcryHdyARilW",
+      "name": "Old State House",
+      "find": "Old State House, Boston",
+      "from": 1713,
+      "text": "The brick seat of the colonial government, its lion and unicorn above the balcony where the Declaration of Independence was read to Boston. The Boston Massacre happened in the street below; the State Street T stop is underneath it."
+    },
+    {
+      "id": "seed:3Q92x4YuP4ZnMn1W",
+      "name": "Boston Public Library",
+      "find": "McKim Building, Boston Public Library",
+      "text": "McKim's 'palace for the people' on Copley Square, with Sargent's murals upstairs and a cloistered courtyard. Philip Johnson's granite addition, 1972, faces Boylston Street.",
+      "height": 22,
+      "at": [
+        42.34935,
+        -71.07826
+      ]
+    },
+    {
+      "id": "seed:waBNzlQqWdQ2kopk",
+      "name": "Massachusetts State House",
+      "find": "Massachusetts State House",
+      "from": 1798,
+      "text": "Bulfinch's State House on Beacon Hill, its dome covered in copper by Paul Revere and gilded since. The Sacred Cod hangs in the House chamber."
+    },
+    {
+      "id": "seed:Mrg7oMOVZrHdr6xs",
+      "name": "USS Constitution",
+      "model": "uss-constitution",
+      "find": "USS Constitution, Charlestown",
+      "seedShape": true,
+      "text": "'Old Ironsides', launched 1797 and never defeated, still a commissioned ship of the Navy at Pier 1 in the Charlestown Navy Yard. Sailors in 1812 uniforms take visitors below decks."
+    },
+    {
+      "id": "seed:vjP5KVYQl5ql0Y0m",
+      "name": "Isabella Stewart Gardner Museum",
+      "find": "Isabella Stewart Gardner Museum",
+      "text": "A Venetian palazzo on the Fenway built around a flowered courtyard, kept exactly as its founder arranged it. Rembrandts, a Vermeer and Titian's Europa hang where she left them.",
+      "height": 20
+    },
+    {
+      "id": "seed:QzmRwssUCRoNfjmD",
+      "name": "Prudential Tower",
+      "find": "Prudential Tower",
+      "from": 1964,
+      "height": 228,
+      "text": "The 52-storey 'Pru' over the Back Bay, Boston's first skyscraper of the jet age, with the Skywalk on the 50th floor and the Top of the Hub restaurant. Its shopping arcade links to the Sheraton and the Hynes convention hall."
+    },
+    {
+      "id": "seed:whHmHBhrZAe1kavE",
+      "name": "John Hancock Tower",
+      "find": "200 Clarendon Street",
+      "from": 1976,
+      "height": 241,
+      "text": "I. M. Pei's blue glass slab on Copley Square, the tallest building in New England. Its windows famously popped out and fell to the street in 1973; the observatory on the 60th floor looks out to New Hampshire."
+    },
+    {
+      "id": "seed:sffD5SQpd27sj49f",
+      "name": "Museum of Science",
+      "find": "Museum of Science, Boston",
+      "text": "On the Charles River Dam between Boston and Cambridge, with the Omni theater, the lightning show in the Theater of Electricity and the Hayden Planetarium. School groups by day, laser rock shows at night.",
+      "height": 28
+    },
+    {
+      "id": "seed:Wb3qwQ3W808mAOjU",
+      "name": "Boston Public Garden",
+      "find": "Boston Public Garden",
+      "pin": true,
+      "text": "The Victorian garden beside the Common, with its lagoon, suspension footbridge and the Swan Boats in summer. Washington on horseback faces Commonwealth Avenue."
+    },
+    {
+      "id": "seed:3XKzkd2qJdohEytx",
+      "name": "The Rathskeller",
+      "find": "528 Commonwealth Avenue, Boston",
+      "pin": true,
+      "text": "'The Rat' on Kenmore Square, a cramped basement where the Cars, the Police and every local punk band played. Beer in plastic cups and a stage barely a foot high."
+    },
+    {
+      "id": "seed:2WEfKKs7ugqJafa1",
+      "name": "The Boston Globe",
+      "find": "135 Morrissey Boulevard, Boston",
+      "text": "The Globe's sprawling plant on Morrissey Boulevard in Dorchester, where the presses run all night. Its Spotlight team and city room cover everything from the State House to the Southie busing fights.",
+      "height": 20
+    },
+    {
+      "id": "seed:VtDyya0Cvws0juXT",
+      "name": "Fenway Park",
+      "find": "Fenway Park",
+      "from": 1912,
+      "text": "The Red Sox's 1912 ballpark, squeezed into its block with the Green Monster in left field. This October the Sox are a strike away from the World Series.",
+      "height": 24
+    },
+    {
+      "id": "seed:9TbbRZGFOAptiC1P",
+      "name": "The Channel",
+      "find": "25 Necco Street, Boston",
+      "pin": true,
+      "text": "A huge rock club among the warehouses of Fort Point Channel, where hardcore bands and heavy metal acts play to a thousand people. The neighbourhood is dark and empty after the shows let out."
+    },
+    {
+      "id": "seed:X2SavbLdG9Ue4LmG",
+      "name": "The Metro",
+      "find": "15 Lansdowne Street, Boston",
+      "text": "The big dance club on Lansdowne Street behind the Green Monster, all lasers and new wave. Lines run down the street on weekend nights."
+    },
+    {
+      "id": "seed:IlBCJDvAKbUGLhbA",
+      "name": "The Museum of Fine Arts",
+      "find": "Museum of Fine Arts, Boston",
+      "text": "The great granite museum on Huntington Avenue, with I. M. Pei's new West Wing and one of the best Asian collections in the world. Egyptian tombs, Paul Revere's silver and Copley's portraits of his customers.",
+      "height": 22
+    },
+    {
+      "id": "seed:MDGKfKmTes4Hl6wd",
+      "name": "New England Aquarium",
+      "find": "New England Aquarium",
+      "text": "The concrete aquarium on Central Wharf with its four-storey Giant Ocean Tank and the harbour seals out front. Sea lions perform on the barge Discovery moored alongside.",
+      "height": 22
+    },
+    {
+      "id": "seed:GukpDuPtEcyjY5qt",
+      "name": "The Arnold Arboretum",
+      "find": "Arnold Arboretum",
+      "pin": true,
+      "text": "Harvard's 265-acre tree museum in Jamaica Plain, the jewel of Olmsted's Emerald Necklace. Lilac Sunday in May draws half the city."
+    },
+    {
+      "id": "seed:unVWOF5hpIc2pdrD",
+      "name": "Old North Church",
+      "model": "old-north-church",
+      "find": "Old North Church, Boston",
+      "text": "Christ Church, 1723, the oldest standing church in Boston, in the heart of the North End. The two lanterns that warned of the British march hung in its steeple."
+    },
+    {
+      "id": "seed:s7kICe7M2Mgr61bT",
+      "name": "Cheers Bull and Finch Pub",
+      "find": "84 Beacon Street, Boston",
+      "text": "The basement pub across from the Public Garden whose front door opens every episode of Cheers. Tourists now outnumber the regulars."
+    },
+    {
+      "name": "Quincy Market",
+      "find": "Quincy Market",
+      "text": "The long granite market hall behind Faneuil Hall, reborn in 1976 as a food hall flanked by shops in the North and South Markets. Street performers work the cobblestones all summer.",
+      "height": 16
+    },
+    {
+      "name": "Boston Garden",
+      "at": [
+        42.3662,
+        -71.0621
+      ],
+      "pin": true,
+      "from": 1928,
+      "until": 1998,
+      "text": "The creaky old arena over North Station, home of Larry Bird's Celtics and the Bruins, with dead spots on the parquet only the home team knows. No air conditioning, obstructed views and sixteen championship banners."
+    },
+    {
+      "name": "Harvard University",
+      "find": "Harvard Yard",
+      "pin": true,
+      "text": "The oldest college in America, behind the brick walls of Harvard Yard in Cambridge. Harvard Square around it is bookstores, folk clubs, the Coop and street musicians."
+    },
+    {
+      "name": "MIT",
+      "find": "Massachusetts Institute of Technology",
+      "pin": true,
+      "text": "The Massachusetts Institute of Technology along the Cambridge bank of the Charles, under the Great Dome. Its students are famous for hacks, like the police car once left on that dome."
+    },
+    {
+      "name": "Trinity Church",
+      "find": "Trinity Church, Boston",
+      "from": 1877,
+      "text": "H. H. Richardson's Romanesque masterpiece on Copley Square, reflected in the Hancock Tower's glass. La Farge's murals and stained glass glow inside.",
+      "height": 64
+    },
+    {
+      "name": "Custom House Tower",
+      "find": "Custom House Tower, Boston",
+      "from": 1915,
+      "text": "A Greek-temple customs house with a 1915 clock tower stacked on top, for years the tallest building in Boston. Its clock has been stopped for decades."
+    },
+    {
+      "name": "Bunker Hill Monument",
+      "find": "Bunker Hill Monument",
+      "text": "The 221-foot granite obelisk on Breed's Hill in Charlestown, marking the battle of June 1775. 294 steps to the top and no elevator."
+    },
+    {
+      "name": "Christian Science Center",
+      "text": "The Mother Church's domed basilica and its long reflecting pool off Massachusetts Avenue. The Mapparium inside lets you walk through a stained-glass globe of 1935.",
+      "height": 38,
+      "at": [
+        42.34457,
+        -71.08568
+      ]
+    },
+    {
+      "name": "King's Chapel",
+      "from": 1754,
+      "text": "The dark granite chapel of 1754 at School and Tremont Streets, with the city's oldest burying ground beside it. Its bell was recast by Paul Revere.",
+      "height": 18,
+      "at": [
+        42.35815,
+        -71.06001
+      ]
+    },
+    {
+      "name": "Granary Burying Ground",
+      "find": "Granary Burying Ground",
+      "pin": true,
+      "text": "The 1660 graveyard on Tremont Street where Paul Revere, Samuel Adams and John Hancock lie. Mother Goose is said to be buried here too."
+    },
+    {
+      "name": "Park Street Church",
+      "find": "Park Street Church",
+      "from": 1809,
+      "text": "The white-steepled church at the corner of the Common, 'Brimstone Corner' for the gunpowder once stored in its crypt. 'America' was first sung here in 1831."
+    },
+    {
+      "name": "Boston City Hall",
+      "find": "Boston City Hall",
+      "text": "The brutalist concrete city hall of 1968 on its windswept brick plaza. Mayor Flynn works upstairs; everybody else complains about the building."
+    },
+    {
+      "name": "Union Oyster House",
+      "find": "Union Oyster House",
+      "from": 1826,
+      "text": "The oldest restaurant in America, serving oysters at its half-round bar since 1826. Daniel Webster ate a dozen plates at a sitting here."
+    },
+    {
+      "name": "Durgin-Park",
+      "find": "North Market, Boston",
+      "text": "The dining room upstairs at the North Market, with communal tables, prime rib, Indian pudding and waitresses famous for their rudeness. Established before you were born.",
+      "height": 16
+    },
+    {
+      "name": "Jordan Marsh",
+      "find": "Macy's, 450 Washington Street, Boston",
+      "from": 1851,
+      "text": "New England's great department store at Downtown Crossing, with its blueberry muffins and the Enchanted Village at Christmas. Filene's is across Summer Street."
+    },
+    {
+      "name": "Filene's Basement",
+      "find": "426 Washington Street, Boston",
+      "pin": true,
+      "text": "The bargain basement under Filene's at Downtown Crossing, where the automatic markdowns draw elbow-throwing crowds. The wedding-gown sale is a blood sport."
+    },
+    {
+      "name": "The Combat Zone",
+      "find": "Lower Washington Street, Boston",
+      "at": [
+        42.3519,
+        -71.0629
+      ],
+      "pin": true,
+      "text": "Lower Washington Street's adult zone of strip clubs, porn theatres and bars between Downtown Crossing and Chinatown. Shrinking under redevelopment, but still trouble after dark."
+    },
+    {
+      "name": "Chinatown Gate",
+      "find": "Chinatown Gate, Boston",
+      "pin": true,
+      "from": 1982,
+      "text": "The paifang gate at Beach Street, a gift from Taiwan, at the entrance to Boston's Chinatown. Bakeries, dim sum halls and garment lofts crowd the streets behind it."
+    },
+    {
+      "name": "Hatch Shell",
+      "find": "Hatch Memorial Shell",
+      "text": "The Art Deco band shell on the Charles River Esplanade, where the Boston Pops play the 1812 Overture on the Fourth of July. Free concerts and movies all summer."
+    },
+    {
+      "name": "Copley Plaza Hotel",
+      "find": "Fairmont Copley Plaza",
+      "text": "The grand 1912 hotel on Copley Square, gilded ballrooms and the Oak Bar. Society weddings and visiting dignitaries stay here."
+    },
+    {
+      "name": "Ritz-Carlton Boston",
+      "find": "The Newbury, Boston",
+      "text": "The discreet hotel at Arlington and Newbury overlooking the Public Garden, where Boston's old money takes tea. Gentlemen wear jackets in the dining room, no exceptions."
+    },
+    {
+      "name": "Haymarket",
+      "find": "Blackstone Street, Boston",
+      "at": [
+        42.3618,
+        -71.057
+      ],
+      "pin": true,
+      "text": "The open-air produce market on Blackstone Street every Friday and Saturday, in the shadow of the elevated Central Artery. Vendors bark prices and the pavement is slick with crushed fruit."
+    },
+    {
+      "name": "Charlestown Navy Yard",
+      "find": "Charlestown Navy Yard",
+      "pin": true,
+      "text": "The 1800 navy yard, closed in 1974 and now part national park, part apartments in old ropewalks and shops. The USS Cassin Young lies beside Old Ironsides."
+    },
+    {
+      "name": "Boston Tea Party Ship",
+      "find": "Boston Tea Party Ships & Museum",
+      "pin": true,
+      "text": "A replica brig moored at the Congress Street Bridge where visitors can throw tea into Fort Point Channel. The museum on the bridge tells the story of December 16, 1773."
+    },
+    {
+      "name": "Computer Museum",
+      "find": "Boston Children's Museum",
+      "text": "The new Computer Museum shares an old wool warehouse on Museum Wharf with the Children's Museum, both with the giant milk bottle out front. Inside, a walk-through computer is under construction.",
+      "height": 26
+    },
+    {
+      "name": "Castle Island",
+      "find": "Fort Independence, Boston",
+      "pin": true,
+      "text": "Fort Independence on its spit of land in South Boston, ringed by a walkway where Southie strolls on summer evenings. Sullivan's sells hot dogs by the causeway."
+    },
+    {
+      "name": "Logan International Airport",
+      "find": "Boston Logan International Airport",
+      "pin": true,
+      "text": "Boston's airport on landfill in East Boston, reached through the Sumner and Callahan tunnels. The planes come in low over the harbour and the Southie three-deckers."
+    },
+    {
+      "name": "Citgo Sign",
+      "find": "Citgo sign, Kenmore Square",
+      "pin": true,
+      "from": 1965,
+      "text": "The blinking red and blue Citgo triangle over Kenmore Square, saved by a public outcry when the company tried to turn it off. Every home run over the Monster flies toward it.",
+      "at": [
+        42.3488,
+        -71.09504
+      ]
+    }
+  ]
+}

@@ -1,0 +1,494 @@
+{
+  "about": "Las Vegas's preconfigured landmarks, written as of 1986. Casinos since demolished are pins on their sites.",
+  "landmarks": [
+    {
+      "name": "Caesars Palace",
+      "find": "Caesars Palace",
+      "from": 1966,
+      "text": "The Roman fantasy on the Strip, with toga-clad cocktail waitresses, fountains Evel Knievel tried to jump in 1967, and championship fights in its parking lot arena. High rollers are met at the door."
+    },
+    {
+      "name": "Circus Circus",
+      "find": "Circus Circus Las Vegas",
+      "from": 1968,
+      "text": "The big-top casino where trapeze acts fly over the blackjack tables and families crowd the midway. Hunter S. Thompson made it his symbol of American excess in Fear and Loathing."
+    },
+    {
+      "name": "Stardust",
+      "at": [
+        36.1347,
+        -115.166
+      ],
+      "from": 1958,
+      "until": 2007,
+      "text": "The Strip resort with the most famous sign in Vegas, a galaxy of neon, and the Lido de Paris showgirls. The skim rooms here made the Chicago Outfit rich; the feds are still sorting it out.",
+      "shape": [
+        {
+          "rect": [
+            110,
+            70
+          ],
+          "h": 10,
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "rect": [
+            25,
+            120
+          ],
+          "h": 30,
+          "at": [
+            -90,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The Sands",
+      "at": [
+        36.122,
+        -115.1696
+      ],
+      "from": 1952,
+      "until": 1996,
+      "text": "The Rat Pack's casino, where Sinatra, Dean Martin and Sammy Davis Jr. held court in the Copa Room. Its curving tower and 'A Place in the Sun' sign are pure fifties cool.",
+      "shape": [
+        {
+          "rect": [
+            110,
+            70
+          ],
+          "h": 10,
+          "at": [
+            -70,
+            0
+          ]
+        },
+        {
+          "circle": 22,
+          "h": 60,
+          "at": [
+            25,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The Dunes",
+      "at": [
+        36.1126,
+        -115.1745
+      ],
+      "from": 1955,
+      "until": 1993,
+      "text": "The Arabian-themed resort guarded by a giant fibreglass sultan, with its 18-hole golf course and the topless Casino de Paris show. It changes owners about as often as the dealers change shifts.",
+      "shape": [
+        {
+          "rect": [
+            120,
+            90
+          ],
+          "h": 10,
+          "at": [
+            -70,
+            0
+          ]
+        },
+        {
+          "rect": [
+            22,
+            95
+          ],
+          "h": 80,
+          "at": [
+            10,
+            -20
+          ]
+        },
+        {
+          "rect": [
+            85,
+            20
+          ],
+          "h": 55,
+          "at": [
+            20,
+            70
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Desert Inn",
+      "at": [
+        36.1287,
+        -115.165
+      ],
+      "from": 1950,
+      "until": 2000,
+      "text": "The elegant country-club casino where Howard Hughes rented the top floors in 1966, then bought the hotel rather than leave. Its golf course hosts the Tournament of Champions.",
+      "shape": [
+        {
+          "rect": [
+            110,
+            70
+          ],
+          "h": 10,
+          "at": [
+            -70,
+            40
+          ]
+        },
+        {
+          "rect": [
+            100,
+            22
+          ],
+          "h": 48,
+          "at": [
+            20,
+            0
+          ]
+        },
+        {
+          "rect": [
+            22,
+            70
+          ],
+          "h": 30,
+          "at": [
+            -50,
+            -50
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Riviera",
+      "find": "Riviera Hotel and Casino",
+      "from": 1955,
+      "until": 2015,
+      "text": "The Strip's first high-rise, home to Splash and An Evening at La Cage, with Liberace opening its showroom in 1955. Its marquee is a wall of gold light.",
+      "shape": [
+        {
+          "rect": [
+            120,
+            80
+          ],
+          "h": 10,
+          "at": [
+            -70,
+            0
+          ]
+        },
+        {
+          "rect": [
+            22,
+            90
+          ],
+          "h": 30,
+          "at": [
+            10,
+            -20
+          ]
+        },
+        {
+          "rect": [
+            90,
+            22
+          ],
+          "h": 55,
+          "at": [
+            50,
+            60
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Sahara",
+      "find": "Sahara Las Vegas",
+      "text": "The Moroccan-themed resort at the north end of the Strip, where the Beatles stayed in 1964. Camels and caravans on the signage, Don Rickles in the lounge."
+    },
+    {
+      "name": "Flamingo Hilton",
+      "find": "Flamingo Las Vegas",
+      "text": "Bugsy Siegel's 1946 Flamingo, its pink-feathered neon now under Hilton's name. The gangster was shot in Beverly Hills six months after its rocky opening."
+    },
+    {
+      "name": "Tropicana",
+      "find": "Tropicana Las Vegas",
+      "until": 2024,
+      "text": "The 'Tiffany of the Strip', with a stained-glass ceiling over its casino and the Folies Bergere showgirls since 1959. Mob skimming here sent several men to prison this decade.",
+      "shape": [
+        {
+          "rect": [
+            120,
+            90
+          ],
+          "h": 10,
+          "at": [
+            -50,
+            -10
+          ]
+        },
+        {
+          "rect": [
+            100,
+            22
+          ],
+          "h": 70,
+          "at": [
+            40,
+            50
+          ]
+        },
+        {
+          "rect": [
+            100,
+            22
+          ],
+          "h": 70,
+          "at": [
+            40,
+            -70
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Aladdin",
+      "at": [
+        36.1095,
+        -115.1711
+      ],
+      "from": 1966,
+      "until": 1997,
+      "text": "The Arabian Nights resort where Elvis married Priscilla in 1967, with a giant genie's lamp on its sign. Its Theatre for the Performing Arts books the biggest rock acts on the Strip.",
+      "shape": [
+        {
+          "rect": [
+            110,
+            80
+          ],
+          "h": 10,
+          "at": [
+            -75,
+            0
+          ]
+        },
+        {
+          "rect": [
+            22,
+            110
+          ],
+          "h": 60,
+          "at": [
+            5,
+            0
+          ]
+        },
+        {
+          "rect": [
+            80,
+            70
+          ],
+          "h": 28,
+          "at": [
+            80,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Las Vegas Hilton",
+      "find": "Westgate Las Vegas Resort & Casino",
+      "text": "The tallest hotel in town beside the Convention Center, where Elvis played 837 sold-out shows. Its sports book is the biggest in the world."
+    },
+    {
+      "name": "Frontier",
+      "at": [
+        36.129,
+        -115.1695
+      ],
+      "from": 1942,
+      "until": 2007,
+      "text": "The Old West-themed casino where Elvis debuted in Vegas in 1956 and the Supremes said goodbye to Diana Ross. Howard Hughes owned it; Siegfried & Roy perform here.",
+      "shape": [
+        {
+          "rect": [
+            140,
+            80
+          ],
+          "h": 14
+        }
+      ]
+    },
+    {
+      "name": "Hacienda",
+      "at": [
+        36.0938,
+        -115.1745
+      ],
+      "from": 1956,
+      "until": 1996,
+      "text": "The first casino drivers from Los Angeles see at the south end of the Strip, a family-friendly resort with its own little airline. A neon horse and rider gallop over the entrance.",
+      "shape": [
+        {
+          "rect": [
+            90,
+            60
+          ],
+          "h": 10,
+          "at": [
+            -40,
+            0
+          ]
+        },
+        {
+          "rect": [
+            90,
+            18
+          ],
+          "h": 36,
+          "at": [
+            45,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bally's Grand",
+      "find": "Horseshoe Las Vegas",
+      "text": "The MGM Grand, renamed Bally's Grand this year, rebuilt after the 1980 fire that killed 85 people. Its Jubilee! show sinks the Titanic every night."
+    },
+    {
+      "name": "Imperial Palace",
+      "find": "The LINQ Hotel + Experience",
+      "text": "The pagoda-roofed casino with a collection of 200 classic cars on its parking ramp, Hitler's Mercedes among them. The buffet is famously cheap."
+    },
+    {
+      "name": "Landmark Hotel",
+      "at": [
+        36.1328,
+        -115.1597
+      ],
+      "from": 1969,
+      "until": 1995,
+      "text": "The mushroom-shaped tower beside the Convention Center, opened by Howard Hughes in 1969. Its top-floor restaurant and lounge look over the whole valley.",
+      "shape": [
+        {
+          "circle": 12,
+          "h": 94
+        },
+        {
+          "circle": 24,
+          "base": 84,
+          "h": 108
+        },
+        {
+          "rect": [
+            90,
+            60
+          ],
+          "h": 9,
+          "at": [
+            0,
+            -75
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Golden Nugget",
+      "find": "Golden Nugget Las Vegas",
+      "text": "Steve Wynn's white-and-gold palace downtown, the classiest joint on Fremont Street, with the world's largest gold nugget on display. Frank Sinatra headlines here."
+    },
+    {
+      "name": "Binion's Horseshoe",
+      "find": "Binion's Gambling Hall and Hotel",
+      "text": "Benny Binion's no-limit casino on Fremont Street, home of the World Series of Poker. Gamblers pose with a million dollars in cash displayed in a horseshoe."
+    },
+    {
+      "name": "Fremont Hotel",
+      "find": "Fremont Hotel and Casino",
+      "text": "Downtown's first high-rise of 1956, its sign one of the brightest on Glitter Gulch. Wayne Newton got his start in its lounge."
+    },
+    {
+      "name": "Union Plaza",
+      "find": "Plaza Hotel & Casino",
+      "from": 1971,
+      "text": "The hotel at the head of Fremont Street, built on the site of the old Union Pacific depot, with Amtrak's Desert Wind arriving under its roof. Its lounge books old-school comics."
+    },
+    {
+      "name": "Vegas Vic",
+      "pin": true,
+      "text": "The 40-foot neon cowboy waving over the Pioneer Club on Fremont Street since 1951. His 'Howdy Podner' greeting has been silenced; Lee Marvin complained of the noise.",
+      "at": [
+        36.17085,
+        -115.14405
+      ]
+    },
+    {
+      "name": "El Cortez",
+      "find": "El Cortez Hotel and Casino",
+      "text": "The 1941 Spanish-style casino that Bugsy Siegel bought and sold, the oldest still standing in Las Vegas. Cheap rooms, cheap tables, and penny slots for the locals."
+    },
+    {
+      "name": "Little White Wedding Chapel",
+      "text": "The tiny white chapel on Las Vegas Boulevard where Joan Collins married last year. A drive-up window marries couples without leaving the car.",
+      "at": [
+        36.15965,
+        -115.1508
+      ],
+      "height": 6
+    },
+    {
+      "name": "Liberace Museum",
+      "pin": true,
+      "from": 1979,
+      "until": 2010,
+      "text": "Mr. Showmanship's collection of rhinestone pianos, mirrored cars and fur capes in a strip mall on Tropicana Avenue. The man himself still plays the Hilton.",
+      "at": [
+        36.10085,
+        -115.1282
+      ]
+    },
+    {
+      "name": "McCarran International Airport",
+      "find": "Harry Reid International Airport",
+      "pin": true,
+      "text": "The airport at the south end of the Strip, its terminal lined with slot machines. Junket charters land around the clock."
+    },
+    {
+      "name": "Thomas & Mack Center",
+      "find": "Thomas & Mack Center",
+      "text": "UNLV's new arena, home of Jerry Tarkanian's Runnin' Rebels and the National Finals Rodeo. The Rebels are among the best teams in the country."
+    },
+    {
+      "name": "Silver Slipper",
+      "at": [
+        36.1316,
+        -115.1645
+      ],
+      "until": 1988,
+      "text": "The small casino crowned by a giant revolving neon slipper, bought by Howard Hughes because its sign shone into his Desert Inn bedroom. Its gambling hall is Old West saloon.",
+      "shape": [
+        {
+          "rect": [
+            60,
+            40
+          ],
+          "h": 8
+        }
+      ]
+    }
+  ]
+}

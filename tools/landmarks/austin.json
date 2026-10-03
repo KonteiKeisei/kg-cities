@@ -1,0 +1,103 @@
+{
+  "about": "Austin's preconfigured landmarks, written as of 1986.",
+  "landmarks": [
+    {
+      "name": "Texas State Capitol",
+      "find": "Texas State Capitol",
+      "text": "The pink granite capitol of 1888, taller than the one in Washington, as every Texan will tell you. A new aluminium cast of the Goddess of Liberty was lifted onto its dome this June."
+    },
+    {
+      "name": "UT Tower",
+      "text": "The 307-foot tower over the University of Texas, lit orange when the Longhorns win. A sniper shot 46 people from its observation deck in 1966; the deck has been closed since 1975.",
+      "at": [
+        30.2861,
+        -97.7394
+      ],
+      "height": 94
+    },
+    {
+      "name": "Congress Avenue Bridge",
+      "find": "Ann W. Richards Congress Avenue Bridge",
+      "pin": true,
+      "text": "The bridge over Town Lake whose rebuilt crevices have drawn more than a million Mexican free-tailed bats. The city is trying to get rid of them; they pour out at dusk."
+    },
+    {
+      "name": "Sixth Street",
+      "find": "East 6th Street, Austin",
+      "pin": true,
+      "text": "Old Pecan Street's Victorian storefronts, packed with live music bars and blues clubs. Thursday to Saturday nights it is closed to cars and full of students."
+    },
+    {
+      "name": "Barton Springs Pool",
+      "find": "Barton Springs Pool",
+      "pin": true,
+      "text": "A spring-fed pool in Zilker Park, 68 degrees all year and swum in since long before the city. Topless sunbathing is a local custom and a local argument."
+    },
+    {
+      "name": "Zilker Park",
+      "find": "Zilker Park",
+      "pin": true,
+      "text": "The city's big park along Barton Creek, with the Zilker moonlight tower that becomes a Christmas tree of lights every December. Kite festivals and frisbee all year."
+    },
+    {
+      "name": "Driskill Hotel",
+      "find": "The Driskill",
+      "text": "The 1886 Romanesque cattle-baron hotel on Sixth Street, where LBJ waited for his election results. Its mezzanine bar is thick with lobbyists when the legislature sits."
+    },
+    {
+      "name": "Threadgill's",
+      "find": "Threadgill's, North Lamar",
+      "pin": true,
+      "text": "The old gas station on North Lamar where Kenneth Threadgill's Wednesday hootenannies launched Janis Joplin. Chicken-fried steak and vegetables by the plate now."
+    },
+    {
+      "name": "Austin City Limits Studio",
+      "pin": true,
+      "text": "Studio 6A on the UT campus, where KLRU tapes Austin City Limits in front of a painted skyline backdrop. Stevie Ray Vaughan and Willie Nelson are regulars.",
+      "at": [
+        30.2891,
+        -97.7409
+      ]
+    },
+    {
+      "name": "LBJ Library",
+      "find": "Lyndon Baines Johnson Library and Museum",
+      "text": "The windowless travertine monument to Lyndon Johnson on the UT campus, with a replica of his Oval Office. Lady Bird keeps an office upstairs."
+    },
+    {
+      "name": "Mount Bonnell",
+      "find": "Mount Bonnell",
+      "pin": true,
+      "text": "The limestone lookout above Lake Austin, 102 steps up to the best sunset in town. A favourite of couples and legends."
+    },
+    {
+      "name": "Treaty Oak",
+      "find": "Treaty Oak, Austin",
+      "pin": true,
+      "text": "The 500-year-old live oak where Stephen F. Austin is said to have signed a treaty with the Comanche and Tonkawa. The last of a grove called the Council Oaks."
+    },
+    {
+      "name": "Robert Mueller Municipal Airport",
+      "at": [
+        30.2992,
+        -97.7045
+      ],
+      "pin": true,
+      "until": 1999,
+      "text": "Austin's small airport, with jets landing low over East Austin's houses. A fight over building a bigger one somewhere else goes on."
+    },
+    {
+      "name": "Frank Erwin Center",
+      "find": "Frank Erwin Center",
+      "pin": true,
+      "until": 2023,
+      "text": "UT's round arena by I-35, called 'the Drum', where the Longhorns play basketball and the big tours stop. Graduation fills it every May."
+    },
+    {
+      "name": "Texas Memorial Stadium",
+      "find": "Darrell K Royal-Texas Memorial Stadium",
+      "pin": true,
+      "text": "The Longhorns' football stadium on campus, where 80,000 burnt-orange fans fill the stands. Saturday afternoons in the fall stop the whole city."
+    }
+  ]
+}

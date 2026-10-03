@@ -32,7 +32,9 @@ export const PALETTES = {
     runway: "#3d6a7c", rail: "#2c5a71", boundary: "#2c5a71",
     label: "#e6eef2", roadLabel: "#a9c3cf", civicLabel: "#a9c3cf", minorLabel: "#7f9cab", waterLabel: "#7d93b8", halo: "#101523",
     transit: "#ffd166",
-    wallDark: "#0b1220", wallLit: "#1f3350", roofLow: "#22344f", roofMid: "#2c4a6b", roofHigh: "#3a6788"
+    // Taller roofs lighter (a tower's roof was lost against the streets), still deep blue.
+    wallDark: "#0b1220", wallLit: "#1f3350", roofLow: "#22344f", roofMid: "#30577c", roofHigh: "#4a7fa6",
+    shadow: "#03060c", shadowOpacity: 0.55
   },
   day: {
     ...SHARED,
@@ -48,7 +50,9 @@ export const PALETTES = {
     runway: "#5d6984", rail: "#6f7a92", boundary: "#6f7a92",
     label: "#f2f5f8", roadLabel: "#18202f", roadHalo: "#d6dce4", civicLabel: "#dfe5ec", minorLabel: "#b9c3cf", waterLabel: "#9fbbe3", halo: "#2f394d",
     transit: "#f2d27a",
-    wallDark: "#272f41", wallLit: "#55617d", roofLow: "#56637f", roofMid: "#5d6a86", roofHigh: "#65728e"
+    // Taller roofs lighter, so towers stand out from the blocks around them; walls a step darker.
+    wallDark: "#222a3b", wallLit: "#55617d", roofLow: "#56637f", roofMid: "#66738f", roofHigh: "#8693ad",
+    shadow: "#141a28", shadowOpacity: 0.42
   }
 };
 
@@ -71,6 +75,13 @@ const SLICES = [3, 6, 9, 12, 15, 18, 21];
 export const SLICE_COUNT = SLICES.length;
 /** Height used where the map gives none. */
 export const DEFAULT_HEIGHT = 9;
+/**
+ * The view's tilt from straight down, in degrees (the GM's chosen standard: 17). A building's roof
+ * is drawn north of its footprint by its height times tan(tilt), its "lean".
+ */
+export const DEFAULT_TILT = 17;
+export const leanFor = (tiltDegrees) => Math.tan((Math.max(0, Math.min(60, Number(tiltDegrees) || 0)) * Math.PI) / 180);
+export const DEFAULT_LEAN = leanFor(DEFAULT_TILT);
 
 /* ---------------------------------------- */
 /*  Expressions                              */
@@ -111,12 +122,20 @@ export function twinkle(t, g) {
 /*  Layer groups                             */
 /* ---------------------------------------- */
 
-function leanLayers(P, lean, buildingFilter) {
+function shadowLayer(id, filter, P) {
+  return {
+    id, type: "fill", source: "shadows", minzoom: 14, filter,
+    paint: { "fill-color": P.shadow, "fill-antialias": false, "fill-opacity": ["interpolate", ["linear"], ["zoom"], 14, 0, 14.6, P.shadowOpacity] }
+  };
+}
+
+/** between: layers drawn over the low buildings and under the tall ones. */
+function leanLayers(P, lean, buildingFilter, between = []) {
   const slices = lean > 0 ? SLICES.map((h, i) => {
     const next = SLICES[i + 1] ?? TALL;
     return {
       id: `lean-slice-${i}`, type: "fill", source: "osm", "source-layer": "building", minzoom: 14,
-      filter: ["all", buildingFilter, [">=", HEIGHT, h], ["<", HEIGHT, TALL]],
+      filter: ["all", buildingFilter, ["!", ["to-boolean", ["coalesce", ["get", "hide_3d"], false]]], [">=", HEIGHT, h], ["<", HEIGHT, TALL]],
       paint: {
         // A building's highest slice is its roof.
         "fill-color": ["case", ["<", HEIGHT, next], P.roofLow, P.wallDark],
@@ -138,16 +157,21 @@ function leanLayers(P, lean, buildingFilter) {
   const isGold = ["to-boolean", ["get", "gold"]];
   return [
     ...slices,
+    ...between,
     {
       // Tall buildings, landmarks and the buildings beside them: real walls and roofs in one
-      // back-to-front order (scripts/lean.mjs). Towers are see-through so the street shows.
+      // back-to-front order (scripts/lean.mjs). See-through, so the buildings and streets behind
+      // and below show as soft shapes, the taller the more; and without outlines: MapLibre draws a
+      // fill layer's outlines in a pass after all its fills, ignoring the sort key, so every
+      // building's edges showed through the ones in front (the "wireframe"). Faces are told apart
+      // by their shading. Landmarks are near-solid.
       id: "lean", type: "fill", source: "lean", minzoom: 14,
       layout: { "fill-sort-key": ["get", "key"] },
       paint: {
         "fill-color": ["case", isGold, gold, plain],
-        "fill-outline-color": ["case", isGold, edge, plain],
-        "fill-opacity": ["case", isGold, 0.97, ["to-boolean", ["get", "near"]], 0.58,
-          ["interpolate", ["linear"], ["get", "h"], 12, 0.9, 40, 0.62, 120, 0.5]]
+        "fill-outline-color": "rgba(0, 0, 0, 0)",
+        // One level for every tower: a skyscraper fading more than its neighbours lost its shape.
+        "fill-opacity": ["case", isGold, 0.97, ["to-boolean", ["get", "near"]], 0.58, 0.84]
       }
     },
     {
@@ -243,6 +267,23 @@ function nightLayers(zoomAt) {
   ];
 }
 
+/**
+ * era.clearedStreets for cleared sites: streets wholly inside a site, the outline pushed out by
+ * metres so a street along its edge, or across it between two sites, counts too.
+ */
+export function clearedStreetsFilter(rings, metres = 80) {
+  if (!rings.length) return undefined;
+  const widened = rings.map((ring) => {
+    const cx = ring.reduce((s, p) => s + p[0], 0) / ring.length, cy = ring.reduce((s, p) => s + p[1], 0) / ring.length;
+    const k = Math.cos((cy * Math.PI) / 180) * 111320;
+    return [ring.map(([x, y]) => {
+      const dx = (x - cx) * k, dy = (y - cy) * 111320, d = Math.hypot(dx, dy) || 1;
+      return [x + (dx / d) * metres / k, y + (dy / d) * metres / 111320];
+    })];
+  });
+  return ["within", { type: "MultiPolygon", coordinates: widened }];
+}
+
 /* ---------------------------------------- */
 /*  The style                                */
 /* ---------------------------------------- */
@@ -254,11 +295,24 @@ function nightLayers(zoomAt) {
  * gone since, transit: GeoJSON of the period's rail lines }. night: { image, bounds, lights }.
  * cityNames: the city's own names, left unlabelled on its scene (everyone knows where they are).
  */
-export function buildStyle({ tiles, glyphs, look = "night", lean = 0.5, zoomAt, era = {}, night = null, attribution = "", cityNames = [], palette = null }) {
+export function buildStyle({ tiles, glyphs, look = "night", lean = DEFAULT_LEAN, zoomAt, era = {}, night = null, attribution = "", cityNames = [], palette = null }) {
   // palette: colours to use over the look's own (day theme candidates, GM customisation).
   const P = { ...(PALETTES[look] ?? PALETTES.night), ...(palette ?? {}) };
   const labelZoom = zoomAt(LABELS_SCALE);
   const labelsFrom = (z) => Math.max(z, labelZoom);
+  // Street and bridge names as the era knew them: era.roadNames { today's name: the period's }.
+  const renames = Object.entries(era.roadNames ?? {});
+  const roadName = renames.length ? ["match", NAME, ...renames.flat(), NAME] : NAME;
+  // A bridge deck ("George Washington Bridge Upper Level") is labelled as its bridge.
+  const deckAt = (deck) => ["index-of", deck, roadName];
+  const bridgeName = ["case",
+    [">=", deckAt(" Upper Level"), 0], ["slice", roadName, 0, deckAt(" Upper Level")],
+    [">=", deckAt(" Lower Level"), 0], ["slice", roadName, 0, deckAt(" Lower Level")],
+    roadName];
+  const NAMED = ["get", "name"];
+  const isBridge = ["all", ["has", "name"], ["any",
+    ["==", ["slice", NAMED, ["max", 0, ["-", ["length", NAMED], 6]]], "Bridge"],
+    [">=", ["index-of", "Bridge Upper Level", NAMED], 0], [">=", ["index-of", "Bridge Lower Level", NAMED], 0]]];
   const isBuilding = ["!", ["in", ["id"], ["literal", era.hiddenBuildings ?? []]]];
   const roadFilter = (...classes) => (era.hiddenRoads ? ["all", cls(...classes), ["!", era.hiddenRoads]] : cls(...classes));
   const empty = { type: "FeatureCollection", features: [] };
@@ -283,8 +337,16 @@ export function buildStyle({ tiles, glyphs, look = "night", lean = 0.5, zoomAt, 
       osm: { type: "vector", tiles: [tiles], minzoom: 0, maxzoom: 14, attribution },
       places: { type: "geojson", data: empty },
       lean: { type: "geojson", data: empty, maxzoom: 18, tolerance: 0.2 },
+      shadows: { type: "geojson", data: empty, maxzoom: 17, tolerance: 0.4 },
       transit: { type: "geojson", data: era.transit ?? empty },
       "period-roads": { type: "geojson", data: era.extraRoads ?? empty },
+      // Ground as it was: today's parks and plazas on land the period used otherwise (the
+      // Greenway where the elevated Central Artery stood) are covered over with plain ground.
+      "period-ground": { type: "geojson", data: era.ground ?? empty },
+      // Sites rebuilt since the era (a Strip resort on an older casino's ground), as bare ground
+      // over everything of today's on them. The map data's buildings cannot all be hidden by id:
+      // one id can hold several buildings far apart.
+      "cleared-ground": { type: "geojson", data: era.clearedGround ?? empty },
       landmarks: { type: "geojson", data: empty, maxzoom: 20, tolerance: 0.1 },
       flash: { type: "geojson", data: empty },
       ...(night ? {
@@ -316,6 +378,7 @@ export function buildStyle({ tiles, glyphs, look = "night", lean = 0.5, zoomAt, 
         layout: { "line-join": "round" },
         paint: { "line-color": P.shoreline, "line-opacity": P.shorelineOpacity, "line-width": ["interpolate", ["linear"], ["zoom"], 10, 0.6, 14, 1.2, 18, 2.2] }
       },
+      { id: "period-ground", type: "fill", source: "period-ground", paint: { "fill-color": P.land } },
       { id: "piers", type: "fill", source: "osm", "source-layer": "transportation", filter: ["all", ["==", ["geometry-type"], "Polygon"], cls("pier")], paint: { "fill-color": P.land } },
       { id: "pier-lines", type: "line", source: "osm", "source-layer": "transportation", filter: ["all", ["==", ["geometry-type"], "LineString"], cls("pier")], layout: { "line-cap": "butt" }, paint: { "line-color": P.land, "line-width": metres(8) } },
       { id: "waterways", type: "line", source: "osm", "source-layer": "waterway", filter: cls("river", "canal", "stream"), paint: { "line-color": P.water, "line-width": exp([[10, 0.5], [14, 2], [18, 8]]) } },
@@ -342,9 +405,28 @@ export function buildStyle({ tiles, glyphs, look = "night", lean = 0.5, zoomAt, 
       roadLine("major-roads", ["primary", "secondary", "tertiary"], P.major, MAJOR),
       roadLine("highways", ["motorway", "trunk"], P.highway, HIGHWAY),
       // Roads of the period that are gone now (an elevated highway since torn down).
+      // An elevated highway reads as raised: a dark edge wider than its deck, then the deck.
+      { id: "period-roads-edge", type: "line", source: "period-roads", layout: { "line-cap": "butt", "line-join": "round" }, paint: { "line-color": P.wallDark, "line-opacity": 0.85, "line-width": ["interpolate", ["exponential", 2], ["zoom"], 12, 3, 16, 22, 20, 340] } },
       { id: "period-roads", type: "line", source: "period-roads", layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": P.highway, "line-width": exp(HIGHWAY) } },
-      ...landmarkGroundLayers(P),
-      ...leanLayers(P, lean, isBuilding),
+      // Tall buildings' shadows on the ground and streets, under every building: what sets a
+      // tower apart from the ones behind it.
+      ...(lean > 0 ? [shadowLayer("shadows", ["!", ["get", "over"]], P)] : []),
+      ...leanLayers(P, lean, isBuilding, [
+        // Between the low buildings and the tall: sites rebuilt since the era, bare (their low
+        // buildings are drawn by height slices, which cannot be hidden by place), then the ground
+        // and shadows of what stood on them (the World Trade Center).
+        { id: "cleared-ground", type: "fill", source: "cleared-ground", paint: { "fill-color": P.land, "fill-antialias": false } },
+        // The public streets across them again (Sands Avenue), not the resorts' own drives.
+        ...(era.clearedStreets ? (() => {
+          const kinds = [["minor", ["minor"], P.road, MINOR], ["major", ["primary", "secondary", "tertiary"], P.major, MAJOR], ["highways", ["motorway", "trunk"], P.highway, HIGHWAY]];
+          return [
+            ...kinds.map(([id, classes, , widths]) => roadLine(`cleared-${id}-casing`, classes, P.casing, casing(widths), { "line-opacity": P.casingOpacity })),
+            ...kinds.map(([id, classes, color, widths]) => roadLine(`cleared-${id}`, classes, color, widths))
+          ].map((l) => ({ ...l, filter: ["all", l.filter, era.clearedStreets] }));
+        })() : []),
+        ...landmarkGroundLayers(P),
+        ...(lean > 0 ? [shadowLayer("shadows-over", ["get", "over"], P)] : [])
+      ]),
       ...landmarkPinLayers(P),
       ...flashLayers(P),
       // The period's rapid transit, each line in its own colour, dashed underground.
@@ -370,16 +452,32 @@ export function buildStyle({ tiles, glyphs, look = "night", lean = 0.5, zoomAt, 
       },
       {
         id: "water-labels", type: "symbol", source: "osm", "source-layer": "water_name", minzoom: labelsFrom(10),
+        // Names on sites an era clears (the memorial pools at the World Trade Center).
+        ...(era.hiddenLabels ? { filter: ["!", era.hiddenLabels] } : {}),
         layout: { "text-field": NAME, "text-font": ITALIC, "text-size": 12, "text-max-width": 8 },
         paint: { "text-opacity": fadeIn(labelsFrom(10)), "text-color": P.waterLabel, "text-halo-color": P.halo, "text-halo-width": 1 }
       },
       {
         id: "road-labels", type: "symbol", source: "osm", "source-layer": "transportation_name", minzoom: labelsFrom(13),
         // Day: highways are drawn but not named (the reference style turns their labels off).
-        filter: ["all", roadFilter(...(look === "day" ? [] : ["motorway", "trunk"]), "primary", "secondary", "tertiary", "minor"), ["has", "name"]],
-        layout: { "symbol-placement": "line", "text-field": NAME, "text-font": MEDIUM, "text-size": ["interpolate", ["linear"], ["zoom"], 13, 10, 17, 13, 20, 16], "text-max-angle": 30 },
+        filter: ["all", roadFilter(...(look === "day" ? [] : ["motorway", "trunk"]), "primary", "secondary", "tertiary", "minor"), ["has", "name"], ["!", isBridge]],
+        layout: { "symbol-placement": "line", "text-field": roadName, "text-font": MEDIUM, "text-size": ["interpolate", ["linear"], ["zoom"], 13, 10, 17, 13, 20, 16], "text-max-angle": 30 },
         // Street names can sit on light streets over dark ground: their own outline colour when set.
         paint: { "text-opacity": fadeIn(labelsFrom(13)), "text-color": P.roadLabel, "text-halo-color": P.roadHalo ?? P.halo, "text-halo-width": 1.4 }
+      },
+      {
+        // Bridges by name, every class including highways (the George Washington Bridge is
+        // I-95, and highways are otherwise unnamed at night). The name layer does not mark
+        // bridges, so: a road named "... Bridge", or a deck ("... Bridge Upper Level") shown as
+        // the bridge. Footpaths and service roads ("... Bridge Path") are left out.
+        id: "bridge-labels", type: "symbol", source: "osm", "source-layer": "transportation_name", minzoom: 11.5,
+        filter: ["all", isBridge, ["!", ["in", ["get", "class"], ["literal", ["path", "track", "service"]]]],
+          ...(era.hiddenRoads ? [["!", era.hiddenRoads]] : [])],
+        layout: {
+          "symbol-placement": "line", "symbol-spacing": 600, "text-field": bridgeName, "text-font": MEDIUM,
+          "text-size": ["interpolate", ["linear"], ["zoom"], 12, 11, 16, 14, 20, 17], "text-max-angle": 25, "text-letter-spacing": 0.04
+        },
+        paint: { "text-opacity": ["interpolate", ["linear"], ["zoom"], 11.5, 0, 12.2, 1], "text-color": P.label, "text-halo-color": P.halo, "text-halo-width": 1.6 }
       },
       // Place names come from the city's place list (scripts/places.mjs), not the tiles, so an era
       // and the GM can correct them. Hidden ones show only while the GM edits.

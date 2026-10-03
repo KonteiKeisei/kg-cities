@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>KG Cities Tilt Compare</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; font: 13px sans-serif; color: #fff; }
+  #grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 3px; height: 100%; }
+  .cell { position: relative; }
+  .cell > div { position: absolute; inset: 0; }
+  .tag { position: absolute; top: 8px; left: 8px; z-index: 2; background: #000b; padding: 4px 8px; border-radius: 4px; font-weight: 600; }
+</style>
+</head>
+<body>
+<div id="grid"></div>
+<script type="module">
+  // The same view at four building tilts, kept in step: drag or zoom any of them.
+  // ?city=new-york|boston ?look=night|day ?lon ?lat ?z ?tilts=10,15,20,27
+  import * as maplibregl from "../lib/maplibre/maplibre-gl.mjs";
+  import { buildStyle } from "../scripts/style.mjs";
+  import { tallBuildings, buildingsInAreas } from "../scripts/derive.mjs";
+  import { leanFeatures, shadowFeatures } from "../scripts/lean.mjs";
+  import { landmarkBuildingIds, landmarkFeatures, landmarkItems, landmarkNeighbours } from "../scripts/landmarks.mjs";
+  import { boxAround } from "../scripts/geo.mjs";
+  const q = new URLSearchParams(location.search);
+  const cities = await (await fetch("../data/cities/index.json")).json();
+  const city = cities.find((c) => c.id === (q.get("city") ?? "new-york"));
+  const pack = city.pack ? await (await fetch(`../data/cities/${city.id}.json`)).json() : { landmarks: [], eras: {} };
+  const year = 1986, era = pack.eras?.["1980s"]?.map ?? {};
+  const centre = [Number(q.get("lon") ?? city.center[0]), Number(q.get("lat") ?? city.center[1])];
+  const box = boxAround(centre, [1.4, 1.4]);
+  const template = (await (await fetch("https://tiles.openfreemap.org/planet")).json()).tiles[0];
+  const getTile = async (z, x, y) => { const r = await fetch(template.replace("{z}", z).replace("{x}", x).replace("{y}", y)); return r.ok ? new Uint8Array(await r.arrayBuffer()) : null; };
+  const inYear = (x) => (x.from == null || year >= x.from) && (x.until == null || year < x.until);
+  const landmarks = (pack.landmarks ?? []).filter(inYear);
+  const tall = await tallBuildings(getTile, box);
+  const footprints = landmarks.filter((lm) => lm.buildings?.length).flatMap((lm) => [...lm.buildings, ...(lm.neighbours ?? [])].map((b) => b.rings[0]));
+  const cleared = await buildingsInAreas(getTile, [...(era.hiddenAreas ?? []).filter(inYear).map((a) => a.ring), ...footprints]);
+  const hidden = new Set([...cleared, ...landmarkBuildingIds(landmarks)]);
+  const periodBuildings = (era.extraBuildings ?? []).filter(inYear).map(({ from, until, name, ...b }) => b);
+  const drawn = [...tall.filter((b) => !hidden.has(b.id)), ...periodBuildings, ...landmarkNeighbours(landmarks)];
+  const shadows = shadowFeatures([...drawn, ...landmarks.flatMap((lm) => lm.buildings ?? [])]);
+  const base = new URL("..", location.href).href;
+  const k = 1 / (2.5 * 0.3048) * 40075016 * Math.cos((city.center[1] * Math.PI) / 180);
+  const zoomAt = (s) => Math.log2((s * k) / 512);
+  const tilts = (q.get("tilts") ?? "10,15,20,27").split(",").map(Number);
+  const maps = [];
+  for (const deg of tilts) {
+    const lean = Math.tan((deg * Math.PI) / 180);
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    cell.innerHTML = `<div></div><span class="tag">${deg}° tilt (lean ${lean.toFixed(2)})${deg === 27 ? ", today" : ""}</span>`;
+    document.getElementById("grid").append(cell);
+    const style = buildStyle({ tiles: template, glyphs: `${base}data/fonts/{fontstack}/{range}.pbf`, look: q.get("look") ?? "night", lean, zoomAt,
+      era: { ...era, hiddenBuildings: [...hidden] }, attribution: "© OpenFreeMap © OpenStreetMap" });
+    style.sources.osm.maxzoom = 14;
+    style.sources.lean.data = leanFeatures(drawn, { lean, extra: landmarkItems(landmarks, { lean }) });
+    style.sources.landmarks.data = landmarkFeatures(landmarks, { lean });
+    style.sources.shadows.data = shadows;
+    const map = new maplibregl.Map({ container: cell.firstElementChild, style, center: centre, zoom: Number(q.get("z") ?? 15.8), attributionControl: false });
+    maps.push(map);
+  }
+  // Keep the four views together.
+  let syncing = false;
+  for (const m of maps) m.on("move", () => {
+    if (syncing) return;
+    syncing = true;
+    for (const o of maps) if (o !== m) o.jumpTo({ center: m.getCenter(), zoom: m.getZoom() });
+    syncing = false;
+  });
+  window.maps = maps;
+</script>
+</body>
+</html>

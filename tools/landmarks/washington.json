@@ -1,0 +1,212 @@
+{
+  "about": "Washington's preconfigured landmarks, written as of 1986.",
+  "landmarks": [
+    {
+      "name": "The White House",
+      "find": "White House, 1600 Pennsylvania Avenue",
+      "text": "The President's house on Pennsylvania Avenue, where Ronald Reagan's second term is weathering the first leaks of the Iran affair. Pennsylvania Avenue still runs open to traffic out front."
+    },
+    {
+      "name": "United States Capitol",
+      "find": "United States Capitol",
+      "text": "The domed seat of Congress on Capitol Hill, with the Senate wing to the north and the House to the south. Tourists can wander the halls and watch from the galleries."
+    },
+    {
+      "name": "Washington Monument",
+      "find": "Washington Monument",
+      "text": "The 555-foot marble obelisk at the heart of the Mall, the colour changing a third of the way up where building stopped for the Civil War. An elevator runs to the top."
+    },
+    {
+      "name": "Lincoln Memorial",
+      "find": "Lincoln Memorial",
+      "text": "Daniel Chester French's seated Lincoln in his Doric temple at the west end of the Reflecting Pool. Martin Luther King Jr. gave the 'I Have a Dream' speech from its steps."
+    },
+    {
+      "name": "Jefferson Memorial",
+      "find": "Thomas Jefferson Memorial",
+      "text": "The round, domed memorial on the Tidal Basin, framed by the cherry blossoms every April. A bronze Jefferson stands among his words on the walls."
+    },
+    {
+      "name": "Vietnam Veterans Memorial",
+      "find": "Vietnam Veterans Memorial",
+      "pin": true,
+      "text": "Maya Lin's black granite wall in Constitution Gardens, carved with 58,000 names. Visitors leave letters, medals and rubbings of the names every day."
+    },
+    {
+      "name": "Smithsonian Castle",
+      "find": "Smithsonian Institution Building",
+      "text": "The red sandstone castle of 1855 on the Mall, the Smithsonian's first building and still its headquarters. James Smithson lies in a crypt inside the door."
+    },
+    {
+      "name": "National Air and Space Museum",
+      "find": "National Air and Space Museum",
+      "from": 1976,
+      "text": "The most visited museum in the world, with the Wright Flyer, the Spirit of St. Louis and the Apollo 11 command module. The IMAX film To Fly plays every hour."
+    },
+    {
+      "name": "National Museum of Natural History",
+      "find": "National Museum of Natural History",
+      "text": "The domed museum on the Mall with an African bull elephant in its rotunda and the Hope Diamond upstairs. The insect zoo is a school-trip favourite."
+    },
+    {
+      "name": "National Gallery of Art",
+      "text": "The marble West Building of Old Masters and I. M. Pei's knife-edged East Building of modern art, joined underground. The only Leonardo in the Americas hangs here.",
+      "at": [
+        38.8913,
+        -77.0199
+      ],
+      "height": 30
+    },
+    {
+      "name": "Library of Congress",
+      "find": "Thomas Jefferson Building",
+      "text": "The richly decorated Jefferson Building behind the Capitol, its domed Main Reading Room ringed with statues. The largest library in the world."
+    },
+    {
+      "name": "Supreme Court",
+      "find": "Supreme Court of the United States",
+      "text": "The marble temple of the Supreme Court across from the Capitol, 'Equal Justice Under Law' over its door. Chief Justice Burger retires this summer and Rehnquist takes his place."
+    },
+    {
+      "name": "Union Station",
+      "find": "Washington Union Station",
+      "text": "Daniel Burnham's vast Beaux-Arts station, closed and leaking after a failed visitors' centre, now under restoration. Trains run from a cramped temporary station behind it."
+    },
+    {
+      "name": "Kennedy Center",
+      "find": "John F. Kennedy Center for the Performing Arts",
+      "text": "The marble performing arts centre on the Potomac, with its long Grand Foyer of red carpet and chandeliers. The Kennedy Center Honors are televised from here every December."
+    },
+    {
+      "name": "Watergate Complex",
+      "find": "Watergate complex",
+      "text": "The curving riverfront apartments, hotel and offices where the 1972 break-in at the Democratic National Committee brought down Nixon. Its name has become a suffix for every scandal since."
+    },
+    {
+      "name": "The Pentagon",
+      "find": "The Pentagon",
+      "pin": true,
+      "text": "The five-sided headquarters of the Department of Defense across the river in Arlington, the largest office building in the world. Twenty-three thousand people work inside."
+    },
+    {
+      "name": "Arlington National Cemetery",
+      "find": "Arlington National Cemetery",
+      "pin": true,
+      "text": "Rows of white headstones on the hills above the Potomac, around Arlington House, Robert E. Lee's old home. The eternal flame burns at John F. Kennedy's grave."
+    },
+    {
+      "name": "Iwo Jima Memorial",
+      "find": "Marine Corps War Memorial",
+      "pin": true,
+      "text": "The bronze Marines raising the flag on Mount Suribachi, at the edge of Arlington. Sunset parades are held here on summer Tuesdays."
+    },
+    {
+      "name": "Georgetown",
+      "find": "Georgetown, Washington",
+      "pin": true,
+      "text": "The old port town of cobbled streets, rowhouses and the C&O Canal, with M Street's bars and Wisconsin Avenue's shops. The Exorcist steps lead down to the river."
+    },
+    {
+      "name": "Ford's Theatre",
+      "find": "Ford's Theatre",
+      "text": "The theatre where Lincoln was shot in 1865, restored and playing again, with the presidential box draped in flags. He died across the street in the Petersen House."
+    },
+    {
+      "name": "FBI Headquarters",
+      "find": "J. Edgar Hoover Building",
+      "text": "The brutal concrete J. Edgar Hoover Building on Pennsylvania Avenue. The public tour ends at an indoor firing range demonstration."
+    },
+    {
+      "name": "Old Post Office Pavilion",
+      "find": "Old Post Office, Washington DC",
+      "text": "The Romanesque post office with its clock tower on Pennsylvania Avenue, saved and reopened in 1983 with a food court in its atrium. The tower has the second best view in town."
+    },
+    {
+      "name": "The Willard Hotel",
+      "find": "Willard InterContinental Washington",
+      "text": "The grand hotel beside the White House where the word 'lobbyist' was supposedly born, reopening this year after nearly two decades shut. Presidents-elect have stayed here since Lincoln."
+    },
+    {
+      "name": "Washington National Cathedral",
+      "find": "Washington National Cathedral",
+      "text": "The Gothic cathedral on Mount St. Alban, still being built eighty years after its foundation stone. A Darth Vader gargoyle has just been carved for its northwest tower."
+    },
+    {
+      "name": "Dupont Circle",
+      "find": "Dupont Circle",
+      "pin": true,
+      "text": "The fountain circle at the centre of the gay neighbourhood and the start of Embassy Row along Massachusetts Avenue. Chess players and bike messengers gather in the park."
+    },
+    {
+      "name": "National Zoo",
+      "pin": true,
+      "text": "The Smithsonian's free zoo in Rock Creek Park, famous for the giant pandas Ling-Ling and Hsing-Hsing, a gift from China in 1972. The pandas' attempts at a cub make the evening news.",
+      "at": [
+        38.9296,
+        -77.0498
+      ]
+    },
+    {
+      "name": "RFK Stadium",
+      "pin": true,
+      "until": 2019,
+      "text": "The Redskins' stadium by the Anacostia River, where the stands literally bounce when the crowd chants 'We want Dallas'. The Hogs and Joe Theismann's successors play here.",
+      "at": [
+        38.8898,
+        -76.9719
+      ]
+    },
+    {
+      "name": "Capital Centre",
+      "at": [
+        38.9036,
+        -76.8442
+      ],
+      "pin": true,
+      "from": 1973,
+      "until": 1999,
+      "text": "The Bullets' and Capitals' arena out in Landover, Maryland, with the first video scoreboard, the Telscreen. Every big concert tour stops here."
+    },
+    {
+      "name": "9:30 Club",
+      "find": "930 F Street NW, Washington",
+      "pin": true,
+      "from": 1980,
+      "until": 1996,
+      "text": "The tiny, sweaty club in an old building on F Street, the centre of DC's punk and go-go scenes. Minor Threat and Fugazi's crowd are regulars."
+    },
+    {
+      "name": "Ben's Chili Bowl",
+      "find": "Ben's Chili Bowl",
+      "text": "The U Street diner of half-smokes and chili since 1958, open through the 1968 riots when the street around it burned. A U Street institution."
+    },
+    {
+      "name": "Eastern Market",
+      "find": "Eastern Market, Washington",
+      "text": "The 1873 brick market hall on Capitol Hill, with butchers and bakers inside and a flea market outside on weekends. Blueberry pancakes at the Market Lunch counter."
+    },
+    {
+      "name": "Hirshhorn Museum",
+      "text": "The round concrete 'doughnut' of modern art on the Mall, with Rodin's Burghers of Calais in its sunken sculpture garden. Washington still argues over the building.",
+      "at": [
+        38.8881,
+        -77.023
+      ],
+      "height": 25
+    },
+    {
+      "name": "National Archives",
+      "text": "The temple where the Declaration of Independence, the Constitution and the Bill of Rights lie in helium-filled cases. At night they sink into a vault below the floor.",
+      "at": [
+        38.8928,
+        -77.023
+      ],
+      "height": 30
+    },
+    {
+      "name": "Old Executive Office Building",
+      "find": "Eisenhower Executive Office Building",
+      "text": "The ornate French Second Empire pile beside the White House, home to the National Security Council staff. Oliver North's office is on the third floor."
+    }
+  ]
+}

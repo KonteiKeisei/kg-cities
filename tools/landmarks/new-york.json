@@ -1,0 +1,405 @@
+{
+  "about": "New York's preconfigured landmarks, written as of 1986. The World Trade Center and the Empire State Building have hand-built models (tools/build-new-york-pack.mjs); run that first, then node tools/build-landmarks.mjs new-york.",
+  "landmarks": [
+    {
+      "name": "Rockefeller Center",
+      "area": [
+        [
+          40.758669,
+          -73.981218
+        ],
+        [
+          40.757379,
+          -73.978148
+        ],
+        [
+          40.759139,
+          -73.97686
+        ],
+        [
+          40.760428,
+          -73.97993
+        ]
+      ],
+      "text": "Fourteen Art Deco towers between Fifth and Sixth Avenues, crowned by the 70-storey RCA Building with NBC's studios inside and the Rainbow Room on top. Radio City Music Hall holds the 6th Avenue corner; in winter the skating rink below Prometheus fills and the Christmas tree goes up."
+    },
+    {
+      "name": "Chrysler Building",
+      "find": "Chrysler Building, Manhattan",
+      "from": 1930,
+      "text": "William Van Alen's 1930 tower of terraced steel arches, eagle gargoyles and a stainless-steel spire that briefly made it the tallest in the world. The lobby's marble and murals are open to anyone who walks in off Lexington Avenue."
+    },
+    {
+      "name": "Statue of Liberty",
+      "find": "Statue of Liberty",
+      "from": 1886,
+      "text": "Back from two years in scaffolding, the statue was relit on July 4th of this centennial year with a new gold-leafed torch. The ferry runs from Battery Park; the climb up the inside of the crown is 354 steps."
+    },
+    {
+      "name": "Ellis Island",
+      "find": "Ellis Island Immigration Museum",
+      "from": 1900,
+      "text": "The great immigration hall has stood empty since 1954, its tiled Registry Room crumbling while a restoration slowly gets under way. Twelve million people came through here; the island is fenced off to all but work crews."
+    },
+    {
+      "name": "Brooklyn Bridge",
+      "find": "Brooklyn Bridge",
+      "pin": true,
+      "from": 1883,
+      "text": "Roebling's granite towers and steel web have carried traffic across the East River since 1883. The wooden promenade above the cars is the city's favourite walk, especially at sunset toward the towers of Lower Manhattan."
+    },
+    {
+      "name": "Central Park",
+      "find": "Central Park, Manhattan",
+      "pin": true,
+      "text": "843 acres of Olmsted and Vaux's lawns, lakes and rambles from 59th to 110th Street, coming back from the neglect of the 1970s under the new Conservancy. Fine by day for skaters and softball; the Ramble after dark has a reputation no one argues with."
+    },
+    {
+      "name": "Times Square",
+      "find": "Times Square",
+      "pin": true,
+      "text": "Neon, Broadway marquees and the news zipper on One Times Square, wrapped around a 42nd Street of peep shows, grindhouse cinemas and three-card monte. Hustlers outnumber tourists after midnight; the cleanup is still only talk."
+    },
+    {
+      "name": "Grand Central Terminal",
+      "from": 1913,
+      "text": "The Beaux-Arts gateway to the commuter lines north, its main concourse ceiling painted with the constellations (backwards) and dimmed by decades of cigarette smoke. The Oyster Bar downstairs and the whispering gallery outside it are local secrets everyone knows.",
+      "at": [
+        40.75272,
+        -73.97724
+      ],
+      "find": "Grand Central Terminal, 89 East 42nd Street",
+      "height": 38
+    },
+    {
+      "name": "Madison Square Garden and Penn Station",
+      "find": "Madison Square Garden",
+      "from": 1968,
+      "text": "The round Garden sits on top of Pennsylvania Station, a low-ceilinged warren that replaced McKim's marble station in the 1960s. Knicks, Rangers, the circus and rock concerts upstairs; Amtrak and the Long Island Rail Road underneath."
+    },
+    {
+      "name": "Metropolitan Museum of Art",
+      "from": 1880,
+      "text": "Two million works behind the Fifth Avenue steps, from the Temple of Dendur in its glass wing to the Old Masters upstairs. Admission is pay-what-you-wish, and the steps out front are where half the Upper East Side meets.",
+      "at": [
+        40.77937,
+        -73.96339
+      ],
+      "find": "Metropolitan Museum of Art, 1000 Fifth Avenue",
+      "height": 30
+    },
+    {
+      "name": "Solomon R. Guggenheim Museum",
+      "from": 1959,
+      "text": "Frank Lloyd Wright's white spiral on Fifth Avenue, where the art hangs along one ramp winding down six storeys. The building is the exhibit as much as anything on its walls.",
+      "at": [
+        40.78298,
+        -73.95895
+      ],
+      "find": "Solomon R. Guggenheim Museum",
+      "height": 28
+    },
+    {
+      "name": "Museum of Modern Art",
+      "find": "Museum of Modern Art, Manhattan",
+      "from": 1939,
+      "text": "Picasso, Van Gogh's Starry Night and Monet's water lilies on West 53rd Street, newly doubled in size with a residential tower rising above it. The sculpture garden is the quietest square block in Midtown."
+    },
+    {
+      "name": "American Museum of Natural History",
+      "from": 1877,
+      "text": "Dinosaur halls, dioramas of stuffed African wildlife and a 94-foot blue whale hanging over the ocean hall, on Central Park West. The Hayden Planetarium next door runs laser shows to Pink Floyd on weekend nights.",
+      "at": [
+        40.78132,
+        -73.97399
+      ],
+      "find": "American Museum of Natural History",
+      "height": 32
+    },
+    {
+      "name": "New York Public Library",
+      "from": 1911,
+      "text": "The marble main branch on Fifth Avenue at 42nd, guarded by the lions Patience and Fortitude. Its Rose Main Reading Room is a block long; behind it, Bryant Park is a drug market the city keeps promising to retake.",
+      "at": [
+        40.75318,
+        -73.98225
+      ],
+      "find": "Stephen A. Schwarzman Building",
+      "height": 30
+    },
+    {
+      "name": "United Nations Headquarters",
+      "find": "United Nations Headquarters",
+      "from": 1952,
+      "text": "The glass slab of the Secretariat on the East River, international territory with its own guards, post office and stamps. Diplomatic plates crowd the streets of Turtle Bay and park wherever they please."
+    },
+    {
+      "name": "St. Patrick's Cathedral",
+      "find": "St. Patrick's Cathedral, Manhattan",
+      "from": 1879,
+      "text": "The Gothic Revival seat of the Archbishop of New York, its twin spires dwarfed by Rockefeller Center across Fifth Avenue. Midnight Mass and the St. Patrick's Day parade both pass through its doors."
+    },
+    {
+      "name": "Flatiron Building",
+      "find": "Flatiron Building",
+      "from": 1902,
+      "text": "The narrow limestone wedge where Broadway crosses Fifth Avenue at 23rd Street, one of the city's first skyscrapers. The district around it is turning from toy wholesalers to photographers' lofts and ad agencies."
+    },
+    {
+      "name": "Woolworth Building",
+      "find": "Woolworth Building",
+      "from": 1913,
+      "text": "The 'Cathedral of Commerce' on Broadway, a Gothic tower of terracotta that was the world's tallest until 1930. The vaulted lobby has carved caricatures of Frank Woolworth counting his nickels."
+    },
+    {
+      "name": "Carnegie Hall",
+      "from": 1891,
+      "text": "The great concert hall at Seventh Avenue and 57th, saved from demolition in 1960 and closed this year for a top-to-bottom restoration. Tchaikovsky conducted on its opening night.",
+      "at": [
+        40.76509,
+        -73.97994
+      ],
+      "find": "Carnegie Hall",
+      "height": 46
+    },
+    {
+      "name": "Lincoln Center",
+      "find": "Lincoln Center for the Performing Arts",
+      "from": 1962,
+      "text": "The Metropolitan Opera, the New York Philharmonic and the City Ballet around one travertine plaza and fountain on the Upper West Side. Juilliard students busk on the steps between performances."
+    },
+    {
+      "name": "Apollo Theater",
+      "from": 1914,
+      "text": "Harlem's legendary stage on 125th Street, where Ella Fitzgerald and James Brown were made at Amateur Night. Bought out of bankruptcy and reopened after renovation, with Amateur Night back on Wednesdays.",
+      "at": [
+        40.81003,
+        -73.95002
+      ],
+      "find": "Apollo Theater, 253 West 125th Street",
+      "height": 20
+    },
+    {
+      "name": "Yankee Stadium",
+      "find": "Old Yankee Stadium site, Bronx",
+      "at": [
+        40.8274,
+        -73.9273
+      ],
+      "pin": true,
+      "from": 1923,
+      "until": 2009,
+      "text": "The House That Ruth Built, remodelled in the 1970s, on 161st Street in the Bronx. The 4 train rattles past the bleachers on its elevated track."
+    },
+    {
+      "name": "Shea Stadium",
+      "at": [
+        40.7561,
+        -73.8458
+      ],
+      "pin": true,
+      "from": 1964,
+      "until": 2009,
+      "text": "Home of the Mets in Flushing, under the flight path into LaGuardia, and this year the loudest ballpark in America. The Beatles played here in 1965; the 7 train stops at Willets Point."
+    },
+    {
+      "name": "Coney Island",
+      "find": "Coney Island Cyclone",
+      "pin": true,
+      "text": "The wooden Cyclone, the Wonder Wheel, Nathan's Famous and a boardwalk past its glory days at the end of the subway lines. Hot summer weekends still bring a million people to the beach."
+    },
+    {
+      "name": "CBGB",
+      "find": "315 Bowery, Manhattan",
+      "from": 1973,
+      "until": 2006,
+      "text": "The narrow, graffiti-plastered club under the Bowery's flophouses where the Ramones, Blondie and Talking Heads started out. Hardcore matinees on Sunday afternoons; the bathrooms are a legend of their own."
+    },
+    {
+      "name": "New York Stock Exchange",
+      "find": "New York Stock Exchange",
+      "from": 1903,
+      "text": "The temple-fronted trading floor at Broad and Wall Streets, roaring with a bull market and the new money of the decade. Traders in coloured jackets spill out for lunch on Wall Street at noon."
+    },
+    {
+      "name": "South Street Seaport",
+      "find": "South Street Seaport Museum",
+      "from": 1983,
+      "text": "Restored 19th-century counting houses, tall ships at the piers and a new market hall by the Fulton Fish Market, where the trucks unload before dawn. Wall Street crowds pack its bars after work."
+    },
+    {
+      "name": "Washington Square Park",
+      "find": "Washington Square Park",
+      "pin": true,
+      "text": "The arch, the fountain and the chess tables at the heart of Greenwich Village and NYU. Folk singers, skateboarders and dealers whispering 'smoke' share the benches."
+    },
+    {
+      "name": "Chelsea Hotel",
+      "from": 1884,
+      "text": "Red-brick bohemian landmark on West 23rd Street, home over the years to Dylan Thomas, Arthur C. Clarke and Sid Vicious. The lobby is hung with art paid in lieu of rent.",
+      "at": [
+        40.74445,
+        -73.99687
+      ],
+      "find": "Hotel Chelsea, 222 West 23rd Street",
+      "height": 40
+    },
+    {
+      "name": "The Dakota",
+      "from": 1884,
+      "text": "The gabled apartment house on Central Park West at 72nd Street, where John Lennon was shot in 1980. Fans still leave flowers at the gate, and across the street the park has made Strawberry Fields.",
+      "at": [
+        40.77636,
+        -73.97618
+      ],
+      "find": "The Dakota, 1 West 72nd Street",
+      "height": 40
+    },
+    {
+      "name": "The Plaza Hotel",
+      "find": "The Plaza Hotel",
+      "from": 1907,
+      "text": "The French Renaissance chateau at Grand Army Plaza where Fifth Avenue meets Central Park. The Oak Bar, the Palm Court and the carriages lined up outside are the picture of old New York money."
+    },
+    {
+      "name": "Waldorf-Astoria",
+      "find": "Waldorf Astoria New York",
+      "from": 1931,
+      "text": "The Art Deco hotel on Park Avenue where presidents stay and the Secretary-General of the UN lives. Its private railway siding under Grand Central is the stuff of rumour."
+    },
+    {
+      "name": "Trump Tower",
+      "find": "Trump Tower, Manhattan",
+      "from": 1983,
+      "text": "A 58-storey sawtooth of dark glass on Fifth Avenue with a six-floor atrium of pink marble and a waterfall. The developer's name is everywhere in the papers this year."
+    },
+    {
+      "name": "Citicorp Center",
+      "find": "601 Lexington Avenue",
+      "from": 1977,
+      "text": "The silver tower on Lexington with the 45-degree roof, standing on four stilts over St. Peter's Church. Its sloping crown was meant for solar panels that never came."
+    },
+    {
+      "name": "Pan Am Building",
+      "find": "MetLife Building",
+      "from": 1963,
+      "text": "The 59-storey slab astride Park Avenue behind Grand Central, with the airline's name across the top. Its rooftop helipad closed after the 1977 crash."
+    },
+    {
+      "name": "Prospect Park",
+      "find": "Prospect Park, Brooklyn",
+      "pin": true,
+      "text": "Olmsted and Vaux's other masterpiece, Brooklyn's Long Meadow, boathouse and lake behind Grand Army Plaza. Families picnic by day; the deeper woods are left alone at night."
+    },
+    {
+      "name": "Bronx Zoo",
+      "find": "Bronx Zoo",
+      "pin": true,
+      "text": "The country's largest city zoo, 265 acres of the Bronx with JungleWorld newly opened under glass. The Skyfari cable cars drift over the bison range."
+    },
+    {
+      "name": "Federal Hall",
+      "find": "Federal Hall National Memorial",
+      "from": 1842,
+      "text": "The Greek-temple customs house on Wall Street where George Washington, in bronze, stands on the spot of his first inauguration. A quiet museum among the bank towers."
+    },
+    {
+      "name": "Trinity Church",
+      "from": 1846,
+      "text": "The brownstone Gothic church at the head of Wall Street, once the tallest building in New York. Alexander Hamilton is buried in its churchyard.",
+      "at": [
+        40.70805,
+        -74.01207
+      ],
+      "find": "Trinity Church, 75 Broadway",
+      "height": 30
+    },
+    {
+      "name": "New York City Hall",
+      "find": "New York City Hall",
+      "from": 1812,
+      "text": "The small, elegant 1812 city hall in its park off Broadway, where Mayor Koch asks everyone 'How'm I doing?'. The disused City Hall subway station sits beneath it, its tiles and chandeliers sealed away."
+    },
+    {
+      "name": "Tavern on the Green",
+      "from": 1934,
+      "text": "The glittering restaurant in an old sheepfold in Central Park, all crystal, mirrors and fairy lights in the trees. Tourists and celebrities, birthdays and premieres.",
+      "at": [
+        40.77214,
+        -73.97776
+      ],
+      "find": "Tavern on the Green",
+      "height": 8
+    },
+    {
+      "name": "Katz's Delicatessen",
+      "from": 1888,
+      "text": "The Lower East Side's pastrami institution on Houston Street, where you keep your ticket or pay a fine. 'Send a salami to your boy in the army' is still painted on the wall.",
+      "at": [
+        40.72225,
+        -73.98742
+      ],
+      "find": "Katz's Delicatessen, 205 East Houston Street",
+      "height": 8
+    },
+    {
+      "name": "Port Authority Bus Terminal",
+      "find": "Port Authority Bus Terminal",
+      "from": 1950,
+      "text": "The grim, sprawling bus depot on Eighth Avenue at 42nd Street, where runaways get off and hustlers wait for them. Gates to everywhere from New Jersey to California."
+    },
+    {
+      "name": "Gracie Mansion",
+      "from": 1799,
+      "text": "The mayor's Federal-style residence in Carl Schurz Park above the East River. Koch is its tenant, though he still keeps his Village apartment.",
+      "at": [
+        40.77596,
+        -73.94298
+      ],
+      "find": "Gracie Mansion",
+      "height": 12
+    },
+    {
+      "name": "Cathedral of St. John the Divine",
+      "find": "Cathedral of Saint John the Divine",
+      "from": 1911,
+      "text": "The largest cathedral in the world, unfinished, on Amsterdam Avenue in Morningside Heights. Stone carvers trained from the neighbourhood are back at work on its towers after forty years."
+    },
+    {
+      "name": "Whitehall Ferry Terminal",
+      "find": "Whitehall Terminal, Manhattan",
+      "pin": true,
+      "text": "The worn terminal at the tip of Manhattan for the Staten Island Ferry: a 25-cent round trip past the Statue of Liberty. Commuters, tourists and people with nowhere better to be at 3 a.m."
+    },
+    {
+      "name": "John F. Kennedy International Airport",
+      "find": "John F. Kennedy International Airport",
+      "pin": true,
+      "text": "The city's international gateway on Jamaica Bay, with Saarinen's swooping TWA terminal and the Concorde to London and Paris. Cargo theft here is an industry of its own."
+    },
+    {
+      "name": "LaGuardia Airport",
+      "find": "LaGuardia Airport",
+      "pin": true,
+      "text": "The crowded domestic airport on Flushing Bay, with the hourly Eastern and Pan Am shuttles to Boston and Washington. Delays are a way of life."
+    },
+    {
+      "name": "Harlem's 125th Street",
+      "find": "Hotel Theresa",
+      "from": 1913,
+      "text": "Harlem's main street of record shops, street preachers and the old Hotel Theresa, where Castro stayed in 1960. Sylvia's soul food is around the corner on Lenox Avenue."
+    },
+    {
+      "name": "Chinatown",
+      "find": "Mott Street, Manhattan",
+      "pin": true,
+      "text": "Mott, Pell and Doyers Streets, crowded with dim sum houses, fish markets and gambling dens behind unmarked doors. The Ghost Shadows and Flying Dragons run the streets after dark."
+    },
+    {
+      "name": "Little Italy",
+      "find": "Mulberry Street, Manhattan",
+      "pin": true,
+      "text": "Mulberry Street's cafés and red-sauce restaurants, shrinking as Chinatown grows around them. The Feast of San Gennaro fills it every September; Umberto's Clam House is where Joey Gallo was shot."
+    }
+  ]
+}
