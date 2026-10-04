@@ -10,7 +10,15 @@ Set in **1986** by default: towers built since are gone, the transit runs as it 
 
 ## Install
 
-Put the `kg-cities` folder in your Foundry `Data/modules` folder (or install from the release's manifest), then enable **KG Cities** in your world.
+In Foundry's **Add-on Modules > Install Module**, paste this manifest URL:
+
+```
+https://github.com/KonteiKeisei/kg-cities/releases/latest/download/module.json
+```
+
+Or unzip a release into your Foundry `Data/modules` folder. Then enable **KG Cities** in your world.
+
+See the [wiki](https://github.com/KonteiKeisei/kg-cities/wiki) for a full guide. **Coming:** modern cities (after the 1980s) and international cities.
 
 ## Making a city
 
