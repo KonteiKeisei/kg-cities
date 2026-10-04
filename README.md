@@ -6,7 +6,7 @@ Set in **1986** by default: towers built since are gone, the transit runs as it 
 
 - **Requires:** Foundry VTT v13.
 - **Cities:** Boston, New York, Washington, Philadelphia, Baltimore, Atlanta, St. Louis, Detroit, Chicago, San Francisco, Los Angeles, Las Vegas, Austin, Miami.
-- **Works with:** **KG Transit** for the cities' rail networks, airports and flights between the cities; [Calendaria](https://github.com/Sayshal/calendaria) for the time of day (day and night looks).
+- **Works with:** **[KG Transit](https://github.com/KonteiKeisei/kg-transit)** for the cities' rail networks, airports and flights between the cities (a good module on its own; on a city scene it sets up the city's known transit by itself); [Calendaria](https://github.com/Sayshal/calendaria) for the time of day (day and night looks).
 
 ## Install
 
@@ -29,7 +29,7 @@ See the [wiki](https://github.com/KonteiKeisei/kg-cities/wiki) for a full guide.
 ## On the map
 
 - **Landmarks** glow gold, their real buildings lit (or a pin for parks, bridges and places since demolished). Hover one for its card (art, description, address, distance from your token); click to read its journal page. Landmarks gone or not yet built in the scene's year are left off.
-- **Safe havens** (the players' places) are blue, **airports** violet (with KG Transit).
+- **Safe havens** (the players' places) are blue, **airports** violet (with [KG Transit](https://github.com/KonteiKeisei/kg-transit)).
 - **Search** (Ctrl+F, or the magnifier in the token controls): landmarks, addresses ("193 Salem St"), streets and places, nearest first. Picking one pans there and makes it blink.
 - **Edit points of interest** (GM, the landmark tool in the notes controls): click a label, landmark or building to edit it in a panel beside the sidebar: name, journal page, image, summary, linked scene, glow, hidden from players, move, remove. Click a plain building or empty map for a quick menu (point of interest, safe haven, label, pin). Landmarks and label edits are kept per city, so a campaign can travel between cities.
 
