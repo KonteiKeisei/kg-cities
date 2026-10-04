@@ -58,6 +58,9 @@ export class PoiEditor {
       this.banner = null;
       document.removeEventListener("keydown", this.onKey, true);
     }
+    // Keep the sidebar toggle in step when edit mode ends from here (Done or Esc).
+    const tool = ui.controls?.controls?.notes?.tools?.kgCitiesEdit;
+    if (tool) tool.active = editing;
     ui.controls?.render();
   }
 

@@ -1,5 +1,10 @@
 # KG Cities changelog
 
+## 0.7.2
+
+- Leaving POI edit mode with the banner's **Done** button (or Esc) turns the sidebar's edit
+  toggle off too, so one click turns editing back on.
+
 ## 0.7.1: ready to share
 
 - **Map tile server** setting: download cities from your own server of OpenMapTiles-schema
