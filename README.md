@@ -72,4 +72,4 @@ Only when a city is generated or refreshed: that city's map tiles from [OpenFree
 
 ## License and credits
 
-The code is under the [MIT License](LICENSE). The map data in `data/cities` and `data/transit` is derived from OpenStreetMap, © OpenStreetMap contributors, under the [Open Database License](DATA-LICENSE.md). Map tiles © OpenFreeMap © OpenMapTiles. MapLibre GL JS, Mapbox's pbf and vector-tile libraries and the Noto Sans fonts keep their own licenses: see [CREDITS.md](CREDITS.md).
+KG Cities is under the [PolyForm Noncommercial License 1.0.0](LICENSE): free to use, copy, share and change for noncommercial purposes. It may not be sold, in whole, in part or as a modified version, or used commercially. The map data in `data/cities` and `data/transit` is derived from OpenStreetMap, © OpenStreetMap contributors, under the [Open Database License](DATA-LICENSE.md). Map tiles © OpenFreeMap © OpenMapTiles. MapLibre GL JS, Mapbox's pbf and vector-tile libraries and the Noto Sans fonts keep their own licenses: see [CREDITS.md](CREDITS.md).

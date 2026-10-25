@@ -1,5 +1,12 @@
 # KG Cities changelog
 
+## 0.7.4
+
+- KG Cities is now under the PolyForm Noncommercial License 1.0.0 (LICENSE), like KG Transit:
+  free to use, copy, share and change for noncommercial purposes, not to be sold or used
+  commercially. OpenStreetMap-derived data stays under the ODbL; the bundled libraries and fonts
+  keep their own licenses.
+
 ## 0.7.3
 
 - A landmark's card shows once the pointer has rested on it for 400 ms. An open card still

@@ -1,6 +1,7 @@
 # Credits
 
-KG Cities is © 2026 Konte, under the MIT License (LICENSE). It is built on:
+KG Cities is © 2026 Konte, under the PolyForm Noncommercial License 1.0.0 (LICENSE): free to
+use, copy, share and change for noncommercial purposes, not to be sold. It is built on:
 
 | What | From | License |
 |---|---|---|
