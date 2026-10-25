@@ -192,7 +192,9 @@ export class Archive {
     let lastErr;
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        const res = await fetch(this.source, { headers: { Range: `bytes=${offset}-${offset + length - 1}` } });
+        // Past the browser cache: Chromium fails a part request that meets a part-cached copy of the
+        // same file (ERR_CACHE_OPERATION_NOT_SUPPORTED), and tiles read here are kept in memory anyway.
+        const res = await fetch(this.source, { cache: "no-store", headers: { Range: `bytes=${offset}-${offset + length - 1}` } });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const buf = new Uint8Array(await res.arrayBuffer());
         // A server that ignores Range sends the whole file: keep it and read from memory.

@@ -1,5 +1,15 @@
 # KG Cities changelog
 
+## 0.7.3
+
+- A landmark's card shows once the pointer has rested on it for 400 ms. An open card still
+  follows the pointer and switches straight to a neighbouring landmark.
+- The Old North Church faces the right way: the nave runs back from Salem Street, the tower and
+  spire on the Salem Street end, the rounded chancel behind. The model lines up on the nave's
+  longest wall, not on a belfry tier's outline.
+- Reading a city's map skips the browser cache, so Chromium no longer logs
+  ERR_CACHE_OPERATION_NOT_SUPPORTED for parts of map.pmtiles.
+
 ## 0.7.2
 
 - Leaving POI edit mode with the banner's **Done** button (or Esc) turns the sidebar's edit

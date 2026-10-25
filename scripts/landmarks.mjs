@@ -171,21 +171,6 @@ function placeModel(faces, angle) {
   return faces.map((f) => ({ ...f, pts: f.pts.map(([u, v, z]) => [u * c - v * s, u * s + v * c, z]) }));
 }
 
-/** Centre and long-axis angle of the largest ring among a landmark's buildings (local metres). */
-function footprintAxis(rings) {
-  // ccw() also drops the repeated closing point, which would otherwise pull the centre toward it.
-  const ring = ccw(rings.reduce((best, r) => (Math.abs(area2(r)) > Math.abs(area2(best)) ? r : best)));
-  let len = 0, angle = 0;
-  for (let i = 0; i < ring.length; i++) {
-    const p = ring[i], q = ring[(i + 1) % ring.length];
-    const dx = q[0] - p[0], dy = q[1] - p[1];
-    const l = Math.hypot(dx, dy);
-    if (l > len) { len = l; angle = (Math.atan2(dy, dx) * 180) / Math.PI; }
-  }
-  const cx = ring.reduce((s, p) => s + p[0], 0) / ring.length, cy = ring.reduce((s, p) => s + p[1], 0) / ring.length;
-  return { cx, cy, angle };
-}
-
 function normal(pts) {
   // Newell's method.
   let nx = 0, ny = 0, nz = 0;
@@ -223,10 +208,17 @@ export function landmarkFaces(lm) {
     } else {
       // The model's u axis follows the main block's long side. Its front (the tower) goes on the
       // end where the whole outline sticks out furthest: the tower's bump, not the rounded apse.
-      const main = rings.reduce((best, r) => (r.length < best.length ? r : best));
-      let angle;
-      ({ cx, cy, angle } = footprintAxis([main]));
+      // The axis is the longest wall of the whole outline (a side of the main block; the small
+      // rings are belfry tiers, whose sides point anywhere). The centre is the middle of that wall
+      // along it and of the outline across it, so the tower and apse do not pull it off the block.
+      const outline = ccw(rings.reduce((best, r) => (Math.abs(area2(r)) > Math.abs(area2(best)) ? r : best)));
+      let wall = [outline[0], outline[1]], len = 0;
+      outline.forEach((p, i) => { const q = outline[(i + 1) % outline.length], l = Math.hypot(q[0] - p[0], q[1] - p[1]); if (l > len) { len = l; wall = [p, q]; } });
+      const angle = (Math.atan2(wall[1][1] - wall[0][1], wall[1][0] - wall[0][0]) * 180) / Math.PI;
       const ux = Math.cos((angle * Math.PI) / 180), uy = Math.sin((angle * Math.PI) / 180);
+      const u = ([x, y]) => x * ux + y * uy, v = ([x, y]) => -x * uy + y * ux;
+      const vs = outline.map(v), cu = (u(wall[0]) + u(wall[1])) / 2, cv = (Math.min(...vs) + Math.max(...vs)) / 2;
+      cx = cu * ux - cv * uy; cy = cu * uy + cv * ux;
       const along = rings.flat().map(([x, y]) => (x - cx) * ux + (y - cy) * uy);
       front = Math.max(...along) >= -Math.min(...along) ? angle : angle + 180;
     }

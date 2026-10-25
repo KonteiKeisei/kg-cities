@@ -2,11 +2,11 @@
   "id": "kg-cities",
   "title": "KG Cities",
   "description": "Generate a styled, real-world US city as a gridless scene at real scale (feet and miles): Boston, New York, Washington, Philadelphia, Baltimore, Atlanta, St. Louis, Detroit, Chicago, San Francisco, Los Angeles, Las Vegas, Austin and Miami. Only the city you pick is downloaded. Day and night looks, leaning buildings, 1980s eras, landmarks, and the city at night from orbit when zoomed far out.",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "license": "LICENSE",
   "url": "https://github.com/KonteiKeisei/kg-cities",
   "manifest": "https://github.com/KonteiKeisei/kg-cities/releases/latest/download/module.json",
-  "download": "https://github.com/KonteiKeisei/kg-cities/releases/download/v0.7.2/kg-cities-0.7.2.zip",
+  "download": "https://github.com/KonteiKeisei/kg-cities/releases/download/v0.7.3/kg-cities-0.7.3.zip",
   "bugs": "https://github.com/KonteiKeisei/kg-cities/issues",
   "compatibility": {
     "minimum": "13",

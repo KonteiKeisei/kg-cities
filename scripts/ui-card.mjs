@@ -6,6 +6,8 @@ import { formatDistance, metres, sceneToLatLon } from "./geo.mjs";
 
 const CLICK_PX = 6;
 const CLICK_MS = 500;
+// How long the pointer rests on a landmark before its card shows.
+const CARD_DELAY_MS = 400;
 const esc = (s) => foundry.utils.escapeHTML(String(s ?? ""));
 
 export class HoverCard {
@@ -48,6 +50,8 @@ export class HoverCard {
   }
 
   hide() {
+    clearTimeout(this.pending?.timer);
+    this.pending = null;
     this.el?.remove();
     this.el = null;
     this.hovered = null;
@@ -68,7 +72,13 @@ export class HoverCard {
       const id = this.layer?.landmarkAt(at) ?? null;
       const lm = id ? this.landmarks.get(id) : null;
       if (!lm || (lm.hidden && !game.user.isGM)) return this.hide();
-      this.#show(lm, global);
+      // A card already open follows the pointer, or moves to the next landmark at once; a new one
+      // waits until the pointer has rested on the landmark for a moment.
+      if (this.el) return this.#show(lm, global);
+      this.pointer = global;
+      if (this.pending?.id === lm.id) return;
+      clearTimeout(this.pending?.timer);
+      this.pending = { id: lm.id, timer: setTimeout(() => { this.pending = null; this.#show(lm, this.pointer); }, CARD_DELAY_MS) };
     });
   }
 
