@@ -1,11 +1,15 @@
-import { latLonToScene, makeFrame, sceneToLatLon } from "./geo.mjs";
+import { canvasScaleForTileZoom, latLonToScene, makeFrame, sceneToLatLon } from "./geo.mjs";
 import { CityLayer } from "./map-layer.mjs";
 import { DATA_VERSION, generateCity, isUpdating, loadCities, loadCityPack, openGenerator, refreshTransit, updateCityData } from "./generator.mjs";
 import { DEFAULT_TILT, NIGHT_MIN_SCALE, leanFor } from "./style.mjs";
 import { LandmarkStore, PlaceStore, SearchData } from "./city-stores.mjs";
+import { mergeLandmarks, pageSummary } from "./landmarks.mjs";
 import { HoverCard } from "./ui-card.mjs";
 import { MapSearch } from "./ui-search.mjs";
 import { PoiEditor } from "./ui-editor.mjs";
+import { PlaceCards, VISIBILITY, asHtml, visibilityOf } from "./place-card.mjs";
+import { registerPlaceLinks } from "./place-links.mjs";
+import { SceneTrail, listenForOpens } from "./ui-trail.mjs";
 
 const MODULE_ID = "kg-cities";
 const SETTINGS = { look: "look", lean: "tilt", highDpi: "highDpi", businesses: "businesses", dayStart: "dayStart", nightStart: "nightStart" };
@@ -67,9 +71,164 @@ async function landmarksFromModules(c) {
   return lists.flat().filter((lm) => lm?.id && Number.isFinite(lm.lat) && Number.isFinite(lm.lon));
 }
 const landmarkOrAdded = { get: (id) => landmarks.get(id) ?? addedLandmarks.find((a) => a.id === id) ?? null };
-const card = new HoverCard({ landmarks: landmarkOrAdded, search: searchData, isEditing: () => !!editor?.editing });
-editor = new PoiEditor({ places, landmarks, search: searchData, card, api: projection });
+const trail = new SceneTrail({ getLandmark: async (city, id) => (await cityLandmarks(city)).find((l) => l.id === id) ?? null });
+const cards = new PlaceCards(placeCardSource());
+const openCard = (lm, { edit = false } = {}) => cityId && cards.open({ kind: "landmark", city: cityId, id: lm.id }, { edit });
+const card = new HoverCard({
+  landmarks: landmarkOrAdded, search: searchData, isEditing: () => !!editor?.editing,
+  openCard, enterScene: (lm, scene) => enterScene(cityId, lm, scene, false)
+});
+editor = new PoiEditor({ places, landmarks, search: searchData, card, api: projection, openCard });
 const mapSearch = new MapSearch({ getLayer: () => layer, getPlaces: () => places.places, getLandmarks: () => drawnLandmarks(), data: searchData });
+
+/* ---------------------------------------- */
+/*  Place cards                              */
+/* ---------------------------------------- */
+
+/** A city's landmarks, drawn or not: the pack's seed with the GM's saved list. */
+async function cityLandmarks(city) {
+  if (city === cityId && current) return landmarks.list;
+  const seed = (await loadCityPack(city).catch(() => null))?.landmarks ?? [];
+  const saved = (game.settings.get(MODULE_ID, "landmarks") ?? {})[city];
+  return mergeLandmarks(saved?.list ?? null, seed, saved?.removed ?? []);
+}
+
+async function saveCityLandmarks(city, list, { remove = null } = {}) {
+  const all = foundry.utils.deepClone(game.settings.get(MODULE_ID, "landmarks") ?? {});
+  const removed = new Set(all[city]?.removed ?? []);
+  if (remove) removed.add(remove);
+  all[city] = { list, removed: [...removed] };
+  await game.settings.set(MODULE_ID, "landmarks", all);
+}
+
+/** A scene of this city: the one on screen if it is, else the first. */
+const sceneOfCity = (city) => (cityOf(canvas.scene)?.city === city ? canvas.scene : game.scenes.find((s) => cityOf(s)?.city === city) ?? null);
+
+/** The GM goes to a place's scene (all: everyone, by activating it), leaving the way back there. */
+async function enterScene(city, lm, scene, all) {
+  if (!game.user.isGM || !scene) return;
+  await trail.link(scene, { from: sceneOfCity(city), city, landmark: lm.id, name: lm.name });
+  return all ? scene.activate() : scene.view();
+}
+
+/** Centre the map on a landmark of the city on screen, and make it blink. */
+function locate(lm) {
+  if (!lm || !layer.frame) return;
+  const at = latLonToScene(layer.frame, lm.lat, lm.lon);
+  layer.flash?.({ type: "FeatureCollection", features: [{ type: "Feature", properties: {}, geometry: { type: "Point", coordinates: [lm.lon, lm.lat] } }] });
+  canvas.animatePan({ x: at.x, y: at.y, scale: Math.min(canvasScaleForTileZoom(layer.frame, 17.5), CONFIG.Canvas.maxZoom), duration: 900 });
+}
+
+/** Card fields kept only when set. */
+const CARD_KEYS = ["img", "known", "rumours", "gmNotes", "scene", "journal"];
+
+function placeCardSource() {
+  const find = async (ref) => (await cityLandmarks(ref.city)).find((l) => l.id === ref.id) ?? null;
+  return {
+    async get(ref) {
+      const lm = await find(ref);
+      if (!lm) return null;
+      const haven = lm.tone === "haven", vis = visibilityOf(lm);
+      const cityName = (await loadCities()).find((c) => c.id === ref.city)?.name ?? "";
+      const here = ref.city === cityId && !!current;
+      const address = here ? await searchData.addressAt(lm.lat, lm.lon).catch(() => null) : null;
+      const scene = lm.scene ? game.scenes.get(lm.scene) : null;
+      // An older landmark's text is its short summary until the GM writes What is known.
+      const known = lm.known ?? asHtml(lm.summary);
+      const journal = lm.journal ?? lm.page ?? null;
+      return {
+        name: lm.name || "Landmark", type: haven ? "Safe haven" : "Point of interest", tone: haven ? "haven" : "gold", icon: haven ? "fa-house-chimney" : "fa-landmark",
+        subtitle: [address?.text, address?.area, here ? "" : cityName].filter(Boolean).join(" · "),
+        img: lm.img ?? "", known, gmNotes: lm.gmNotes ?? "", rumours: lm.rumours ?? "", visibility: vis,
+        actors: lm.actors ?? [], journal, images: lm.images ?? [], scene: lm.scene ?? null,
+        enterLabel: scene ? (cityOf(scene) ? `Go to ${scene.name}` : `Enter ${lm.name}`) : null,
+        locate: here, canDelete: true,
+        mapNote: "Where it is, its shape, glow and kind are set on the map: turn on Edit points of interest and click it.",
+        form: { name: lm.name ?? "", img: lm.img ?? "", visibility: vis, rumours: lm.rumours ?? "", known, gmNotes: lm.gmNotes ?? "", scene: lm.scene ?? "", actors: lm.actors ?? [], journal: journal ?? "", images: lm.images ?? [] }
+      };
+    },
+    async save(ref, v) {
+      if (!game.user.isGM) return;
+      const list = await cityLandmarks(ref.city), lm = list.find((l) => l.id === ref.id);
+      if (!lm) return;
+      const out = { ...lm };
+      if ("name" in v) out.name = v.name || lm.name;
+      if ("visibility" in v) { out.visibility = VISIBILITY[v.visibility] ? v.visibility : "discovered"; out.hidden = out.visibility === "hidden"; }
+      for (const k of CARD_KEYS) if (k in v) out[k] = v[k] || null;
+      for (const k of ["actors", "images"]) if (k in v) out[k] = v[k] ?? [];
+      // What is known takes over from the short summary; the journal field from the old page link.
+      if ("known" in v) { out.known = v.known ?? ""; delete out.summary; }
+      if ("journal" in v) delete out.page;
+      for (const k of [...CARD_KEYS, "actors", "images"]) if (out[k] == null || (Array.isArray(out[k]) && !out[k].length)) delete out[k];
+      if ("known" in v) out.known ??= "";
+      await saveCityLandmarks(ref.city, list.map((l) => (l.id === lm.id ? out : l)));
+    },
+    async remove(ref) {
+      if (!game.user.isGM) return;
+      const lm = await find(ref);
+      if (!lm) return;
+      if (ref.city === cityId && current) return editor.removeLandmark(lm);
+      const list = await cityLandmarks(ref.city);
+      return saveCityLandmarks(ref.city, list.filter((l) => l.id !== lm.id), { remove: lm.id });
+    },
+    async enter(ref, all) {
+      const lm = await find(ref);
+      return enterScene(ref.city, lm, lm?.scene ? game.scenes.get(lm.scene) : null, all);
+    },
+    async locate(ref) { if (ref.city === cityId && current) locate(await find(ref)); },
+    async placeChoices(ref) {
+      const city = ref?.city ?? cityId;
+      if (!city) return [];
+      const cityName = (await loadCities()).find((c) => c.id === city)?.name ?? city;
+      return (await cityLandmarks(city)).filter((l) => game.user.isGM || visibilityOf(l) !== "hidden").map((l) => ({
+        name: l.name, where: `${l.tone === "haven" ? "Safe haven" : "Point of interest"}, ${cityName}`, ref: { kind: "landmark", city, id: l.id }
+      }));
+    }
+  };
+}
+
+/**
+ * Journal-style points of interest to place cards, once (the GM in charge, on load): a linked
+ * page's text becomes What is known, shown to players as the page was; its first picture becomes
+ * the art when there is none. The journal stays linked, as the card's Journal button. Points of
+ * interest the GM already wrote a card for are left alone. Returns how many changed.
+ */
+async function convertJournalLandmarks() {
+  const all = foundry.utils.deepClone(game.settings.get(MODULE_ID, "landmarks") ?? {});
+  let n = 0;
+  for (const saved of Object.values(all)) {
+    for (const lm of saved?.list ?? []) {
+      if (!lm.page || lm.known != null) continue;
+      const doc = await fromUuid(lm.page).catch(() => null);
+      if (!doc) continue;
+      const pages = doc.documentName === "JournalEntry" ? doc.pages.contents : [doc];
+      const html = pages.map((p) => p.text?.content ?? "").join("").trim();
+      const summary = String(lm.summary ?? "").trim();
+      const plain = (s) => s.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+      lm.known = `${summary && !plain(html).includes(summary) ? asHtml(summary) : ""}${html}`;
+      lm.img ||= pages.find((p) => p.type === "image")?.src ?? pageSummary(html).img ?? undefined;
+      if (!lm.img) delete lm.img;
+      lm.journal = lm.page;
+      delete lm.page;
+      delete lm.summary;
+      n++;
+    }
+  }
+  if (!n) return 0;
+  await game.settings.set(MODULE_ID, "landmarks", all);
+  ui.notifications.info(`KG Cities: ${n} point${n === 1 ? "" : "s"} of interest now carry their journal text on their place cards. The journals stay linked.`);
+  return n;
+}
+
+Hooks.once("ready", () => {
+  listenForOpens();
+  if (game.users.activeGM?.isSelf) convertJournalLandmarks().catch((err) => console.error(`${MODULE_ID} | journal conversion`, err));
+});
+
+/** What the map draws of the landmarks: a card's text changing does not redraw the city. */
+const DRAWN_KEY_SKIP = new Set(["img", "known", "rumours", "gmNotes", "scene", "journal", "page", "summary", "actors", "images", "visibility"]);
+const drawnKey = () => JSON.stringify(drawnLandmarks().map((l) => Object.fromEntries(Object.entries(l).filter(([k]) => !DRAWN_KEY_SKIP.has(k)))));
+let lastDrawnKey = null;
 
 /* ---------------------------------------- */
 /*  Day and night                            */
@@ -136,7 +295,15 @@ Hooks.once("init", () => {
   // { [city]: { list, removed } } once the GM edits a city's landmarks; until then the pack's seed.
   register("landmarks", {
     scope: "world", config: false, type: Object, default: {},
-    onChange: () => { card.refresh(); if (current) drawCity(); }
+    onChange: () => {
+      card.refresh();
+      cards.refresh();
+      // The way back shows the place's actors and journal: they may have changed.
+      if (trail.el) trail.draw();
+      // Only what the map draws redraws the city; a card's text, art or links do not.
+      if (current && drawnKey() !== lastDrawnKey) drawCity();
+      else if (current) mapSearch.entries = null;
+    }
   });
   // { [city]: { edits: { placeId: {...} }, added: { id: {...} } } }: the GM's label edits.
   register("placeEdits", { scope: "world", config: false, type: Object, default: {}, onChange: () => refreshPlaces() });
@@ -151,6 +318,9 @@ Hooks.once("init", () => {
       return true;
     }
   });
+
+  // @CityPlace[city:id]{Name} in any text opens that place's card.
+  registerPlaceLinks(cards);
 
   layer.onError = (err) => {
     console.warn(`${MODULE_ID} |`, err);
@@ -198,6 +368,8 @@ Hooks.once("init", () => {
     refreshTransit: (cityId) => refreshTransit(cityId),
     /** The city scene's flag, or null. */
     cityOf,
+    /** Open a landmark's place card, e.g. openPlaceCard("boston", "seed:..."); edit: the GM's form. */
+    openPlaceCard: (city, id, { edit = false } = {}) => cards.open({ kind: "landmark", city, id }, { edit, warnMissing: true }),
     /**
      * Add landmarks to city maps from another module: fn(cityFlag) returns (or resolves to) a list
      * of landmark-like entries (see "Landmarks from other modules" above). Returns a function that
@@ -300,6 +472,10 @@ async function drawCity() {
   card.attach(layer);
   editor.attach(layer);
   if (editor.editing) layer.setEditing(true);
+  lastDrawnKey = drawnKey();
+  // Back from a place's scene by the trail: centre on the place.
+  const focus = trail.takeFocus(scene.id);
+  if (focus) locate(landmarks.get(focus));
 }
 
 /** In the scene's year: from (built) up to until (gone). */
@@ -325,11 +501,13 @@ function teardown() {
   current = null;
 }
 
-Hooks.on("canvasReady", () => drawCity());
-Hooks.on("canvasTearDown", () => teardown());
+Hooks.on("canvasReady", () => { trail.draw(); drawCity(); });
+Hooks.on("canvasTearDown", () => { trail.remove(); teardown(); });
 Hooks.on("canvasPan", () => layer.update());
 Hooks.on("updateScene", (scene, changes) => {
-  if (scene === canvas.scene && foundry.utils.hasProperty(changes, `flags.${MODULE_ID}`)) drawCity();
+  if (scene !== canvas.scene) return;
+  if (foundry.utils.hasProperty(changes, `flags.${MODULE_ID}.returnTo`) || "name" in changes || "navName" in changes) trail.draw();
+  if (foundry.utils.hasProperty(changes, `flags.${MODULE_ID}`) && !foundry.utils.hasProperty(changes, `flags.${MODULE_ID}.returnTo`)) drawCity();
 });
 Hooks.on("updateWorldTime", () => {
   if (setting(SETTINGS.look) === LOOKS.auto) layer.setLook(currentLook());

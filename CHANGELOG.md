@@ -1,5 +1,34 @@
 # KG Cities changelog
 
+## 0.8.0
+
+- **Place cards**, ported from KG Realms. Clicking a landmark or safe haven opens its card, a
+  window that is also the GM's editor (Edit, then Save or Discard). No journal is needed: the
+  card holds What is known (for players, with secret blocks the GM reveals one at a time),
+  Rumours and GM notes, written in a full-size editor. Who sees it: hidden, rumoured (players get
+  the name, the marker and the rumours) or discovered.
+- A card links a scene (Enter activates it for everyone, View is the GM's alone), actors (open,
+  or drag onto the scene), an optional journal (opens from the card for anyone allowed to read
+  it) and pictures. A journal page dropped on the card's Text box is copied in as a secret block.
+- Place links: Insert place link in the text editor writes `@CityPlace[city:id]{Name}`, which
+  opens that place's card from any journal, chat message or card.
+- The way back (GM): entering a place's scene from its card leaves a trail, shown at the top of
+  that scene (Boston, 1986 › Old North Church), docked under the scene navigation as KG Realms
+  docks its bar. The city crumb takes everyone back, centred on the place; shift-click looks
+  back alone. Under it, the place's links: Open Actor opens the actor for everyone on the scene,
+  the GM included (players without permission see its art; drag it for a token), the eye opens
+  its sheet for the GM alone; the people button shows the
+  journal to the players on the scene, Journal opens it for the GM alone. More actors: a +N list.
+- The point-of-interest editor keeps the map side (name, kind, shape, glow, who sees it, move,
+  remove); its journal page, image, summary and scene fields moved to the card (Edit the card).
+  A new point of interest opens its card to write it up.
+- Journal-style points of interest are converted once, when the GM loads the world: the linked
+  page's text becomes What is known (shown to players, as the page was), its first picture the
+  art if there is none, and the journal stays linked as the card's Journal button. Cards already
+  written are left alone. Ones with only a summary show it as What is known until edited.
+- Editing a card's text, art or links no longer redraws the whole city map.
+- `api.openPlaceCard(cityId, landmarkId, { edit })`.
+
 ## 0.7.4
 
 - KG Cities is now under the PolyForm Noncommercial License 1.0.0 (LICENSE), like KG Transit:

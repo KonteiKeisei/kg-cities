@@ -1,6 +1,9 @@
 // Editing points of interest (GM): a banner while edit mode is on, a quick menu when a plain
 // building or empty map is clicked, and the editor docked beside the sidebar for labels, points
-// of interest and safe havens. Design: tools/mockups/ui-mockup.html.
+// of interest and safe havens. The editor sets where a point is and how it is drawn; its text and
+// links live on its place card (place-card.mjs). Design: tools/mockups/ui-mockup.html.
+
+import { VISIBILITY, firstParagraph, plainLinks, visibilityOf } from "./place-card.mjs";
 
 const CLICK_PX = 6;
 const CLICK_MS = 500;
@@ -10,9 +13,12 @@ const esc = (s) => foundry.utils.escapeHTML(String(s ?? ""));
 const MODEL_NAMES = { "old-north-church": "Old North Church", "uss-constitution": "USS Constitution", "wtc-twin-towers": "World Trade Center towers" };
 
 export class PoiEditor {
-  /** places: PlaceStore; landmarks: LandmarkStore; search: SearchData; card: HoverCard; api: lat/lon <-> scene. */
-  constructor({ places, landmarks, search, card, api }) {
-    Object.assign(this, { places, landmarks, search, card, api });
+  /**
+   * places: PlaceStore; landmarks: LandmarkStore; search: SearchData; card: HoverCard; api: lat/lon <-> scene;
+   * openCard(lm, { edit }): open a landmark's place card.
+   */
+  constructor({ places, landmarks, search, card, api, openCard }) {
+    Object.assign(this, { places, landmarks, search, card, api, openCard });
     this.layer = null;
     this.editing = false;
     this.click = null;
@@ -207,21 +213,27 @@ export class PoiEditor {
     this.draft = {
       show: show ?? (lm ? (lm.tone === "haven" ? SHOW.haven : SHOW.gold) : SHOW.label),
       shape: lm?.model ? `model:${lm.model}` : lm ? (lm.buildings?.length ? "building" : "pin") : footprint ? "building" : "pin",
-      footprint
+      footprint,
+      visibility: lm ? visibilityOf(lm) : place?.hidden ? "hidden" : "discovered"
     };
     this.#render();
   }
 
-  #pageOptions(selected) {
-    const groups = game.journal.contents.filter((j) => j.pages.size).sort((a, b) => a.name.localeCompare(b.name))
-      .map((j) => `<optgroup label="${esc(j.name)}">${j.pages.contents.sort((a, b) => a.sort - b.sort)
-        .map((p) => `<option value="${p.uuid}" ${p.uuid === selected ? "selected" : ""}>${esc(p.name)}</option>`).join("")}</optgroup>`);
-    return `<option value="">(no page)</option>${groups.join("")}`;
-  }
-
-  #sceneOptions(selected) {
-    return `<option value="">(no scene)</option>${game.scenes.contents.sort((a, b) => a.name.localeCompare(b.name))
-      .map((s) => `<option value="${s.id}" ${s.id === selected ? "selected" : ""}>${esc(s.name)}</option>`).join("")}`;
+  /** What the place card holds, in a few words, with the button to edit it. */
+  #cardSummary(lm) {
+    if (!lm) return `<p class="tip"><i class="fa-solid fa-circle-info"></i>Its card (text, art, scene, actors, journal) opens to edit once you add it.</p>`;
+    const text = plainLinks(lm.known != null ? firstParagraph(lm.known, true, 160) : lm.summary ?? "");
+    const scene = lm.scene ? game.scenes.get(lm.scene) : null;
+    const journal = lm.journal ?? lm.page;
+    const links = [
+      scene ? `<span><i class="fa-solid fa-film"></i>${esc(scene.name)}</span>` : "",
+      lm.actors?.length ? `<span><i class="fa-solid fa-user"></i>${lm.actors.length} actor${lm.actors.length === 1 ? "" : "s"}</span>` : "",
+      journal ? `<span><i class="fa-solid fa-book-open"></i>Journal</span>` : ""
+    ].join("");
+    return `<div class="card-sum"><div class="thumb" style="${lm.img ? `background-image:url('${esc(foundry.utils.getRoute(lm.img))}')` : ""}">${lm.img ? "" : `<i class="fa-solid fa-image"></i>`}</div>
+      <p>${text ? esc(text) : `<span class="none">Nothing written yet.</span>`}</p></div>
+      ${links ? `<div class="links">${links}</div>` : ""}
+      <button type="button" class="btn" data-act="card"><i class="fa-solid fa-pen-to-square"></i>Edit the card</button>`;
   }
 
   #render() {
@@ -264,16 +276,8 @@ export class PoiEditor {
       </div>
       <div class="scroll">
         <div class="sec poi">
-          <h5>Story <span>shown on the hover card</span></h5>
-          <label class="field"><i class="fa-solid fa-book-open"></i><select name="page">${this.#pageOptions(lm?.page)}</select></label>
-          <div class="imgrow"><div class="thumb">${lm?.img ? "" : `<i class="fa-solid fa-image"></i>`}</div>
-            <label class="field"><input name="img" value="${esc(lm?.img ?? "")}" placeholder="Image (from the page)"><button type="button" class="btn ghost small" data-act="browse" data-tooltip="Browse"><i class="fa-solid fa-folder-open"></i></button></label></div>
-          <textarea name="summary" placeholder="A line or two for the hover card (from the page when blank)">${esc(lm?.summary ?? "")}</textarea>
-        </div>
-        <div class="sec poi">
-          <h5>Scene <span>GM only</span></h5>
-          <label class="field"><i class="fa-solid fa-film"></i><select name="scene">${this.#sceneOptions(lm?.scene)}</select></label>
-          <p class="tip"><i class="fa-solid fa-circle-info"></i>Clicking offers you this scene to view or activate. Players still get the page.</p>
+          <h5>Place card <span>what players read, and its links</span></h5>
+          ${this.#cardSummary(lm)}
         </div>
         <div class="sec label">
           <h5>Label</h5>
@@ -285,7 +289,10 @@ export class PoiEditor {
           <h5>On the map</h5>
           <div class="poi">${shapeRow}
             <label class="toggle">Glow<input type="checkbox" name="glow" ${lm?.glow !== false ? "checked" : ""}></label></div>
-          <label class="toggle"><span>Hidden from players<small>You still see it, struck through while editing.</small></span><input type="checkbox" name="hidden" ${hidden ? "checked" : ""}></label>
+          <label class="toggle label-only"><span>Hidden from players<small>You still see it, struck through while editing.</small></span><input type="checkbox" name="hidden" ${hidden ? "checked" : ""}></label>
+          <div class="poi who"><span class="lbl">Who sees it</span>
+            <div class="seg vis" role="radiogroup" aria-label="Who sees it">${Object.entries(VISIBILITY).map(([k, l]) => `<button type="button" role="radio" data-vis="${k}" aria-checked="${d.visibility === k}" class="${d.visibility === k ? "on" : ""}">${l}</button>`).join("")}</div>
+            <small class="vis-hint"></small></div>
         </div>
       </div>
       <div class="bottom">
@@ -301,7 +308,6 @@ export class PoiEditor {
       const el = this.panel?.querySelector(".addr");
       if (a && el) el.textContent = [a.text, a.area].filter(Boolean).join(", ");
     }).catch(() => {});
-    this.#thumb();
     this.panel.querySelector(".title").focus();
   }
 
@@ -309,17 +315,17 @@ export class PoiEditor {
   #sync() {
     const label = this.draft.show === SHOW.label;
     for (const el of this.panel.querySelectorAll(".poi")) el.hidden = label;
+    for (const el of this.panel.querySelectorAll(".label-only")) el.hidden = !label;
     // A label needs a kind; a landmark made from a label keeps its label fields too.
     for (const el of this.panel.querySelectorAll(".sec.label")) el.hidden = !label && !this.poi.place;
-    for (const b of this.panel.querySelectorAll(".seg button")) b.classList.toggle("on", b.dataset.show === this.draft.show);
-  }
-
-  #thumb() {
-    const img = this.panel?.elements.img.value.trim();
-    const thumb = this.panel?.querySelector(".thumb");
-    if (!thumb) return;
-    thumb.style.backgroundImage = img ? `url('${foundry.utils.getRoute(img)}')` : "";
-    thumb.innerHTML = img ? "" : `<i class="fa-solid fa-image"></i>`;
+    for (const b of this.panel.querySelectorAll(".seg button[data-show]")) b.classList.toggle("on", b.dataset.show === this.draft.show);
+    for (const b of this.panel.querySelectorAll(".seg button[data-vis]")) {
+      const on = b.dataset.vis === this.draft.visibility;
+      b.classList.toggle("on", on);
+      b.setAttribute("aria-checked", on);
+    }
+    const hint = this.panel.querySelector(".vis-hint");
+    if (hint) hint.textContent = { hidden: "Players see nothing of it.", rumoured: "Players see its marker, its name and the card's rumours.", discovered: "Players see it and its card." }[this.draft.visibility] ?? "";
   }
 
   #wire() {
@@ -330,23 +336,23 @@ export class PoiEditor {
       this.draft.show = b.dataset.show;
       this.#sync();
     });
+    form.querySelector(".seg.vis")?.addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-vis]");
+      if (!b) return;
+      this.draft.visibility = b.dataset.vis;
+      this.#sync();
+    });
     form.querySelector(".shape")?.addEventListener("click", (e) => {
       const b = e.target.closest("button[data-shape]");
       if (!b || b.disabled) return;
       this.draft.shape = b.dataset.shape;
       for (const x of form.querySelectorAll(".shape button")) x.classList.toggle("on", x === b);
     });
-    form.elements.img.addEventListener("change", () => this.#thumb());
-    form.elements.page.addEventListener("change", () => {
-      // A page picked for a nameless point names it.
-      if (!form.elements.name.value.trim()) form.elements.name.value = form.elements.page.selectedOptions[0]?.text ?? "";
-    });
     form.addEventListener("click", async (e) => {
       const act = e.target.closest("[data-act]")?.dataset.act;
       if (act === "close") this.#closePanel();
-      else if (act === "browse") {
-        new foundry.applications.apps.FilePicker.implementation({ type: "image", current: form.elements.img.value, callback: (path) => { form.elements.img.value = path; this.#thumb(); } }).render(true);
-      } else if (act === "move") { this.moving = !this.moving; this.#syncMove(); }
+      else if (act === "card" && this.poi.lm) this.openCard(this.landmarks.get(this.poi.lm.id) ?? this.poi.lm, { edit: true });
+      else if (act === "move") { this.moving = !this.moving; this.#syncMove(); }
       else if (act === "remove") this.#confirmRemove(e.target.closest("[data-act]"));
       else if (act === "confirm-remove") await this.#remove();
       else if (act === "undo") {
@@ -383,7 +389,6 @@ export class PoiEditor {
       if (!el) continue;
       if (el.type === "checkbox") el.checked = !!v; else if (v != null) el.value = v;
     }
-    this.#thumb();
   }
 
   #confirmRemove(button) {
@@ -405,8 +410,7 @@ export class PoiEditor {
     const f = this.panel.elements;
     return {
       name: f.name.value.trim(), show: this.draft.show, kind: f.kind.value.trim(), hidden: f.hidden.checked,
-      note: f.note.value.trim(), page: f.page.value || null, scene: f.scene.value || null,
-      img: f.img.value.trim() || null, summary: f.summary.value.trim() || null,
+      note: f.note.value.trim(), visibility: this.draft.visibility,
       shape: this.poi.lm?.model ? `model:${this.poi.lm.model}` : this.draft.shape, glow: f.glow.checked
     };
   }
@@ -447,7 +451,8 @@ export class PoiEditor {
       if (lm) await this.landmarks.save(list.filter((l) => l.id !== lm.id), { remove: lm.id });
       return;
     }
-    const base = lm ? { ...lm } : { id: `gm:${foundry.utils.randomID()}`, page: null };
+    // From the latest saved copy: its card may have been edited while this editor was open.
+    const base = lm ? { ...(this.landmarks.get(lm.id) ?? lm) } : { id: `gm:${foundry.utils.randomID()}` };
     if (!lm || poi.moved) {
       Object.assign(base, { lat: +poi.lat.toFixed(6), lon: +poi.lon.toFixed(6) });
       if (poi.building) Object.assign(base, { buildings: [poi.building], neighbours: poi.neighbours });
@@ -457,10 +462,13 @@ export class PoiEditor {
     const made = this.#apply(base, { ...v, name });
     if (place) made.placeId = place.id;
     await this.landmarks.save(lm ? list.map((l) => (l.id === lm.id ? made : l)) : [...list, made]);
+    // A new point of interest: straight on to its card, to write what it is.
+    if (!lm) this.openCard(made, { edit: true });
   }
 
   #apply(lm, v) {
-    const out = { ...lm, name: v.name, tone: v.show === SHOW.haven ? "haven" : "gold", page: v.page, scene: v.scene, img: v.img, summary: v.summary, glow: v.glow, hidden: v.hidden };
+    const visibility = VISIBILITY[v.visibility] ? v.visibility : "discovered";
+    const out = { ...lm, name: v.name, tone: v.show === SHOW.haven ? "haven" : "gold", glow: v.glow, visibility, hidden: visibility === "hidden" };
     const before = lm.model ? `model:${lm.model}` : lm.buildings?.length ? "building" : "pin";
     // A shape the GM chose by hand is kept even when the city's map data for it changes.
     if (v.shape !== before) out.shapeEdited = true;
@@ -470,10 +478,20 @@ export class PoiEditor {
     return out;
   }
 
-  /** Remove the landmark, and its label too: a GM-added one is deleted, a mapped one hidden. */
+  /** Remove a landmark from its card: as the editor's Remove, with the label under it. */
+  removeLandmark(lm) {
+    if (this.poi?.lm?.id === lm.id) this.#closePanel();
+    return this.#removePoi({ lm, place: this.#placeFor(lm) });
+  }
+
   async #remove() {
-    const { place, lm } = this.poi;
+    const poi = this.poi;
     this.#closePanel();
+    return this.#removePoi(poi);
+  }
+
+  /** Remove the landmark, and its label too: a GM-added one is deleted, a mapped one hidden. */
+  async #removePoi({ place, lm }) {
     if (place) {
       await this.places.save((e) => {
         if (place.gmAdded) delete e.added[place.id];

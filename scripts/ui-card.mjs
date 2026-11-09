@@ -1,8 +1,9 @@
-// The hover card on landmarks and safe havens, for everyone, and click to open: the landmark's
-// journal page, or for the GM a linked scene. Design: tools/mockups/ui-mockup.html.
+// The hover card on landmarks and safe havens, for everyone, and click to open the place card
+// (place-card.mjs). Design: tools/mockups/ui-mockup.html.
 
 import { pageSummary } from "./landmarks.mjs";
 import { formatDistance, metres, sceneToLatLon } from "./geo.mjs";
+import { VISIBILITY, asHtml, firstParagraph, plainLinks, visibilityOf } from "./place-card.mjs";
 
 const CLICK_PX = 6;
 const CLICK_MS = 500;
@@ -11,9 +12,12 @@ const CARD_DELAY_MS = 400;
 const esc = (s) => foundry.utils.escapeHTML(String(s ?? ""));
 
 export class HoverCard {
-  /** landmarks: a LandmarkStore; search: SearchData (addresses); isEditing(): edit mode is on. */
-  constructor({ landmarks, search, isEditing }) {
-    Object.assign(this, { landmarks, search, isEditing });
+  /**
+   * landmarks: a LandmarkStore; search: SearchData (addresses); isEditing(): edit mode is on;
+   * openCard(lm): open its place card; enterScene(lm, scene): the GM goes to its scene.
+   */
+  constructor({ landmarks, search, isEditing, openCard, enterScene }) {
+    Object.assign(this, { landmarks, search, isEditing, openCard, enterScene });
     this.layer = null;
     this.el = null;
     this.hovered = null;
@@ -82,17 +86,21 @@ export class HoverCard {
     });
   }
 
-  /** The card's text: the landmark's own image and summary if set, else from its journal page. */
+  /**
+   * The card's text: What is known (without secrets for players), or only the rumours while it
+   * is rumoured; older landmarks fall back to their summary, then their journal page.
+   */
   #summary(lm) {
     if (this.summaries.has(lm.id)) return this.summaries.get(lm.id);
-    const page = lm.page ? fromUuidSync(lm.page) : null;
+    const rumoured = !game.user.isGM && visibilityOf(lm) === "rumoured";
+    const page = !lm.known && !lm.summary && lm.page ? fromUuidSync(lm.page, { strict: false }) : null;
     const fromPage = page?.text?.content ? pageSummary(page.text.content) : { img: page?.src ?? null, subtitle: "", excerpt: "" };
+    const excerpt = rumoured ? firstParagraph(asHtml(lm.rumours)) : lm.known != null ? firstParagraph(lm.known) : lm.summary || fromPage.excerpt;
     const s = {
       title: lm.name || page?.name || "Landmark",
-      img: lm.img || fromPage.img,
-      subtitle: fromPage.subtitle,
-      excerpt: lm.summary || fromPage.excerpt,
-      canOpen: !!page && page.testUserPermission(game.user, "OBSERVER")
+      img: rumoured ? null : lm.img || fromPage.img,
+      subtitle: rumoured ? "Rumoured" : fromPage.subtitle,
+      excerpt: plainLinks(excerpt)
     };
     this.summaries.set(lm.id, s);
     return s;
@@ -166,11 +174,11 @@ export class HoverCard {
       return flying ? `<div class="foot"><span><i class="fa-solid fa-plane-departure"></i> Click to book a flight</span></div>` : "";
     }
     const scene = game.user.isGM && lm.scene ? game.scenes.get(lm.scene) : null;
-    const gm = game.user.isGM && lm.hidden ? `<span class="badge gm">Hidden from players</span>` : "";
-    let text = "";
-    if (scene) text = `<span><i class="fa-solid fa-film"></i> <b>${esc(scene.name)}</b>: click for options, shift-click to view</span>`;
-    else if (s.canOpen) text = `<span><i class="fa-solid fa-book-open"></i> Click to read the page</span>`;
-    return text || gm ? `<div class="foot">${text || "<span></span>"}${gm}</div>` : "";
+    const vis = visibilityOf(lm);
+    const gm = game.user.isGM && vis !== "discovered" ? `<span class="badge gm">${esc(VISIBILITY[vis])} to players</span>` : "";
+    const text = scene ? `<span><i class="fa-solid fa-film"></i> Click for the card · <b>Shift</b>-click to view <b>${esc(scene.name)}</b></span>`
+      : `<span><i class="fa-solid fa-hand-pointer"></i> Click for the card</span>`;
+    return `<div class="foot">${text}${gm}</div>`;
   }
 
   /* ---------------------------------------- */
@@ -191,10 +199,7 @@ export class HoverCard {
     if (id) this.open(id, { shift: event.shiftKey });
   }
 
-  /**
-   * Players: the landmark's journal page. GM with a linked scene: read the page, view the scene
-   * alone or activate it for everyone; shift-click views it at once.
-   */
+  /** Everyone: the place card. The GM's shift-click views a linked scene at once. */
   async open(id, { shift = false } = {}) {
     const lm = this.landmarks.get(id);
     if (!lm) return;
@@ -204,25 +209,7 @@ export class HoverCard {
       return;
     }
     const scene = game.user.isGM && lm.scene ? game.scenes.get(lm.scene) : null;
-    if (scene && shift) return scene.view();
-    if (scene) {
-      const page = lm.page ? fromUuidSync(lm.page) : null;
-      const buttons = [];
-      if (page) buttons.push({ action: "page", label: "Read the page", icon: "fa-solid fa-book-open" });
-      buttons.push({ action: "view", label: "View the scene", icon: "fa-solid fa-eye", default: true });
-      buttons.push({ action: "activate", label: "Activate for everyone", icon: "fa-solid fa-bullseye" });
-      const choice = await foundry.applications.api.DialogV2.wait({
-        window: { title: lm.name },
-        content: `<p>Linked scene: <strong>${esc(scene.name)}</strong>.</p><p class="hint">View takes only you there; Activate moves every player to it.</p>`,
-        buttons, rejectClose: false
-      });
-      if (choice === "view") return scene.view();
-      if (choice === "activate") return scene.activate();
-      if (choice !== "page") return;
-    }
-    const page = lm.page ? await fromUuid(lm.page) : null;
-    if (!page) return ui.notifications.info(`${lm.name} has no journal page yet.`);
-    if (!page.testUserPermission(game.user, "OBSERVER")) return ui.notifications.warn(`You cannot see the page for ${lm.name}.`);
-    page.parent.sheet.render(true, { pageId: page.id });
+    if (scene && shift) return this.enterScene(lm, scene);
+    return this.openCard(lm);
   }
 }
