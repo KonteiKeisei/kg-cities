@@ -33,7 +33,7 @@ See the [wiki](https://github.com/KonteiKeisei/kg-cities/wiki) for a full guide.
 - **The way back** (GM): after entering a place's scene from its card, a bar at the top shows the trail (Boston, 1986 › Old North Church). Click the city to take everyone back, centred on the place; the arrow looks back alone; the people button brings every player to where you are.
 - **Safe havens** (the players' places) are blue, **airports** violet (with [KG Transit](https://github.com/KonteiKeisei/kg-transit)).
 - **Search** (Ctrl+F, or the magnifier in the token controls): landmarks, addresses ("193 Salem St"), streets and places, nearest first. Picking one pans there and makes it blink.
-- **Edit points of interest** (GM, the landmark tool in the notes controls): click a label, landmark or building to edit it in a panel beside the sidebar: name, kind, shape, glow, who sees it, move, remove, and **Edit the card** for its text and links. Click a plain building or empty map for a quick menu (point of interest, safe haven, label, pin). Landmarks and label edits are kept per city, so a campaign can travel between cities.
+- **Edit points of interest** (GM, the landmark tool in the token controls): click a label, landmark or building to edit it in a panel beside the sidebar: name, kind, shape, glow, who sees it, move, remove, and **Edit the card** for its text and links. Click a plain building or empty map for a quick menu (point of interest, safe haven, label, pin). Landmarks and label edits are kept per city, so a campaign can travel between cities.
 
 ## The 1980s
 
@@ -61,6 +61,8 @@ Each city's 1986: towers built since are hidden (from their construction dates i
 - `generateCity(cityId, { era, year, area, at, view })`: make a city scene without the dialog.
 - `sceneCovering(cityId, { lat, lon, era })`: the smallest scene of a city whose map covers a point.
 - `openPlaceCard(cityId, landmarkId, { edit })`: open a landmark's place card.
+- `parties.scene(scene)`, `parties.selected(scene)`, `parties.members(actor)`, `parties.meta(actor)`: party tokens (dnd5e group actors; KG Realms' parties count too).
+- `route(from, to, { mode, show })`: the fastest route on the city scene on screen, walking (3 mph) or driving (35 mph, 55 on interstates), in the scene's era. Points are scene `{ x, y }` or `{ lat, lon }`; returns miles, minutes, interstate miles and the route's points.
 
 ## What it downloads
 

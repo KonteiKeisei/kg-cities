@@ -65,7 +65,7 @@ export class PoiEditor {
       document.removeEventListener("keydown", this.onKey, true);
     }
     // Keep the sidebar toggle in step when edit mode ends from here (Done or Esc).
-    const tool = ui.controls?.controls?.notes?.tools?.kgCitiesEdit;
+    const tool = ui.controls?.controls?.tokens?.tools?.kgCitiesEdit;
     if (tool) tool.active = editing;
     ui.controls?.render();
   }
@@ -108,6 +108,9 @@ export class PoiEditor {
 
   #down(event) {
     if (event.button !== 0 || !this.editing) return;
+    // The editor sits with the token tools: a click on a token is the token's, not the map's.
+    let at = event.target;
+    while (at && at !== canvas.stage) { if (at.document?.documentName === "Token") return; at = at.parent; }
     this.click = { x: event.global.x, y: event.global.y, t: Date.now() };
   }
 

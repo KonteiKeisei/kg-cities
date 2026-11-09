@@ -3,6 +3,7 @@ import { ATTRIBUTION, downloadTiles, tileSource, tilesFor } from "./download.mjs
 import { Archive, gzip, writeArchive } from "./pmtiles.mjs";
 import { nightView, placeList, tallBuildings, transitLines, transitRoutes } from "./derive.mjs";
 import { searchIndex } from "./search-index.mjs";
+import { roadNetwork } from "./roads-index.mjs";
 
 const MODULE_ID = "kg-cities";
 /** Real scale of every city scene, as the Boston campaign scene: 100 px = 250 ft. */
@@ -13,7 +14,8 @@ export const FEET_PER_PIXEL = 2.5;
  */
 export const GRID = { size: 100, distance: 250, units: "ft" };
 /** Bumped when the generated files change shape, so old cities are offered a rebuild. */
-export const DATA_VERSION = 5;
+// 6: the street network for routes (roads.json).
+export const DATA_VERSION = 6;
 export const ERAS = {
   "1980s": { label: "1980s", year: 1986, ready: true },
   modern: { label: "Modern", year: null, ready: false }
@@ -46,6 +48,7 @@ export function cityFiles(id) {
     places: `${dir}/places.json`,
     transit: `${dir}/transit.json`,
     search: `${dir}/search.json`,
+    roads: `${dir}/roads.json`,
     lights: `${dir}/lights.json`,
     night: `${dir}/night.webp`
   };
@@ -217,6 +220,8 @@ async function deriveAndSave(city, { archive, mapUrl, packed = null, metro, sour
   const transit = await cityTransit(city, metro, getTile);
   note.update(0.74, `${city.name}: indexing streets and addresses…`);
   const search = await searchIndex(getTile, metro);
+  note.update(0.745, `${city.name}: joining up the streets for routes…`);
+  const roads = await roadNetwork(getTile, metro);
   note.update(0.75, `${city.name}: lighting the city at night…`);
   const night = await nightView(getTile, metro, { onProgress: (f) => note.update(0.75 + 0.15 * f, `${city.name}: lighting the city at night…`) });
   const canvasEl = new OffscreenCanvas(night.width, night.height);
@@ -234,6 +239,7 @@ async function deriveAndSave(city, { archive, mapUrl, packed = null, metro, sour
     places: await upload(files.places, json(places), "application/json"),
     transit: await upload(files.transit, json(transit), "application/json"),
     search: await upload(files.search, json(search), "application/json"),
+    roads: await upload(files.roads, json(roads), "application/json"),
     lights: await upload(files.lights, json(night.lights), "application/json"),
     night: await upload(files.night, nightBlob, "image/webp")
   };

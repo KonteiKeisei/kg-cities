@@ -1,5 +1,77 @@
 # KG Cities changelog
 
+## 0.9.0
+
+- **Travel by dragging** (the GM, on a city scene): drop a party token somewhere and a window
+  asks how the party goes, with each way's time already worked out. **Walk** (the default, 3 mph
+  along the streets), **Taxi** (four to a cab, the 1986 meter's fare per cab shared by its
+  riders and paid by each rider, the party's purse, or nobody; the meter is set per city in the
+  window), **Own vehicles** (the vehicle actors in the party's group: owners drive their own,
+  everyone else fills the seats; a vehicle whose owner is elsewhere needs a driver chosen;
+  greyed out while anyone lacks a seat; 35 mph, 55 on interstates; the party arrives with its
+  slowest car) and **Teleport** (instant, or keeping one of the other ways' time on the clock).
+  Shift-drag just moves the token. Cancel leaves it where it was. A party token dropped on
+  another of the same party's tokens just moves there (bringing them together to merge, not a
+  trip); splitting and merging never start travel, and stop a trip under way.
+- Vehicles: drop a vehicle actor on the Own vehicles tab to add it to the party; set its owner
+  and passenger seats right there.
+- Trips run together on the world's clock (setting "Travel speed", real time by default), each token moving along its route with its way still to go drawn on the map. The
+  GM's Travelling panel shows each trip's progress, with Arrive now (the clock runs on to its
+  arrival, moving every trip on) and Stop. Other modules hear `kgCities.arrived`.
+- With KG Transit 4.9 (a network on the scene): a **Train** tab, the best stations to walk to and
+  from, door to door ("Walk 6 min to Harvard, Red Line to Park Street 14 min, walk 4 min; 24 min,
+  53 min quicker than walking"). The party walks to the station; there Board opens for the GM
+  with the destination chosen (riders and fares confirmed there, as ever); off the train at that
+  stop, they walk on to where they were dropped. Off early, the walk on is left to the GM.
+- With KG Transit: a party set down on a station by any trip (walk, cab, own vehicles, teleport)
+  gets the Board window there, that party chosen. Ending a trip near a station does not.
+- Trips run in real time by default (setting "Travel speed": real time, or up to 10 minutes a
+  second), the clock written every few seconds as train rides do; Arrive now and Stop are in
+  the Travelling panel.
+- A vehicle's owner is chosen from the party's people (its split groups and the whole party's
+  too, and its current owner), not from every actor in the world. Party names count people
+  only: a party's vehicles are not in its name.
+- One clock: while a train ride or a flight runs the world's clock (in real time), trips move
+  with it instead of running it at the travel speed; the Travelling panel says so.
+- Settings: "Ask how to travel when dragging" (party tokens, every token, never), "Travel
+  speed", and "Cab fares: copper per dollar" (KG Transit's own when it is installed).
+
+- Edit points of interest moved from the Journal Notes controls to the Token controls, where KG
+  Realms keeps its editor. While editing, a click on a token is the token's (select, drag), not
+  a click on the map under it.
+
+- Party tokens, from KG Realms: a party is a dnd5e group actor's token. Each member's portrait
+  sits round the inside of a glowing ring (its colour is a setting), as big as fits without
+  overlapping: they grow as a party splits and shrink as it merges (one member: their portrait
+  fills the ring), and on a city scene zoomed
+  far out the token is drawn larger so it stays findable. The token HUD's party button splits a
+  party (drag people between the two sides) or merges the selected ones. While a party is split,
+  each group and its token are named for who is in it ("Leonard and Pierre", "Leonard, Pierre
+  and Dot"); back together, it takes the party's title again. Members changed on a group's sheet
+  rename it too; renaming the whole party yourself makes that its title. A merge keeps pooled
+  items and money on the old group.
+- Setting "The party": the group actor that is the players' party (empty: dnd5e's primary party).
+- With KG Realms active, Realms manages parties and KG Cities only reads them (no second button
+  or ring). KG Realms' parties count as KG Cities' own. A party split by KG Cities alone is not
+  known to KG Realms as split if Realms is turned on later: merge it and split it again there.
+- `api.parties`: a scene's party tokens, the one to act on, a party's members and its record.
+
+- A street network for routes, built when a city is generated (roads.json, about 7 MB for
+  Boston's metro, 2 MB as sent): every road, alley, service road (airports, hospitals, campuses),
+  pedestrian street and pier, joined where they meet, with each road's kind, interstate, one way,
+  ramp, bridge and tunnel. Sidewalks, footways and cycleways are left out (walkers use the
+  streets), as are parking aisles and driveways. City data goes to version 6: each city asks to
+  rebuild its data once (from the saved map, no download).
+- `api.route(from, to, { mode, show })`: the fastest route on the city scene on screen, on foot
+  at 3 mph or by road at 35 mph (55 on interstates), in the scene's era: roads not built yet are
+  closed, and the era's own roads are open. Harvard Square to Boston Common: 3.8 mi, 77 min on
+  foot; 3.9 mi, 9 min by car.
+- Boston 1986: the elevated Central Artery and the Dewey Square Tunnel are I-93 (interstate)
+  for routes. The rules that remove the Big Dig and the Ted Williams Tunnel now remove only
+  interstate roads, so Route 1A and the Sumner and Callahan tunnels (1934, 1961) are back on the
+  1986 map. For routes, a road the era cuts short (the tunnels' approaches, whose ends today are
+  Big Dig ramps) joins the nearest street within 120 m.
+
 ## 0.8.0
 
 - **Place cards**, ported from KG Realms. Clicking a landmark or safe haven opens its card, a

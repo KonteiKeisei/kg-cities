@@ -6,6 +6,7 @@ import { buildPlaces, compileCorrections, coverPlaces, minZoomForRank, toGeoJSON
 import { mergeLandmarks } from "./landmarks.mjs";
 import { addressFinder, buildIndex, decodeAddresses, decodeStreet, normalize } from "./search.mjs";
 import { metres } from "./geo.mjs";
+import { RoadGraph } from "./routing.mjs";
 
 const getJson = async (url) => {
   const res = await fetch(url, { cache: "no-cache" });
@@ -86,6 +87,29 @@ export class LandmarkStore {
     const removed = new Set(this.getSaved()?.removed ?? []);
     if (remove) removed.add(remove);
     await this.setSaved({ list, removed: [...removed] });
+  }
+}
+
+/* ---------------------------------------- */
+/*  The street network                       */
+/* ---------------------------------------- */
+
+/** A city's routes: its street network loaded on first use (a few MB), with its era's roads. */
+export class RoadData {
+  constructor() {
+    this.key = null;
+    this.graph = null;
+  }
+
+  /** The graph for a roads file and an era's map edits ({ hiddenRoads, extraRoads }); shared by callers. */
+  load(url, era = {}, eraKey = "") {
+    if (!url) return Promise.reject(new Error("this city has no street network yet: rebuild its data (Update city data)"));
+    const key = `${url}|${eraKey}`;
+    if (this.key !== key) {
+      this.key = key;
+      this.graph = getJson(url).then((packed) => new RoadGraph(packed, era)).catch((err) => { this.key = null; throw err; });
+    }
+    return this.graph;
   }
 }
 

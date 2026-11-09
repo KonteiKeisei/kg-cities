@@ -187,6 +187,9 @@ export class HoverCard {
 
   #down(event) {
     if (event.button !== 0) return;
+    // A click on a token (a party standing on a landmark) is the token's, not the landmark's.
+    let at = event.target;
+    while (at && at !== canvas.stage) { if (at.document?.documentName === "Token") { this.click = null; return; } at = at.parent; }
     this.click = { x: event.global.x, y: event.global.y, t: Date.now() };
   }
 

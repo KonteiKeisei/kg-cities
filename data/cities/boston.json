@@ -23528,7 +23528,11 @@
       {
        "type": "Feature",
        "properties": {
-        "dewey": false
+        "dewey": false,
+        "class": "motorway",
+        "network": "us-interstate",
+        "ref": "I 93",
+        "name": "Central Artery"
        },
        "geometry": {
         "type": "LineString",
@@ -23547,7 +23551,11 @@
       {
        "type": "Feature",
        "properties": {
-        "dewey": false
+        "dewey": false,
+        "class": "motorway",
+        "network": "us-interstate",
+        "ref": "I 93",
+        "name": "Central Artery"
        },
        "geometry": {
         "type": "LineString",
@@ -23566,7 +23574,12 @@
       {
        "type": "Feature",
        "properties": {
-        "dewey": true
+        "dewey": true,
+        "class": "motorway",
+        "network": "us-interstate",
+        "ref": "I 93",
+        "name": "Dewey Square Tunnel",
+        "brunnel": "tunnel"
        },
        "geometry": {
         "type": "LineString",
@@ -23585,7 +23598,12 @@
       {
        "type": "Feature",
        "properties": {
-        "dewey": true
+        "dewey": true,
+        "class": "motorway",
+        "network": "us-interstate",
+        "ref": "I 93",
+        "name": "Dewey Square Tunnel",
+        "brunnel": "tunnel"
        },
        "geometry": {
         "type": "LineString",
@@ -23608,7 +23626,11 @@
       {
        "type": "Feature",
        "properties": {
-        "dewey": false
+        "dewey": false,
+        "class": "motorway",
+        "network": "us-interstate",
+        "ref": "I 93",
+        "name": "Central Artery"
        },
        "geometry": {
         "type": "LineString",
@@ -23695,7 +23717,11 @@
       {
        "type": "Feature",
        "properties": {
-        "dewey": false
+        "dewey": false,
+        "class": "motorway",
+        "network": "us-interstate",
+        "ref": "I 93",
+        "name": "Central Artery"
        },
        "geometry": {
         "type": "LineString",
@@ -23782,7 +23808,11 @@
       {
        "type": "Feature",
        "properties": {
-        "dewey": false
+        "dewey": false,
+        "class": "motorway",
+        "network": "us-interstate",
+        "ref": "I 93",
+        "name": "Central Artery"
        },
        "geometry": {
         "type": "LineString",
@@ -23805,7 +23835,11 @@
       {
        "type": "Feature",
        "properties": {
-        "dewey": false
+        "dewey": false,
+        "class": "motorway",
+        "network": "us-interstate",
+        "ref": "I 93",
+        "name": "Central Artery"
        },
        "geometry": {
         "type": "LineString",
@@ -23960,7 +23994,11 @@
       {
        "type": "Feature",
        "properties": {
-        "dewey": false
+        "dewey": false,
+        "class": "motorway",
+        "network": "us-interstate",
+        "ref": "I 93",
+        "name": "Central Artery"
        },
        "geometry": {
         "type": "LineString",
@@ -24075,7 +24113,12 @@
       {
        "type": "Feature",
        "properties": {
-        "dewey": true
+        "dewey": true,
+        "class": "motorway",
+        "network": "us-interstate",
+        "ref": "I 93",
+        "name": "Dewey Square Tunnel",
+        "brunnel": "tunnel"
        },
        "geometry": {
         "type": "LineString",
@@ -24098,7 +24141,12 @@
       {
        "type": "Feature",
        "properties": {
-        "dewey": true
+        "dewey": true,
+        "class": "motorway",
+        "network": "us-interstate",
+        "ref": "I 93",
+        "name": "Dewey Square Tunnel",
+        "brunnel": "tunnel"
        },
        "geometry": {
         "type": "LineString",
@@ -25189,6 +25237,14 @@
          ]
         ]
        }
+      ],
+      [
+       "==",
+       [
+        "get",
+        "network"
+       ],
+       "us-interstate"
       ]
      ],
      [
@@ -25230,6 +25286,14 @@
          ]
         ]
        }
+      ],
+      [
+       "==",
+       [
+        "get",
+        "network"
+       ],
+       "us-interstate"
       ]
      ],
      [

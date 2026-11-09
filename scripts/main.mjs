@@ -2,7 +2,7 @@ import { canvasScaleForTileZoom, latLonToScene, makeFrame, sceneToLatLon } from 
 import { CityLayer } from "./map-layer.mjs";
 import { DATA_VERSION, generateCity, isUpdating, loadCities, loadCityPack, openGenerator, refreshTransit, updateCityData } from "./generator.mjs";
 import { DEFAULT_TILT, NIGHT_MIN_SCALE, leanFor } from "./style.mjs";
-import { LandmarkStore, PlaceStore, SearchData } from "./city-stores.mjs";
+import { LandmarkStore, PlaceStore, RoadData, SearchData } from "./city-stores.mjs";
 import { mergeLandmarks, pageSummary } from "./landmarks.mjs";
 import { HoverCard } from "./ui-card.mjs";
 import { MapSearch } from "./ui-search.mjs";
@@ -10,6 +10,11 @@ import { PoiEditor } from "./ui-editor.mjs";
 import { PlaceCards, VISIBILITY, asHtml, visibilityOf } from "./place-card.mjs";
 import { registerPlaceLinks } from "./place-links.mjs";
 import { SceneTrail, listenForOpens } from "./ui-trail.mjs";
+import { PartyManager, baseParty, groupMembers, partyMeta, partyTitle, sceneParties, selectedParty } from "./party.mjs";
+import { installParty } from "./ui-party.mjs";
+import { TravelController } from "./travel.mjs";
+import { openTravel } from "./ui-travel.mjs";
+import { metres as metresBetween } from "./geo.mjs";
 
 const MODULE_ID = "kg-cities";
 const SETTINGS = { look: "look", lean: "tilt", highDpi: "highDpi", businesses: "businesses", dayStart: "dayStart", nightStart: "nightStart" };
@@ -39,6 +44,53 @@ async function setOfCity(key, value) {
   await game.settings.set(MODULE_ID, key, all);
 }
 const searchData = new SearchData();
+const roads = new RoadData();
+// Parties: dnd5e group actors on the scene, split and merged from the token HUD (KG Realms' own
+// when it is active). Travel (stage 3) tells the manager which parties are on the move.
+const partyManager = new PartyManager();
+
+/* ---------------------------------------- */
+/*  Travel                                   */
+/* ---------------------------------------- */
+
+/** A point in words: the landmark there, else the nearest house number. */
+async function describePoint(p) {
+  const ll = layer.frame ? sceneToLatLon(layer.frame, p) : null;
+  if (!ll) return "";
+  const lm = drawnLandmarks().find((l) => metresBetween(ll, l) < 80);
+  if (lm) return lm.name;
+  const a = await searchData.addressAt(ll.lat, ll.lon);
+  return a ? [a.text, a.area].filter(Boolean).join(", ") : "";
+}
+
+// Dragging a party token on a city scene asks how it goes, then it travels the streets.
+const travel = new TravelController({
+  route: (from, to, options) => routeOnScene(from, to, options),
+  canTravel: (scene) => !!current && current.scene === scene && !!cityOf(scene)?.files?.roads,
+  openDialog: (controller, ctx) => openTravel(controller, ctx, { describe: describePoint, city: cityId })
+});
+partyManager.busy = (id) => travel.busy(id);
+partyManager.stopTravel = (id) => travel.stop(id, { quiet: true });
+
+/**
+ * The fastest route on the city scene on screen, between two points given as scene { x, y } or
+ * { lat, lon }: mode "walk" or "drive". { mode, miles, interstateMiles, minutes, line: [[lon, lat]],
+ * points: [{ x, y }] } or null when no road joins them. show: draw it on the map for a moment.
+ */
+async function routeOnScene(from, to, { mode = "walk", show = false } = {}) {
+  if (!current || !layer.frame) throw new Error("KG Cities: routes work on a city scene");
+  const c = current.city;
+  const graph = await roads.load(c.files?.roads ? url(c.files.roads) : null, current.era.map ?? {}, `${c.city}:${c.era}`);
+  const ll = (p) => (Number.isFinite(p?.lat) ? [p.lon, p.lat] : (({ lat, lon }) => [lon, lat])(sceneToLatLon(layer.frame, p)));
+  const r = graph.route(ll(from), ll(to), mode);
+  if (!r) return null;
+  if (show) layer.flash?.({ type: "FeatureCollection", features: [{ type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: r.line } }] });
+  return {
+    mode, metres: r.metres, interstateMetres: r.interstateMetres, seconds: r.seconds,
+    miles: r.metres / 1609.344, interstateMiles: r.interstateMetres / 1609.344, minutes: r.seconds / 60, line: r.line,
+    points: r.line.map(([lon, lat]) => latLonToScene(layer.frame, lat, lon))
+  };
+}
 const landmarks = new LandmarkStore({ getSaved: () => ofCity("landmarks"), setSaved: (v) => setOfCity("landmarks", v) });
 const places = new PlaceStore({
   getEdits: () => ofCity("placeEdits") ?? { edits: {}, added: {} },
@@ -321,6 +373,8 @@ Hooks.once("init", () => {
 
   // @CityPlace[city:id]{Name} in any text opens that place's card.
   registerPlaceLinks(cards);
+  installParty({ manager: partyManager, isCityScene: (s) => !!cityOf(s) });
+  travel.install();
 
   layer.onError = (err) => {
     console.warn(`${MODULE_ID} |`, err);
@@ -368,6 +422,27 @@ Hooks.once("init", () => {
     refreshTransit: (cityId) => refreshTransit(cityId),
     /** The city scene's flag, or null. */
     cityOf,
+    /**
+     * The fastest route on the city scene on screen: route(from, to, { mode: "walk" | "drive", show }),
+     * points as scene { x, y } or { lat, lon }. Walking at 3 mph, driving at 35 mph and 55 on
+     * interstates, in the scene's era. See routeOnScene.
+     */
+    route: (from, to, options) => routeOnScene(from, to, options),
+    /**
+     * Parties (dnd5e group actors; KG Realms' parties count too): scene(scene) the party token
+     * documents on a scene, in party order; selected(scene, explicit?) the one to act on (the
+     * selected party token, else the scene's only one; throws when several and none selected);
+     * members(actor) a party's member actors; meta(actor) its { family, baseName, number }.
+     */
+    parties: {
+      scene: (scene = canvas.scene) => sceneParties(scene),
+      selected: (scene = canvas.scene, explicit = null) => selectedParty(scene, explicit),
+      members: (actor) => groupMembers(actor),
+      meta: (actor) => partyMeta(actor),
+      /** The party (the setting's group actor, else dnd5e's primary party), and its own title. */
+      base: () => baseParty(),
+      title: (actor) => partyTitle(actor)
+    },
     /** Open a landmark's place card, e.g. openPlaceCard("boston", "seed:..."); edit: the GM's form. */
     openPlaceCard: (city, id, { edit = false } = {}) => cards.open({ kind: "landmark", city, id }, { edit, warnMissing: true }),
     /**
@@ -526,8 +601,9 @@ Hooks.on("getSceneControlButtons", (controls) => {
       order: 100, button: true, onChange: () => mapSearch.toggle()
     };
   }
-  if (controls.notes && game.user.isGM) {
-    controls.notes.tools.kgCitiesEdit = {
+  // With the token tools, where KG Realms keeps its editor.
+  if (controls.tokens && game.user.isGM) {
+    controls.tokens.tools.kgCitiesEdit = {
       name: "kgCitiesEdit", title: "Edit points of interest (click a label, landmark or building; shift-click for a pin)",
       icon: "fa-solid fa-landmark", order: 110, toggle: true, active: editor.editing,
       onChange: (event, active) => editor.setEditing(active)
