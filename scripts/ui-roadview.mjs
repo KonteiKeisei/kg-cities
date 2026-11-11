@@ -122,7 +122,8 @@ export class RoadView {
   sync() {
     const trip = this.#wanted();
     if (!trip) return this.#close();
-    if (trip.key === this.key && this.root) { this.trip = trip; return; }
+    // The same trip (its start may have moved with a skip): kept, unless its window was lost.
+    if (trip.key === this.key && this.root?.isConnected) { this.trip = trip; return; }
     this.#close();
     this.#open(trip);
   }
@@ -210,8 +211,11 @@ export class RoadView {
       if (!this.root) return;
       const dt = Math.min(0.1, (now - last) / 1000);
       last = now;
-      this.#frame(now, dt);
-      this.raf = requestAnimationFrame(loop);
+      // A frame that fails (odd weather, a clock leap) is skipped, not the end of the view.
+      try { this.#frame(now, dt); } catch (err) {
+        if (!this.warned) { this.warned = true; console.warn(`${ID} | street view frame failed`, err); }
+      }
+      if (this.root) this.raf = requestAnimationFrame(loop);
     };
     this.raf = requestAnimationFrame(loop);
     this.#startSound(trip);
@@ -252,7 +256,7 @@ export class RoadView {
     const trip = this.controller.trips[this.key];
     if (!trip) return this.#close();
     const clock = this.controller.now();
-    const share = Math.max(0, Math.min(1, (clock - trip.start) / trip.seconds));
+    const share = Math.max(0, Math.min(1, (clock - trip.start) / trip.seconds)) || 0;
     // Slowing for the last stretch, stopped once there; still while the game is paused.
     const speed = game.paused ? 0 : (SPEEDS[trip.mode] ?? SPEEDS.own) * Math.min(1, (1 - share) * 20);
     this.distance += speed * dt;

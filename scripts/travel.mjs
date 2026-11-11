@@ -65,6 +65,10 @@ export class TravelController {
       name: "Travel speed", hint: "How fast the world's clock runs while parties travel in a city: real time, as train rides run, or faster. Arrive now and Stop are in the Travelling panel.",
       scope: "world", config: true, type: Number, default: 1, choices: RATES, onChange: () => this.#drawPanel()
     });
+    register("travelSkip", {
+      name: "When the clock is skipped", hint: "The GM skips time (Calendaria, or Foundry's clock) while parties are travelling in a city: they travel on through it (a skip longer than what is left means they have arrived), or they wait where they are and go on from there.",
+      scope: "world", config: true, type: String, default: "move", choices: { move: "Parties travel on through it", wait: "Parties wait where they are" }
+    });
     register("taxiMeters", { scope: "world", config: false, type: Object, default: {} });
     register("trips", { scope: "world", config: false, type: Object, default: {}, onChange: () => { this.#drawLines(); this.#drawPanel(); this.#run(); this.onTrips?.(); } });
     // With KG Transit: a party's way on after its train (walk from the station to where it was
@@ -80,6 +84,8 @@ export class TravelController {
     Hooks.on("canvasReady", () => { this.#drawLines(); this.#drawPanel(); this.#run(); this.onTrips?.(); });
     Hooks.on("canvasTearDown", () => { this.lines?.destroy({ children: true }); this.lines = null; });
     Hooks.on("pauseGame", () => this.#drawPanel());
+    // The GM skipping time (not the trips' own running of the clock).
+    Hooks.on("updateWorldTime", (worldTime, delta) => this.#clockMoved(worldTime, delta).catch((err) => console.warn(`${ID} | travel`, err)));
     // Everyone's route lines shorten as the tokens move.
     Hooks.on("updateToken", (doc) => { if (Object.values(this.trips).some((t) => t.token === doc.id)) this.#drawLines(); });
     // Off the train: a party with somewhere still to go walks on from the station.
@@ -207,13 +213,45 @@ export class TravelController {
     const s = Math.round(this.pending);
     this.pending = 0;
     this.steps = 0;
-    if (s > 0) await game.time.advance(s);
+    if (s <= 0) return;
+    // Our own write of the time the trips ran: not a skip (they have already moved by it).
+    this.ownWrite = game.time.worldTime + s;
+    await game.time.advance(s);
   }
 
-  async #tick({ step = true } = {}) {
-    if (this.ticking) return;
+  /**
+   * The world clock moved by something other than the trips' own running (the GM skipping time,
+   * by Calendaria or Foundry): with "travel on", parties move on through it at once, paused or
+   * not, and those whose time is up arrive; with "wait" (and always when time goes back), each
+   * trip's start moves with the clock so the party carries on from where it was. A train or a
+   * flight running the clock is #skipJumps' to handle. The GM in charge decides.
+   */
+  async #clockMoved(world, delta) {
+    if (!isPrimaryGM() || !Object.keys(this.trips).length || !Number.isFinite(delta) || Math.abs(delta) < 1) return;
+    if (this.ownWrite != null && Math.abs(world - this.ownWrite) < 1) { this.ownWrite = null; return; }
+    if (this.#followingClock()) return;
+    this.base = null;
+    if (delta < 0 || game.settings.get(ID, "travelSkip") === "wait") {
+      const trips = foundry.utils.deepClone(this.trips);
+      for (const t of Object.values(trips)) t.start += Math.round(delta);
+      await game.settings.set(ID, "trips", trips);
+      return;
+    }
+    await this.#tick({ step: false, force: true });
+    this.#drawLines();
+    this.#drawPanel();
+  }
+
+  async #tick({ step = true, force = false } = {}) {
+    // One step at a time; one that has hung for long (a lost server reply) no longer blocks the rest.
+    if (this.ticking && Date.now() - (this.tickAt ?? 0) < 15000) {
+      if (!force) return;
+      // A skip waits for the step under way, then runs.
+      for (let i = 0; i < 50 && this.ticking; i++) await new Promise((r) => setTimeout(r, 100));
+    }
     if (step && game.paused) return;
     this.ticking = true;
+    this.tickAt = Date.now();
     try {
       // One clock: while a train ride or a flight runs it (in real time), trips move with it and
       // add nothing of their own; otherwise they run it at the travel speed.

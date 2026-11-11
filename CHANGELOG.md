@@ -1,5 +1,18 @@
 # KG Cities changelog
 
+## 0.12.1
+
+- **Skipping time no longer breaks parties travelling in a city.** A skip (Calendaria's, or
+  Foundry's clock) used to leave them at the end of their route without arriving (while paused),
+  their route lines gone and their street views frozen. Now a new setting, **When the clock is
+  skipped**, decides: they **travel on through it** (the default: a skip longer than what is left
+  means they arrive, at once, paused or not, and onward stages such as boarding a train follow), or
+  they **wait where they are** and carry on afterwards. Going back in time never runs them
+  backwards.
+- A street view whose frame fails is no longer stuck: it skips that frame and carries on, and
+  selecting the party's token reopens a view that was lost.
+- A travel step that never finishes (a lost server reply) no longer stops every trip for good.
+
 ## 0.12.0
 
 - **The phones' photographs are back** (from Unsleeping Pagers): a payphone is its weathered
