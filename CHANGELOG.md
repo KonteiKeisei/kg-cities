@@ -1,5 +1,18 @@
 # KG Cities changelog
 
+## 0.12.2
+
+- **The Travelling panel moves and locks**: drag it by its title anywhere on screen, lock it
+  with its padlock, and it comes back where you left it (per computer). Unmoved, it sits just
+  inside the map's top right, clear of the sidebar, and it always stays on screen.
+- Its rows no longer overhang: a long name or vehicle shortens, and the time left and the
+  Arrive now and Stop buttons stay inside the panel.
+- Without KG Transit, the street view's corner is measured from Foundry's interface too.
+- **Placed payphones are small**: on a city map a 24 px marker (about 60 ft) instead of a whole
+  grid square (250 ft, half a block); on other scenes half a square. Ones already placed at a
+  whole square shrink to match when the GM loads the world, centred where they were (tiles with
+  your own art, or resized by hand, are left as they are).
+
 ## 0.12.1
 
 - **Skipping time no longer breaks parties travelling in a city.** A skip (Calendaria's, or

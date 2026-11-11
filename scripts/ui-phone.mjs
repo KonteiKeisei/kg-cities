@@ -15,6 +15,32 @@ import { uiBounds } from "./ui-trail.mjs";
 const ID = "kg-cities";
 const esc = (s) => foundry.utils.escapeHTML(String(s ?? ""));
 /**
+ * How big a placed phone's tile is, in scene pixels: on a city map (2.5 ft a pixel) a small marker
+ * of 24 px, about 60 ft, where a grid square would be half a block; on any other scene half a
+ * square (a payphone beside a 5 ft character).
+ */
+export const phoneTileSize = (scene) => (scene?.flags?.[ID]?.city ? 24 : Math.round((scene?.grid?.size ?? 100) / 2));
+/** The icon placed phones are drawn with. */
+const PHONE_ICON = `modules/${ID}/assets/phones/payphone.svg`;
+
+/**
+ * Phones placed at a whole grid square (as 0.12.0 placed them) shrink to their new size, centred
+ * where they were. The GM in charge, once per load; tiles of other art or resized by hand are left.
+ */
+export async function shrinkPlacedPhones() {
+  if (!game.user.isGM || game.users.activeGM?.id !== game.user.id) return 0;
+  let n = 0;
+  for (const scene of game.scenes) {
+    const size = phoneTileSize(scene), grid = scene.grid?.size ?? 100;
+    if (size >= grid) continue;
+    const updates = scene.tiles.filter((t) => t.flags?.[ID]?.phone && t.texture?.src === PHONE_ICON && t.width === grid && t.height === grid)
+      .map((t) => ({ _id: t.id, x: Math.round(t.x + (grid - size) / 2), y: Math.round(t.y + (grid - size) / 2), width: size, height: size }));
+    if (updates.length) { await scene.updateEmbeddedDocuments("Tile", updates); n += updates.length; }
+  }
+  return n;
+}
+
+/**
  * The phones' photographs (from Unsleeping Pagers) and where their keys are on them, in percent of
  * the picture: key centres by column and row, a key's width, and the number card's centre.
  */
@@ -68,7 +94,11 @@ export class PhoneUI {
 
   install() {
     const redrawDock = () => this.dock();
-    Hooks.on("ready", () => { this.dock(); this.strip(); });
+    Hooks.on("ready", () => {
+      this.dock();
+      this.strip();
+      shrinkPlacedPhones().catch((err) => console.warn(`${ID} | resizing placed phones`, err));
+    });
     for (const h of ["updateItem", "createItem", "deleteItem", "updateUser"]) Hooks.on(h, (doc) => { if (h !== "updateUser" || doc === game.user) redrawDock(); if (h.endsWith("Item") && pagerOf(doc)) this.refresh(); });
     Hooks.on("updateActor", (a, ch) => { if (foundry.utils.hasProperty(ch, `flags.${ID}.book`) || "system" in ch) this.refresh(); });
     for (const h of ["collapseSidebar", "renderSidebar", "renderHotbar", "canvasReady"]) Hooks.on(h, () => this.#placeDock());
@@ -231,11 +261,11 @@ export class PhoneUI {
   async #place(e) {
     if (e.button !== 0) return;
     const { kind } = this.placing;
-    const at = e.getLocalPosition(canvas.stage), size = canvas.scene.grid?.size ?? 100;
+    const at = e.getLocalPosition(canvas.stage), size = phoneTileSize(canvas.scene);
     this.cancelPlacing({ reopen: false });
     const number = newNumber();
     const [tile] = await canvas.scene.createEmbeddedDocuments("Tile", [{
-      texture: { src: `modules/${ID}/assets/phones/payphone.svg` }, x: Math.round(at.x - size / 2), y: Math.round(at.y - size / 2), width: size, height: size,
+      texture: { src: PHONE_ICON }, x: Math.round(at.x - size / 2), y: Math.round(at.y - size / 2), width: size, height: size,
       flags: { [ID]: { phone: { kind, number, name: "" } } }
     }]);
     ui.notifications.info(`KG Cities: ${kind === "payphone" ? "payphone" : "phone"} ${number} placed. Name it in the switchboard so the books can tell it apart.`);

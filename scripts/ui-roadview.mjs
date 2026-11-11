@@ -11,6 +11,7 @@ import { RoadScene } from "./road-view.mjs";
 import { WeatherOverlay, currentStreetWeather } from "./street-weather.mjs";
 import { clockAt, MODE_COLOURS } from "./travel.mjs";
 import { formatDuration } from "./travel-plan.mjs";
+import { uiBounds } from "./ui-trail.mjs";
 
 const ID = "kg-cities";
 const esc = (s) => foundry.utils.escapeHTML(String(s ?? ""));
@@ -240,7 +241,8 @@ export class RoadView {
     if (!this.root || this.expanded) { if (this.root) Object.assign(this.root.style, { right: "", bottom: "" }); return; }
     let spot = null;
     try { spot = game.modules.get("kg-transit")?.active ? game.modules.get("kg-transit").api?.cornerSpot?.(16, this.root.offsetWidth) : null; } catch { /* older KG Transit */ }
-    spot ??= { right: (document.getElementById("sidebar")?.offsetWidth ?? 300) + 16, bottom: 16 };
+    // Without KG Transit: the same corner of the map, measured from Foundry's own interface.
+    if (!spot) { const b = uiBounds(); spot = { right: window.innerWidth - b.right + 16, bottom: window.innerHeight - b.bottom + 16 }; }
     this.root.style.right = `${spot.right}px`;
     this.root.style.bottom = `${spot.bottom}px`;
   }

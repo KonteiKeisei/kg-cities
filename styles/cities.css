@@ -457,6 +457,17 @@ a.kgc-link:hover { background: rgba(255, 201, 74, 0.22); text-shadow: none; }
 .kgc-trips .trips { display: grid; gap: 8px; }
 .kgc-trips header { display: flex; align-items: center; gap: 8px; }
 .kgc-trips header b { flex: 1; }
+/* Nothing in a row widens the panel: long names and vehicles shorten, times and buttons stay inside. */
+.kgc-trips { max-width: calc(100vw - 16px); grid-template-columns: minmax(0, 1fr); }
+.kgc-trips .trips { grid-template-columns: minmax(0, 1fr); }
+.kgc-trips .trip, .kgc-trips .line, .kgc-trips header { min-width: 0; }
+.kgc-trips .when, .kgc-trips .sub .btn, .kgc-trips header select, .kgc-trips header .lock, .kgc-trips header .paused { flex: none; }
+.kgc-trips header select { min-width: 0; max-width: 150px; }
+.kgc-trips header b.grip { cursor: move; user-select: none; }
+.kgc-trips header b.grip::before { content: "\f58e"; font: 900 11px "Font Awesome 6 Free"; color: var(--kgc-faint); margin-right: 7px; }
+.kgc-trips.dragging { opacity: 0.92; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6); }
+.kgc-trips header .lock { padding: 2px 6px; color: var(--kgc-muted); }
+.kgc-trips.locked header .lock { color: var(--kgc-gold); }
 .kgc-trips header .paused { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ffcf70; }
 .kgc-trips select { height: 26px; font-size: 12px; color: var(--kgc-text); background: #151b28; border: 1px solid var(--kgc-line-2); border-radius: 6px; }
 .kgc-trips .trip { display: grid; gap: 4px; padding-top: 6px; border-top: 1px solid var(--kgc-line); }

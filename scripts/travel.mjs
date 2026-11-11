@@ -6,6 +6,7 @@
 
 import { pointAlong, formatDuration } from "./travel-plan.mjs";
 import { familyActors, groupActor, groupMembers, isPrimaryGM } from "./party.mjs";
+import { uiBounds } from "./ui-trail.mjs";
 
 const ID = "kg-cities";
 const esc = (s) => foundry.utils.escapeHTML(String(s ?? ""));
@@ -69,6 +70,8 @@ export class TravelController {
       name: "When the clock is skipped", hint: "The GM skips time (Calendaria, or Foundry's clock) while parties are travelling in a city: they travel on through it (a skip longer than what is left means they have arrived), or they wait where they are and go on from there.",
       scope: "world", config: true, type: String, default: "move", choices: { move: "Parties travel on through it", wait: "Parties wait where they are" }
     });
+    // Where this user has put the Travelling panel ({ left, top } px) and whether it is locked there.
+    register("travelPanel", { scope: "client", config: false, type: Object, default: {} });
     register("taxiMeters", { scope: "world", config: false, type: Object, default: {} });
     register("trips", { scope: "world", config: false, type: Object, default: {}, onChange: () => { this.#drawLines(); this.#drawPanel(); this.#run(); this.onTrips?.(); } });
     // With KG Transit: a party's way on after its train (walk from the station to where it was
@@ -376,9 +379,11 @@ export class TravelController {
       this.panel.addEventListener("click", (e) => {
         const b = e.target.closest("[data-act]");
         if (!b) return;
-        const run = { arrive: () => this.arriveNow(b.dataset.key), stop: () => this.stop(b.dataset.key) }[b.dataset.act];
+        const run = { arrive: () => this.arriveNow(b.dataset.key), stop: () => this.stop(b.dataset.key), lock: () => this.#lockPanel() }[b.dataset.act];
         run?.().catch((err) => ui.notifications.error(`KG Cities: ${err.message}`));
       });
+      this.#dragPanel();
+      if (!this.panelResize) { this.panelResize = () => this.#placePanel(); window.addEventListener("resize", this.panelResize); }
       this.panel.addEventListener("change", (e) => {
         if (e.target.name === "rate") game.settings.set(ID, "travelPace", Number(e.target.value));
       });
@@ -386,13 +391,14 @@ export class TravelController {
       document.body.append(this.panel);
     }
     const now = this.now();
-    this.panel.style.right = `${(document.getElementById("sidebar")?.offsetWidth ?? 300) + 14}px`;
-    const following = this.#followingClock();
+    const following = this.#followingClock(), locked = !!this.#panelSpot().locked;
     // The header (with the speed dropdown) is redrawn only when it changes, so an open dropdown
     // stays open while the trips below tick on.
-    const head = `<b>Travelling</b>${game.paused ? '<span class="paused">Paused</span>' : ""}
+    const head = `<b class="${locked ? "" : "grip"}" data-tooltip="${locked ? "" : "Drag to move"}">Travelling</b>${game.paused ? '<span class="paused">Paused</span>' : ""}
       ${following ? '<span class="follow" data-tooltip="A train ride or a flight is running the clock in real time; trips move with it until it ends.">On the train\'s clock</span>'
-        : `<select name="rate" aria-label="Travel speed">${Object.entries(RATES).map(([v, l]) => `<option value="${v}" ${Number(v) === this.rate ? "selected" : ""}>${l}</option>`).join("")}</select>`}`;
+        : `<select name="rate" aria-label="Travel speed">${Object.entries(RATES).map(([v, l]) => `<option value="${v}" ${Number(v) === this.rate ? "selected" : ""}>${l}</option>`).join("")}</select>`}
+      <button type="button" class="btn ghost small lock" data-act="lock" aria-pressed="${locked}" aria-label="${locked ? "Unlock the panel" : "Lock the panel where it is"}" data-tooltip="${locked ? "Unlock to move it" : "Lock it where it is"}"><i class="fa-solid ${locked ? "fa-lock" : "fa-lock-open"}"></i></button>`;
+    this.panel.classList.toggle("locked", locked);
     const header = this.panel.querySelector("header");
     if (this.panelHead !== head) { this.panelHead = head; header.innerHTML = head; }
     // The rows are built only when the trips change; each tick just moves their bars and times,
@@ -412,6 +418,61 @@ export class TravelController {
       row.querySelector(".when").textContent = `${formatDuration(left)} left · ${clockAt(t.start + t.seconds)}`;
       row.querySelector(".bar i").style.width = `${(done * 100).toFixed(1)}%`;
     }
+    this.#placePanel();
+  }
+
+  /** This user's place for the panel: { left, top, locked }. */
+  #panelSpot() { try { return game.settings.get(ID, "travelPanel") ?? {}; } catch { return {}; } }
+
+  /**
+   * The panel where this user left it, else just inside the map's top right (clear of the sidebar
+   * and the scene navigation, as measured); always wholly on screen.
+   */
+  #placePanel() {
+    const el = this.panel;
+    if (!el || this.dragging) return;
+    const spot = this.#panelSpot(), w = el.offsetWidth || 330, h = el.offsetHeight || 120, b = uiBounds();
+    let left = Number.isFinite(spot.left) ? spot.left : b.right - w - 12;
+    let top = Number.isFinite(spot.top) ? spot.top : b.top + 10;
+    left = Math.max(8, Math.min(window.innerWidth - w - 8, left));
+    top = Math.max(8, Math.min(window.innerHeight - Math.min(h, 80) - 8, top));
+    Object.assign(el.style, { left: `${Math.round(left)}px`, top: `${Math.round(top)}px`, right: "auto" });
+  }
+
+  async #lockPanel() {
+    const spot = this.#panelSpot();
+    await game.settings.set(ID, "travelPanel", { ...spot, locked: !spot.locked });
+    this.panelHead = null;
+    this.#drawPanel();
+  }
+
+  /** Unlocked, the panel moves by its title; where it is dropped is remembered. */
+  #dragPanel() {
+    const el = this.panel;
+    el.addEventListener("pointerdown", (e) => {
+      if (e.button !== 0 || this.#panelSpot().locked || !e.target.closest("header") || e.target.closest("select, button")) return;
+      e.preventDefault();
+      const r = el.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top;
+      this.dragging = true;
+      el.classList.add("dragging");
+      // Followed on the whole window: a quick drag leaves the panel before it catches up.
+      const move = (ev) => {
+        const left = Math.max(8, Math.min(window.innerWidth - el.offsetWidth - 8, ev.clientX - dx));
+        const top = Math.max(8, Math.min(window.innerHeight - 40, ev.clientY - dy));
+        Object.assign(el.style, { left: `${left}px`, top: `${top}px`, right: "auto" });
+      };
+      const up = () => {
+        window.removeEventListener("pointermove", move);
+        window.removeEventListener("pointerup", up);
+        window.removeEventListener("pointercancel", up);
+        this.dragging = false;
+        el.classList.remove("dragging");
+        game.settings.set(ID, "travelPanel", { ...this.#panelSpot(), left: parseFloat(el.style.left), top: parseFloat(el.style.top) });
+      };
+      window.addEventListener("pointermove", move);
+      window.addEventListener("pointerup", up);
+      window.addEventListener("pointercancel", up);
+    });
   }
 }
 

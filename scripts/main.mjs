@@ -352,7 +352,7 @@ function currentLook() {
 /* ---------------------------------------- */
 
 /** Which local build is running (the browser console says, at load). */
-const BUILD = "2026-11-11 travel-skips";
+const BUILD = "2026-11-11 travel-panel-moves";
 
 Hooks.once("init", () => {
   console.info(`kg-cities | ${game.modules.get(MODULE_ID)?.version} (build ${BUILD})`);
