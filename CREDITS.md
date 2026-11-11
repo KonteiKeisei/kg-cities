@@ -10,6 +10,7 @@ use, copy, share and change for noncommercial purposes, not to be sold. It is bu
 | MapLibre GL JS (`lib/maplibre`) | https://maplibre.org | BSD 3-Clause (`lib/maplibre/LICENSE.txt`) |
 | pbf, vector-tile, point-geometry (`lib/mvt`) | Mapbox, https://github.com/mapbox | BSD 3-Clause / ISC (`lib/mvt/LICENSE-*.txt`) |
 | Noto Sans font glyphs (`data/fonts`) | The Noto Project Authors, https://notofonts.github.io | SIL Open Font License 1.1 (`data/fonts/OFL.txt`) |
+| Phone and pager sounds (`assets/sounds/phone`: ring, dial tone, ringback, keypad tones, pager beep and vibrate) | Unsleeping Pagers (Unsleeping City Campaign), folded into this module | As that module's |
 | PMTiles format (the saved map's file format; the reader and writer here are this module's own) | Protomaps, https://github.com/protomaps/PMTiles | Specification: BSD 3-Clause |
 
 The build tools (`tools/`, not shipped) also used, to make the data:

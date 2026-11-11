@@ -1,5 +1,79 @@
 # KG Cities changelog
 
+## 0.11.0
+
+Folds in Unsleeping Pagers as the city's communications. Phones belong to places; pagers belong
+to people.
+
+- **Place phones**: a place card's Links tab gives a place a phone or a payphone and its number.
+  Calling it rings for the players whose characters are there (near it on the city map, or on its
+  own scene): they hear the bell and Pick up or Let it ring. Calls connect, show their time, and
+  either end hangs up. Busy, no answer and not in service sound as they should.
+- **Payphones take a quarter**, paid from the caller's coins only when the call goes through
+  (otherwise the coin is returned). 911, the operator, 411 and 611 are free.
+- **Pagers are items** on characters, each with its own number, its memory of contacts and its
+  received pages, all of which go with it when it changes hands. Unknown numbers show as digits
+  and can be saved with a name; Call back finds a phone where the character is.
+- **Address books** stay with each character and back up their pagers: numbers saved on a pager
+  are copied in, and a new pager starts from it. At a phone: the address book and the phone book
+  (discovered places with a listed line).
+- **One interface for every device**: desk phone, payphone and pager share the same lit screen,
+  tabs, keypad and buttons, in their own skins. Keyboard dialling works.
+- **Switchboard** (GM, token controls): live calls, every place phone and who is there, every
+  pager (number, page it, give one), and the GM's own numbers for people not on the map. A call
+  strip shows calls waiting for the GM: 911, the operator, the GM's numbers, unlisted numbers.
+- **From Unsleeping Pagers**, once, the first time a GM logs in (that module need not be
+  installed; disable it first): its pager items become pagers of the same model with the actor's
+  pager number (a second pager on an actor gets a new one), each player's page log goes onto
+  their character's pager, and senders with a number go into that pager's memory and the
+  character's address book. The old data is left in place and nothing is moved twice.
+- Settings: how long phones ring; phone and pager volume (per computer).
+- API: `game.modules.get("kg-cities").api.phones`. Device kinds are open to a carried phone (an
+  early cell phone) later.
+
+## 0.10.0
+
+Works with KG Transit 4.9.1 (the train window and the street view follow the same selection and open in one spot).
+
+- **Street views**, like KG Transit's train rides: a party on foot sees the street from the
+  sidewalk at eye height, walking pace and a walker's sway; in a cab or its own vehicle, from the
+  road at 35 mph, through the vehicle's interior when it has one (else just the street going by): a downtown street in perspective (lanes, parking,
+  sidewalks, building fronts with their windows lit at night, street lamps, cross streets and
+  their traffic lights, oncoming traffic), lit for the hour, bouncing a little on the springs,
+  slowing to a stop on arrival. Each player sees their own party's car on their own, whatever
+  they have selected (out of the car their character rides in); the GM sees the view of the
+  party token they have selected (on a train, KG Transit's ride; nothing selected, no view),
+  with Arrive now, Stop and Close. It opens where KG Transit's ride window does, so a party's
+  view is always in one spot; full screen or a window. The Travelling panel moves to the top
+  right, clear of it.
+- Interiors: a cab is built in (setting "Cab interior" to use your own); a party's vehicle uses
+  the "Interior view (KG Cities)" field in its prototype token's settings (Appearance), else the
+  setting "Car interior (default)", empty unless you set one. The street's horizon is found from
+  the picture itself (just above the hood of a car, the headlamp of a motorcycle). Bebe's Mustang
+  and Trudy's motorcycle (interiors and sounds) ship in `assets/` for their tokens. Paint the windows flat grey and `tools/key-interior.py` makes
+  them transparent; `tools/road-harness.html` previews one against the street.
+- Driving sounds: a vehicle's prototype token also takes a "Driving sound (KG Cities)", looped
+  and faded in and out while the party drives it; else the setting "Car sound (default)" (empty:
+  silence). Cabs have their own sound built in (setting "Cab sound" to use your own). A client setting sets
+  the volume.
+- With KG Transit 4.9.1: the GM's ride window shows the ride of the selected party token too.
+  Only the token selected last decides, so the GM never sees a train ride and a street view at once.
+- With Flash Token Bar 5e: on a city scene its bar opens on the Group tab, listing every party
+  with a token on the scene (no dragging in), folded, each with one picture of its people. A
+  plain click picks just that party; shift-click adds. Kept in step as parties split and merge.
+- Money is always shown in dollars (fares, totals, purses); it is still paid from the sheets'
+  coins, at KG Transit's "Money: copper per dollar" rate.
+- A train's Skip, Get off next stop or Arrive no longer makes other parties' street trips arrive
+  at once: they carry on from where they were.
+- The Travelling panel no longer redraws itself under the pointer: its speed dropdown stays open
+  and its buttons answer while trips tick on.
+- Landmark hover cards no longer show (or open on click) through tokens, the sidebar, the chat
+  or any window in front of the map.
+- Street views follow the weather (Calendaria's, read as KG Transit's rides read it): clouds grey
+  the sky and dim the day; rain falls past, wets the road (lamps and headlights shine off it) and
+  runs on a car's windscreen; snow drifts down and whitens the sidewalks; fog hides the far end
+  of the street; thunderstorms flash. `tools/road-harness.html?wx=rain` previews a weather.
+
 ## 0.9.0
 
 - **Travel by dragging** (the GM, on a city scene): drop a party token somewhere and a window

@@ -35,6 +35,19 @@ See the [wiki](https://github.com/KonteiKeisei/kg-cities/wiki) for a full guide.
 - **Search** (Ctrl+F, or the magnifier in the token controls): landmarks, addresses ("193 Salem St"), streets and places, nearest first. Picking one pans there and makes it blink.
 - **Edit points of interest** (GM, the landmark tool in the token controls): click a label, landmark or building to edit it in a panel beside the sidebar: name, kind, shape, glow, who sees it, move, remove, and **Edit the card** for its text and links. Click a plain building or empty map for a quick menu (point of interest, safe haven, label, pin). Landmarks and label edits are kept per city, so a campaign can travel between cities.
 
+## Phones and pagers
+
+Phones belong to places; pagers belong to people.
+
+- **Place phones**: on a place card, Edit, Links, **Phone**: none, a phone or a payphone, with its number (New number picks an unused 555 one). The number shows on the card and the map's hover card. A phone rings for the players whose characters are there (a token or party token within about 300 feet on the city map, or anywhere on the place's own scene): they hear it, and Pick up or Let it ring. Use it from the card's **Phone** button or the **Use a phone here** tool in the token controls (players).
+- **Payphones** take a **quarter** (paid from the caller's coins at the dollar rate, only when the call goes through; otherwise the coin comes back). 911, the operator (0), 411 and 611 are free. Payphones are not in the phone book.
+- **Pagers** are items on a character: the GM gives one from the switchboard (a Pageboy II beeps, a Bravo shows numbers, an NEC 21A shows short messages). Each pager keeps its own number, its **memory** of names and numbers, and its **pages**: unknown callers show as numbers until saved with a name. Handing a pager to someone else hands over all of that. A small pager sits at the bottom right of the map while a player carries one, and buzzes when a page comes in (beep, vibrate or silent, set on the pager).
+- **Address books**: each character keeps one, with them whatever pager they carry. Numbers saved on a pager are copied into it, and a new pager starts from it. At a phone, the address book and the **phone book** (places with a listed phone that the players have discovered) are a tap away.
+- **Paging**: dial a pager's number from any phone, then key in a number to call back and press # (an alphanumeric pager's operator takes a message instead).
+- **Switchboard** (GM, the tower in the token controls): every call (Answer, Not in service, Hang up), every place phone and who is there (Ring it), every pager (change its number, page it, give a new one), and **your numbers**: people and businesses not on the map, whose calls ring for you. Calls to 911, the operator and unlisted numbers ring for you too; a call strip at the top of the screen shows what is waiting.
+- Calls are put through by the GM's client: with no GM logged in there is no dial tone.
+- **Coming from Unsleeping Pagers**: disable it, update KG Cities, and log in as GM. Its pagers, numbers and page logs move over once (it need not be installed), and you are told how many.
+
 ## The 1980s
 
 Each city's 1986: towers built since are hidden (from their construction dates in OpenStreetMap), rail lines and stations end where they ended then, and the Las Vegas Strip is the Strip of the Sands, the Dunes and the Desert Inn, the later resorts cleared to bare ground. New York has the World Trade Center as it stood; Boston has the elevated Central Artery and the period's place names.
@@ -49,6 +62,8 @@ Each city's 1986: towers built since are hidden (from their construction dates i
 | Sharp map on high-DPI screens | Full resolution on screens scaled 150% or more. |
 | Shops and restaurants | Today's businesses in a past era: by type only, hidden, or by name. |
 | Map tile server | Optional: your own server of OpenMapTiles-schema vector tiles (a TileJSON address). Empty uses OpenFreeMap. |
+| Phones ring for | Seconds a phone rings before the caller hears no answer. |
+| Phone and pager volume | Rings, tones and pager alerts, per computer. |
 
 ## For other modules
 

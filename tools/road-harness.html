@@ -1,0 +1,43 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Road harness</title>
+<!-- Preview an interior against the street: road-harness.html?i=cab&h=22 (i: a file in
+     assets/interiors without .webp, or none; h: the hour; walk=1 for the sidewalk view). -->
+<style>body { margin: 0; background: #111; } .stage { position: relative; width: 800px; height: 446px; } .stage canvas, .stage img { position: absolute; inset: 0; width: 100%; height: 100%; }</style>
+<div id="row"></div>
+<script type="module">
+import { RoadScene } from "../scripts/road-view.mjs";
+window.foundry = { utils: {} };
+const { horizonOf } = await import("../scripts/ui-roadview.mjs");
+window.errors = [];
+addEventListener("error", (e) => errors.push(e.message));
+const q = new URLSearchParams(location.search);
+const interior = q.get("i") ?? "cab", hour = Number(q.get("h") ?? 14), walking = q.get("walk") === "1";
+const stage = document.createElement("div");
+stage.className = "stage";
+const c = document.createElement("canvas"); c.width = 800; c.height = 446;
+stage.append(c);
+let horizon = interior === "none" || walking ? 0.45 : 0.27;
+if (interior !== "none" && !walking) {
+  const img = document.createElement("img");
+  img.addEventListener("load", () => { horizon = horizonOf(img) ?? horizon; window.horizon = horizon; }, { once: true });
+  img.src = `../assets/interiors/${interior}.webp`;
+  stage.append(img);
+}
+document.getElementById("row").append(stage);
+const { streetWeather, WeatherOverlay } = await import("../scripts/street-weather.mjs");
+const wx = streetWeather(q.get("wx") ?? "clear"), overlay = new WeatherOverlay();
+overlay.set(wx);
+const scene = new RoadScene(), speed = walking ? 1.34 : 15.6;
+let d = 0, last = performance.now();
+const loop = (now) => {
+  const dt = Math.min(0.1, (now - last) / 1000); last = now; d += speed * dt;
+  try {
+    const g = c.getContext("2d");
+    scene.draw(g, 800, 446, { distance: d, speed, hour, time: now / 1000, walking, horizon, weather: wx });
+    overlay.update(g, 800, 446, { dt, now, speed: speed / 15.6, vp: { x: 400, y: 446 * horizon }, glass: !walking && interior !== "none" });
+  } catch (e) { errors.push(e.message); return; }
+  requestAnimationFrame(loop);
+};
+requestAnimationFrame(loop);
+</script>

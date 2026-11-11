@@ -452,7 +452,9 @@ a.kgc-link:hover { background: rgba(255, 201, 74, 0.22); text-shadow: none; }
 .kgc-travel .foot .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
 /* Parties travelling (GM) */
-.kgc-trips { bottom: 14px; width: 330px; padding: 8px 10px 10px; display: grid; gap: 8px; font-size: 13px; }
+/* Top right, clear of the corner where a party's view (train or street) opens. */
+.kgc-trips { top: 14px; width: 330px; padding: 8px 10px 10px; display: grid; gap: 8px; font-size: 13px; }
+.kgc-trips .trips { display: grid; gap: 8px; }
 .kgc-trips header { display: flex; align-items: center; gap: 8px; }
 .kgc-trips header b { flex: 1; }
 .kgc-trips header .paused { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ffcf70; }
@@ -467,7 +469,198 @@ a.kgc-link:hover { background: rgba(255, 201, 74, 0.22); text-shadow: none; }
 .kgc-trips .sub { font-size: 12px; color: var(--kgc-muted); }
 .kgc-trips .sub span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+/* The driving view: the street out of a cab's or a car's windows */
+.kgc-roadview { position: fixed; z-index: 95; width: 640px; height: 380px; min-width: 360px; min-height: 200px; resize: both; overflow: hidden; border: 2px solid #222; border-radius: 8px; background: #000; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.7); color: #fff; }
+.kgc-roadview.expanded { inset: 0; width: auto; height: auto; border-radius: 0; resize: none; }
+.kgc-roadview .stage { position: absolute; inset: 0; }
+.kgc-roadview .stage canvas, .kgc-roadview .stage .interior { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* Lightning: over the street and the car's inside alike. */
+.kgc-roadview .stage .flash { position: absolute; inset: 0; background: #eef2ff; opacity: 0; pointer-events: none; mix-blend-mode: screen; }
+.kgc-roadview .hud { position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 10px 12px 44px; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8); }
+.kgc-roadview .top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.kgc-roadview .what, .kgc-roadview .clock { background: rgba(0, 0, 0, 0.62); border-radius: 8px; padding: 6px 10px; font-size: 13px; display: inline-flex; gap: 8px; align-items: center; }
+.kgc-roadview .what i { color: var(--mode); }
+.kgc-roadview .clock { flex-direction: column; align-items: flex-end; gap: 0; }
+.kgc-roadview .clock .time { font-size: 16px; font-variant-numeric: tabular-nums; }
+.kgc-roadview .clock .eta { font-size: 11.5px; color: #cfd8e3; }
+.kgc-roadview .bar { height: 5px; border-radius: 999px; background: rgba(255, 255, 255, 0.15); overflow: hidden; }
+.kgc-roadview .bar i { display: block; height: 100%; background: var(--mode); }
+.kgc-roadview .controls { position: absolute; left: 0; right: 0; bottom: 0; display: flex; gap: 6px; padding: 6px; background: rgba(0, 0, 0, 0.75); justify-content: flex-end; }
+.kgc-roadview .controls button { flex: 0 0 auto; width: auto; margin: 0; padding: 0 10px; line-height: 26px; white-space: nowrap; color: #fff; background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 4px; cursor: pointer; font-size: 12.5px; }
+.kgc-roadview .controls button:hover { background: rgba(255, 255, 255, 0.25); }
+.kgc-roadview .controls button:first-child { margin-right: auto; }
+.kgc-roadview .controls button:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+
 @media (prefers-reduced-motion: reduce) {
   .kgc-search.loading .bar i { animation: none; }
   .kgc-editor .toggle input::after { transition: none; }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Phones and pagers: one device layout, three skins. Every device    */
+/*  has a lit screen, tabs, a keypad or a list, and a row of buttons.  */
+/* ------------------------------------------------------------------ */
+
+.kgc-device-window.application, .kgc-switchboard.application { background: var(--kgc-panel); color: var(--kgc-text); border: 1px solid var(--kgc-line-2); border-radius: var(--kgc-radius); box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55); }
+.kgc-device-window .window-header, .kgc-switchboard .window-header { background: rgba(0, 0, 0, 0.3); color: var(--kgc-text); border-bottom: 1px solid var(--kgc-line); }
+.kgc-device-window .window-content { padding: 12px; background: none; color: var(--kgc-text); outline: none; }
+
+.kgc-device {
+  --body: linear-gradient(170deg, #ece4d1, #d4c9b0); --ink: #3a3326; --ink-2: #6f6550; --edge: rgba(0, 0, 0, 0.25);
+  --key: linear-gradient(180deg, #3b3e42, #212326); --key-ink: #f4f1ea; --key-sub: #c9c3b6; --plate: linear-gradient(180deg, #d6d8da, #b9bcbf);
+  --lcd: #a9b58c; --lcd-ink: #1d2714; --go: #2f9e5a; --stop: #c8443a;
+  display: grid; gap: 10px; padding: 14px 14px 12px; border-radius: 16px; background: var(--body); color: var(--ink);
+  box-shadow: inset 0 2px 1px rgba(255, 255, 255, 0.55), inset 0 -3px 6px var(--edge), 0 6px 14px rgba(0, 0, 0, 0.45);
+}
+.kgc-device.skin-payphone {
+  --body: linear-gradient(160deg, #a9afb5, #7b8188 55%, #959ba1); --ink: #15181b; --ink-2: #2f353a; --edge: rgba(0, 0, 0, 0.4);
+  --key: linear-gradient(180deg, #eef0f2, #a8adb2); --key-ink: #16191c; --key-sub: #3d4348; --plate: linear-gradient(180deg, #8c9298, #737980);
+  border: 3px solid #1d2024;
+}
+.kgc-device.skin-pager {
+  --body: linear-gradient(165deg, #2c2f2d, #161817 60%, #262927); --ink: #d9dcd6; --ink-2: #8e948c; --edge: rgba(0, 0, 0, 0.6);
+  --key: linear-gradient(180deg, #4a4e4b, #2a2d2b); --key-ink: #e8ebe5; --key-sub: #a3a99f; --plate: none;
+  border-radius: 22px 22px 30px 30px;
+}
+.kgc-device.skin-pager.model-numeric { --lcd: #9fb3a4; }
+.kgc-device.skin-pager.model-alpha { --lcd: #b4bf8f; }
+.kgc-device > .empty { margin: 0; font-style: italic; color: var(--ink-2); }
+
+.kgc-device .dev-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.kgc-device .dev-brand { font: 700 12px/1.2 Signika, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kgc-device .dev-sub { font: 600 12px "Courier New", monospace; color: var(--ink-2); white-space: nowrap; }
+
+.kgc-device .dev-screen, .kgc-chat-pager {
+  display: grid; gap: 2px; min-height: 92px; padding: 8px 10px; border: 6px solid #111410; border-radius: 6px;
+  background: var(--lcd, #a9b58c); color: var(--lcd-ink, #1d2714); font-family: "Courier New", monospace;
+  box-shadow: inset 2px 2px 8px rgba(0, 0, 0, 0.35); text-shadow: 1px 1px rgba(255, 255, 255, 0.25);
+}
+.kgc-device .lcd-status, .kgc-chat-pager .lcd-status { display: flex; justify-content: space-between; gap: 8px; padding-bottom: 3px; border-bottom: 2px solid rgba(29, 39, 20, 0.45); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; }
+.kgc-device .lcd-main, .kgc-chat-pager .lcd-main { font-size: 22px; font-weight: 700; line-height: 1.15; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.kgc-device .lcd-sub { font-size: 12px; line-height: 1.25; min-height: 15px; }
+.kgc-device .faint { opacity: 0.45; }
+.kgc-device .dev-screen.blink .lcd-main, .kgc-device .dev-screen.blink .lcd-status span:first-child { animation: kgc-blink 0.9s steps(2, start) infinite; }
+@keyframes kgc-blink { to { visibility: hidden; } }
+
+.kgc-device .dev-coin { display: flex; align-items: center; gap: 10px; min-height: 36px; }
+.kgc-device .coin-slot { all: unset; display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 6px; cursor: pointer; font: 700 11px "Courier New", monospace; letter-spacing: 0.08em; color: #e9ecef; background: linear-gradient(180deg, #2b2f33, #15181b); box-shadow: inset 0 1px rgba(255, 255, 255, 0.15); }
+.kgc-device .coin-slot .slot { width: 4px; height: 18px; border-radius: 2px; background: #000; box-shadow: inset 0 0 0 1px #5a6066; }
+.kgc-device .coin-slot.in { color: #ffd56b; }
+.kgc-device .coin-slot.in .slot { background: linear-gradient(90deg, #8a6a1c, #ffd56b, #8a6a1c); }
+.kgc-device .coin-slot:disabled { opacity: 0.5; cursor: not-allowed; }
+.kgc-device .coin-slot:focus-visible { outline: 2px solid #ffd56b; }
+.kgc-device .dev-coin .hint { margin: 0; font-size: 11.5px; color: var(--ink-2); }
+
+.kgc-device .dev-tabs { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; padding: 3px; border-radius: 9px; background: rgba(0, 0, 0, 0.18); }
+.kgc-device .dev-tabs button { all: unset; text-align: center; padding: 6px 4px; border-radius: 7px; font-size: 12.5px; color: var(--ink-2); cursor: pointer; }
+.kgc-device .dev-tabs button i { margin-right: 4px; }
+.kgc-device .dev-tabs button.on { background: rgba(255, 255, 255, 0.35); color: var(--ink); box-shadow: inset 0 0 0 1px var(--edge); }
+.kgc-device.skin-pager .dev-tabs button.on { background: rgba(255, 255, 255, 0.1); }
+.kgc-device .dev-tabs button:focus-visible { outline: 2px solid var(--kgc-gold); }
+
+.kgc-device .dev-body { max-height: 330px; overflow-y: auto; }
+.kgc-device .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 12px; border-radius: 8px; background: var(--plate); }
+.kgc-device .key { all: unset; display: grid; justify-items: center; align-content: center; height: 44px; border-radius: 7px; cursor: pointer; background: var(--key); color: var(--key-ink); box-shadow: 0 2px 0 rgba(0, 0, 0, 0.45), inset 0 1px rgba(255, 255, 255, 0.2); }
+.kgc-device .key b { font: 700 18px/1 Signika, sans-serif; }
+.kgc-device .key small { font-size: 8.5px; letter-spacing: 0.1em; color: var(--key-sub); min-height: 10px; }
+.kgc-device .key:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 0 0 rgba(0, 0, 0, 0.45); }
+.kgc-device .key:disabled { opacity: 0.45; cursor: default; }
+.kgc-device .key:focus-visible { outline: 2px solid var(--kgc-gold); }
+
+.kgc-device .dev-actions { display: flex; gap: 8px; align-items: stretch; }
+.kgc-device .call { all: unset; flex: 1; display: inline-flex; justify-content: center; align-items: center; gap: 8px; min-height: 40px; border-radius: 20px; cursor: pointer; font: 600 14px Signika, sans-serif; color: #fff; box-shadow: inset 0 1px rgba(255, 255, 255, 0.25), 0 2px 4px rgba(0, 0, 0, 0.35); }
+.kgc-device .call.go { background: linear-gradient(180deg, #3cb86c, var(--go)); }
+.kgc-device .call.stop { background: linear-gradient(180deg, #df5a4f, var(--stop)); }
+.kgc-device .call:disabled { opacity: 0.4; cursor: not-allowed; }
+.kgc-device .call:focus-visible, .kgc-device .key-act:focus-visible { outline: 2px solid var(--kgc-gold); outline-offset: 2px; }
+.kgc-device .key-act { all: unset; display: inline-flex; align-items: center; justify-content: center; min-width: 44px; padding: 0 10px; border-radius: 20px; cursor: pointer; font: 600 12px "Courier New", monospace; color: var(--key-ink); background: var(--key); }
+.kgc-device .key-act:disabled { opacity: 0.4; cursor: default; }
+
+.kgc-device .dev-list { list-style: none; margin: 0 0 8px; padding: 4px; display: grid; gap: 2px; border-radius: 8px; background: rgba(12, 16, 26, 0.88); color: var(--kgc-text); }
+.kgc-device .dev-list li { display: flex; align-items: center; gap: 4px; min-height: 34px; padding: 0 4px; border-radius: 6px; }
+.kgc-device .dev-list li:hover { background: rgba(255, 255, 255, 0.05); }
+.kgc-device .dev-list li.empty { color: var(--kgc-muted); font-style: italic; padding: 6px 8px; }
+.kgc-device .dev-list .pick { all: unset; flex: 1; min-width: 0; display: flex; justify-content: space-between; gap: 8px; padding: 6px 6px; cursor: pointer; font-size: 13.5px; }
+.kgc-device .dev-list .pick span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kgc-device .dev-list .num { font-family: "Courier New", monospace; color: var(--kgc-muted); white-space: nowrap; }
+.kgc-device .dev-list .mini { all: unset; padding: 6px 7px; border-radius: 6px; color: var(--kgc-muted); cursor: pointer; }
+.kgc-device .dev-list .mini:hover, .kgc-device .dev-list .mini:focus-visible { color: var(--kgc-gold); background: rgba(255, 255, 255, 0.06); outline: none; }
+.kgc-device .dev-list .page { flex: 1; min-width: 0; display: grid; grid-template-columns: auto 1fr; column-gap: 8px; padding: 6px 4px; font-size: 13px; }
+.kgc-device .dev-list .page .when { color: var(--kgc-muted); font: 12px "Courier New", monospace; }
+.kgc-device .dev-list .page .text { font-family: "Courier New", monospace; font-weight: 700; overflow-wrap: anywhere; }
+.kgc-device .dev-list .page .from { grid-column: 2; color: var(--kgc-muted); font-size: 12px; }
+.kgc-device .dev-list li.edit { display: grid; gap: 6px; padding: 8px; background: rgba(255, 201, 74, 0.06); }
+.kgc-device .dev-list li.edit .row { display: flex; gap: 6px; align-items: center; }
+.kgc-device .dev-list li.edit .grow { flex: 1; }
+.kgc-device input, .kgc-device textarea, .kgc-switchboard input, .kgc-switchboard select { height: 32px; border: 1px solid var(--kgc-line-2); border-radius: 7px; background: rgba(255, 255, 255, 0.05); color: var(--kgc-text); padding: 0 9px; font-size: 13.5px; }
+.kgc-device textarea { height: 70px; padding: 6px 9px; resize: none; font-family: "Courier New", monospace; text-transform: uppercase; }
+.kgc-device .dev-form { display: grid; gap: 8px; }
+.kgc-device .dev-form input, .kgc-device .dev-form textarea { background: rgba(12, 16, 26, 0.88); }
+.kgc-device .dev-form > label { font-size: 12px; color: var(--ink-2); }
+.kgc-device h5 { margin: 8px 2px 4px; border: 0; font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-2); }
+.kgc-device .hint { margin: 4px 2px 0; font-size: 11.5px; line-height: 1.35; color: var(--ink-2); }
+.kgc-device .dev-body > .btn { margin: 0 6px 6px 0; }
+.kgc-device.skin-line .btn, .kgc-device.skin-payphone .btn { background: rgba(12, 16, 26, 0.82); }
+.kgc-device .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 3px; border-radius: 9px; background: rgba(0, 0, 0, 0.3); }
+.kgc-device .seg button { all: unset; text-align: center; padding: 6px 4px; border-radius: 7px; font-size: 12.5px; color: var(--ink-2); cursor: pointer; }
+.kgc-device .seg button.on { background: rgba(255, 201, 74, 0.16); color: var(--kgc-gold); box-shadow: inset 0 0 0 1px rgba(255, 201, 74, 0.45); }
+.kgc-device .dev-foot { margin: 0; font-size: 11.5px; color: var(--ink-2); display: flex; gap: 6px; align-items: center; }
+
+.kgc-chat-pager { min-height: 0; margin-bottom: 6px; }
+.kgc-chat-pager .lcd-main { font-size: 16px; }
+
+/* The pager dock: a player's pager, bottom right of the map. */
+#kgc-pager-dock { position: fixed; z-index: 90; display: inline-flex; align-items: center; gap: 8px; width: auto; height: auto; margin: 0; padding: 6px 10px 6px 6px; cursor: pointer; color: var(--kgc-text); font-size: 18px; }
+#kgc-pager-dock .dock-lcd { padding: 3px 8px; border-radius: 4px; background: #a9b58c; color: #1d2714; font: 700 12px "Courier New", monospace; box-shadow: inset 1px 1px 4px rgba(0, 0, 0, 0.35); }
+#kgc-pager-dock .dock-badge { position: absolute; top: -6px; right: -6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--kgc-danger); color: #fff; font: 700 11px/18px Signika, sans-serif; text-align: center; }
+#kgc-pager-dock:hover { border-color: rgba(255, 201, 74, 0.5); }
+#kgc-pager-dock:focus-visible { outline: 2px solid var(--kgc-gold); outline-offset: 2px; }
+#kgc-pager-dock.buzz { animation: kgc-buzz 0.12s linear 12; }
+@keyframes kgc-buzz { 25% { transform: translate(2px, 0) rotate(1deg); } 75% { transform: translate(-2px, 0) rotate(-1deg); } }
+
+/* The GM's call strip: calls waiting for an answer, top centre. */
+#kgc-call-strip { position: fixed; z-index: 96; top: 70px; left: 50%; transform: translateX(-50%); display: grid; gap: 4px; padding: 6px; max-width: min(720px, calc(100vw - 32px)); }
+#kgc-call-strip .strip-call { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 8px; }
+#kgc-call-strip .strip-call.ringing { background: rgba(255, 201, 74, 0.08); }
+#kgc-call-strip .strip-call > i { color: var(--kgc-gold); width: 18px; text-align: center; }
+#kgc-call-strip .strip-call.ringing > i { animation: kgc-buzz 0.15s linear infinite; }
+#kgc-call-strip .who { all: unset; flex: 1; min-width: 0; display: grid; cursor: pointer; font-size: 13px; }
+#kgc-call-strip .who b { font-weight: 600; }
+#kgc-call-strip .who span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#kgc-call-strip .who span > i { margin: 0 4px; color: var(--kgc-muted); font-size: 11px; }
+#kgc-call-strip .who small { color: var(--kgc-muted); font-size: 11.5px; }
+
+/* The switchboard (GM) */
+.kgc-switchboard .window-content { padding: 0; display: flex; flex-direction: column; background: none; color: var(--kgc-text); }
+.kgc-switchboard .dev-tabs { display: flex; gap: 4px; padding: 0 12px; border-bottom: 1px solid var(--kgc-line); }
+.kgc-switchboard .dev-tabs button { all: unset; padding: 9px 12px; font-size: 13px; color: var(--kgc-muted); border-bottom: 2px solid transparent; cursor: pointer; }
+.kgc-switchboard .dev-tabs button i { margin-right: 6px; }
+.kgc-switchboard .dev-tabs button.on { color: var(--kgc-text); border-bottom-color: var(--kgc-gold); }
+.kgc-switchboard .dev-tabs button:focus-visible { outline: 2px solid var(--kgc-gold); }
+.kgc-switchboard .sb-body { flex: 1; overflow-y: auto; padding: 12px 14px; display: grid; gap: 10px; align-content: start; }
+.kgc-switchboard .sb-dial { display: flex; flex-wrap: wrap; gap: 8px; }
+.kgc-switchboard .sb-dial input, .kgc-switchboard .sb-dial select { flex: 1 1 160px; }
+.kgc-switchboard .hint { margin: 0; font-size: 12.5px; color: var(--kgc-muted); }
+.kgc-switchboard .empty { margin: 0; color: var(--kgc-muted); font-style: italic; }
+.kgc-switchboard .warn { margin: 8px 14px 0; font-size: 12.5px; color: #ffcf70; }
+.kgc-switchboard .faint { color: var(--kgc-faint); }
+.kgc-switchboard .sb-table { width: 100%; border-collapse: collapse; font-size: 13px; background: none; border: 0; }
+.kgc-switchboard .sb-table th { text-align: left; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--kgc-muted); font-weight: 600; background: none; padding: 4px 6px; }
+.kgc-switchboard .sb-table td { padding: 6px; border-top: 1px solid var(--kgc-line); vertical-align: middle; }
+.kgc-switchboard .sb-table tr.ringing td { background: rgba(255, 201, 74, 0.06); }
+.kgc-switchboard .sb-table td small { display: block; color: var(--kgc-muted); font-size: 11.5px; }
+.kgc-switchboard .sb-table .acts { text-align: right; white-space: nowrap; }
+.kgc-switchboard .sb-table .acts > * { margin-left: 4px; }
+.kgc-switchboard .sb-table .acts input { width: 140px; }
+.kgc-switchboard .sb-table td input { width: 100%; }
+.kgc-switchboard .num { font-family: "Courier New", monospace; }
+
+/* The phone on a place card and its hover card */
+.kgc-place-card .phone-field { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.kgc-place-card .phone-field input[type="text"] { font-family: "Courier New", monospace; }
+.kgc-place-card .phone-kind { margin-bottom: 8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  #kgc-pager-dock.buzz, #kgc-call-strip .strip-call.ringing > i { animation: none; }
+  .kgc-device .dev-screen.blink .lcd-main, .kgc-device .dev-screen.blink .lcd-status span:first-child { animation: none; }
 }

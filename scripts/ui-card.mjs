@@ -4,12 +4,36 @@
 import { pageSummary } from "./landmarks.mjs";
 import { formatDistance, metres, sceneToLatLon } from "./geo.mjs";
 import { VISIBILITY, asHtml, firstParagraph, plainLinks, visibilityOf } from "./place-card.mjs";
+import { formatNumber } from "./phone-core.mjs";
 
 const CLICK_PX = 6;
 const CLICK_MS = 500;
 // How long the pointer rests on a landmark before its card shows.
 const CARD_DELAY_MS = 400;
 const esc = (s) => foundry.utils.escapeHTML(String(s ?? ""));
+
+/**
+ * What the page itself last had under the pointer, from the browser's own events (not the
+ * canvas's, which carry on under the sidebar, chat and windows).
+ */
+let domUnder = null;
+document.addEventListener("pointermove", (e) => { domUnder = e.target; }, { capture: true, passive: true });
+document.addEventListener("pointerleave", () => { domUnder = null; }, { passive: true });
+
+/** Nothing of the interface (sidebar, chat, windows, bars) is in front of the map at this canvas point. */
+function mapUnder(global) {
+  const view = canvas.app?.view;
+  if (!view) return false;
+  if (domUnder && domUnder !== view) return false;
+  const rect = view.getBoundingClientRect();
+  return document.elementFromPoint(rect.left + global.x, rect.top + global.y) === view;
+}
+
+/** The pointer's target is a token (or part of one). */
+function tokenUnder(target) {
+  for (let at = target; at && at !== canvas.stage; at = at.parent) if (at.document?.documentName === "Token") return true;
+  return false;
+}
 
 export class HoverCard {
   /**
@@ -65,14 +89,26 @@ export class HoverCard {
   /*  Hover                                    */
   /* ---------------------------------------- */
 
+  /** The pointer is over something else: a token on the map, or the interface (a window, a bar, the sidebar). */
+  #blocked(event) {
+    const dom = event.nativeEvent?.target ?? event.originalEvent?.target ?? null;
+    if (dom && dom !== canvas.app.view) return true;
+    if (!mapUnder(event.global)) return true;
+    return tokenUnder(event.target);
+  }
+
   #move(event) {
+    if (this.#blocked(event)) {
+      if (this.frame) { cancelAnimationFrame(this.frame); this.frame = 0; }
+      return this.hide();
+    }
     if (this.frame) return;
     const global = { x: event.global.x, y: event.global.y };
     const at = event.getLocalPosition(canvas.stage);
     this.frame = requestAnimationFrame(() => {
       this.frame = 0;
       // While the GM edits, the editor owns the pointer.
-      if (this.isEditing()) return this.hide();
+      if (this.isEditing() || !mapUnder(global)) return this.hide();
       const id = this.layer?.landmarkAt(at) ?? null;
       const lm = id ? this.landmarks.get(id) : null;
       if (!lm || (lm.hidden && !game.user.isGM)) return this.hide();
@@ -82,7 +118,7 @@ export class HoverCard {
       this.pointer = global;
       if (this.pending?.id === lm.id) return;
       clearTimeout(this.pending?.timer);
-      this.pending = { id: lm.id, timer: setTimeout(() => { this.pending = null; this.#show(lm, this.pointer); }, CARD_DELAY_MS) };
+      this.pending = { id: lm.id, timer: setTimeout(() => { this.pending = null; if (mapUnder(this.pointer)) this.#show(lm, this.pointer); }, CARD_DELAY_MS) };
     });
   }
 
@@ -141,7 +177,9 @@ export class HoverCard {
       const meta = [
         address?.text ? `<span><i class="fa-solid fa-location-dot"></i>${esc(address.text)}</span>` : "",
         address?.area ? `<span><i class="fa-solid fa-map"></i>${esc(address.area)}</span>` : "",
-        distance ? `<span><i class="fa-solid fa-person-walking"></i>${esc(distance)} away</span>` : ""
+        distance ? `<span><i class="fa-solid fa-person-walking"></i>${esc(distance)} away</span>` : "",
+        lm.phone?.number && (game.user.isGM || visibilityOf(lm) === "discovered")
+          ? `<span><i class="fa-solid ${lm.phone.kind === "payphone" ? "fa-coins" : "fa-phone"}"></i>${esc(formatNumber(lm.phone.number))}${lm.phone.kind === "payphone" ? " (payphone)" : ""}</span>` : ""
       ].join("");
       const badge = airport ? `<span class="badge airport"><i class="fa-solid fa-plane"></i>Airport, ${esc(lm.airport.iata)}</span>`
         : `<span class="badge ${haven ? "haven" : "gold"}"><i class="fa-solid ${haven ? "fa-house-chimney" : "fa-landmark"}"></i>${haven ? "Safe haven" : "Point of interest"}</span>`;
@@ -187,9 +225,9 @@ export class HoverCard {
 
   #down(event) {
     if (event.button !== 0) return;
-    // A click on a token (a party standing on a landmark) is the token's, not the landmark's.
-    let at = event.target;
-    while (at && at !== canvas.stage) { if (at.document?.documentName === "Token") { this.click = null; return; } at = at.parent; }
+    // A click on a token (a party standing on a landmark) is the token's, not the landmark's;
+    // one on the interface is the interface's.
+    if (this.#blocked(event)) { this.click = null; return; }
     this.click = { x: event.global.x, y: event.global.y, t: Date.now() };
   }
 

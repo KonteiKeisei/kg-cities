@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phone harness</title>
+<!-- The phones' real windows (scripts/ui-phone.mjs) over a small stand-in for Foundry.
+     python tools/serve.py, then http://127.0.0.1:8779/tools/phone-harness.html
+     ?gm shows the GM's view (the switchboard and the call strip). -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="../styles/cities.css">
+<style>
+  body { margin: 0; min-height: 100vh; background: #2b3340 radial-gradient(circle at 30% 20%, #3b4656, #1a2029); font-family: Signika, system-ui, sans-serif; }
+  .application { position: absolute; display: flex; flex-direction: column; }
+  .window-header { display: flex; gap: 8px; padding: 6px 10px; font-size: 13px; }
+  .window-header .close { margin-left: auto; cursor: pointer; background: none; border: 0; color: inherit; }
+  #controls { position: fixed; left: 12px; bottom: 12px; display: flex; flex-wrap: wrap; gap: 6px; max-width: 60vw; }
+  #controls button { padding: 6px 10px; border-radius: 6px; border: 1px solid #556; background: #1b2230; color: #dde; cursor: pointer; }
+</style>
+</head>
+<body>
+<div id="controls"></div>
+<script type="module">
+const gm = new URLSearchParams(location.search).has("gm");
+const flagsOf = (o) => o.flags;
+class Coll extends Map { filter(f) { return [...this.values()].filter(f); } find(f) { return [...this.values()].find(f); } some(f) { return [...this.values()].some(f); } map(f) { return [...this.values()].map(f); } [Symbol.iterator]() { return this.values(); } get contents() { return [...this.values()]; } }
+
+// One character carrying a pager, standing at a place with a payphone; a place with a phone nearby.
+const items = new Coll();
+const actor = {
+  id: "a1", name: "Leonard Hale", type: "character", hasPlayerOwner: true, isOwner: true, items,
+  system: { currency: { pp: 0, gp: 3, ep: 0, sp: 4, cp: 0 } },
+  flags: { "kg-cities": { book: [{ id: "c1", name: "Ma", number: "555-0110", note: "" }, { id: "c2", name: "Det. Hanlon", number: "555-0177", note: "" }] } },
+  testUserPermission: () => true,
+  async setFlag(scope, key, v) { this.flags[scope][key] = v; render(); },
+  async update(d) { for (const [k, v] of Object.entries(d)) foundry.utils.setProperty(this, k, v); render(); }
+};
+const pager = {
+  id: "i1", uuid: "Actor.a1.Item.i1", name: "Motorola Bravo", parent: actor, isOwner: true,
+  flags: { "kg-cities": { pager: { model: "numeric", number: "555-0142", alert: "beep", unread: 2,
+    contacts: [{ id: "c1", name: "Ma", number: "555-0110", note: "" }],
+    recent: [
+      { id: "r1", at: 0, time: 0, text: "555-0110", callback: "555-0110" },
+      { id: "r2", at: 0, time: 0, text: "911911", callback: "911911" },
+      { id: "r3", at: 0, time: 0, text: "555-0163", callback: "555-0163" }
+    ] } } },
+  async update(d) { for (const [k, v] of Object.entries(d)) foundry.utils.setProperty(this, k, v); render(); }
+};
+items.set("i1", pager);
+const actors = new Coll([["a1", actor]]);
+const landmarks = { boston: { list: [
+  { id: "p1", name: "Union Oyster House", lat: 42.3612, lon: -71.0569, phone: { kind: "line", number: "555-0120" }, visibility: "discovered" },
+  { id: "p2", name: "Haymarket corner", lat: 42.3618, lon: -71.0581, phone: { kind: "payphone", number: "555-0131" }, visibility: "discovered" },
+  { id: "p3", name: "Faneuil Hall", lat: 42.3600, lon: -71.0560, phone: { kind: "line", number: "555-0105" }, visibility: "discovered" }
+] } };
+// A city scene 1000 px square over a box around Haymarket; Leonard's token stands on both p1 and p2.
+const bounds = { north: 42.3700, south: 42.3500, west: -71.0700, east: -71.0450 };
+const { makeFrame, latLonToScene } = await import("../scripts/geo.mjs");
+const rect = { x: 0, y: 0, width: 1000, height: 1000 };
+const at = latLonToScene(makeFrame(bounds, rect), 42.3615, -71.0575);
+const scene = { id: "s1", flags: { "kg-cities": { city: "boston", bounds } }, getFlag(s, k) { return this.flags[s]?.[k]; }, dimensions: { sceneRect: rect }, grid: { size: 100 },
+  tokens: [{ x: at.x - 50, y: at.y - 50, width: 1, height: 1, actor, actorId: "a1" }] };
+
+const user = { id: gm ? "gm" : "u1", name: gm ? "GM" : "Konte", isGM: gm, active: true, character: gm ? null : actor };
+const notes = [];
+globalThis.foundry = {
+  utils: {
+    escapeHTML: (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])),
+    randomID: () => Math.random().toString(36).slice(2, 12), deepClone: (v) => structuredClone(v),
+    hasProperty: () => false,
+    setProperty(o, path, v) { const ks = path.split("."); let t = o; for (const k of ks.slice(0, -1)) t = t[k] ??= {}; t[ks.at(-1)] = v; },
+    getRoute: (p) => p
+  },
+  audio: { AudioHelper: { play: async () => null } },
+  applications: { api: { ApplicationV2: class {
+    constructor(o = {}) { this.options = { ...this.constructor.DEFAULT_OPTIONS, ...o }; }
+    render() {
+      if (!this.element) {
+        const el = document.createElement("div");
+        el.className = `application ${(this.options.classes ?? []).join(" ")}`;
+        const n = document.querySelectorAll(".application").length;
+        el.style.left = `${40 + n * 350}px`; el.style.top = "30px"; el.style.width = `${this.options.position?.width ?? 330}px`;
+        if (this.options.position?.height > 0) el.style.height = `${this.options.position.height}px`;
+        el.innerHTML = `<header class="window-header"><span class="window-title"></span><button class="close">✕</button></header><section class="window-content"></section>`;
+        el.querySelector(".close").onclick = () => this.close();
+        document.body.append(el);
+        this.element = el;
+      }
+      this.element.querySelector(".window-title").textContent = this.title ?? this.options.window?.title ?? "";
+      this._replaceHTML("", this.element.querySelector(".window-content"));
+      this.rendered = true;
+      return this;
+    }
+    bringToFront() {}
+    close() { this.element?.remove(); this.element = null; this.rendered = false; this._onClose?.({}); }
+  } } }
+};
+globalThis.game = {
+  user, users: Object.assign(new Coll([[user.id, user]]), { activeGM: { id: "gm" } }),
+  actors, scenes: [scene],
+  settings: { get: (m, k) => ({ landmarks, phoneNumbers: [{ id: "n1", name: "Sal's Pizza", number: "555-0188", note: "Fence, back room" }], phoneRingSeconds: 30, phoneVolume: 0 }[k]) },
+  time: { worldTime: 0 }, socket: { on() {}, emit(_, m) { notes.push(m); } }
+};
+globalThis.ui = { notifications: { info: console.info, warn: console.warn } };
+globalThis.Hooks = { on() {}, once() {}, callAll() {} };
+globalThis.fromUuidSync = (u) => (u === pager.uuid ? pager : null);
+globalThis.ChatMessage = { create: console.info, getSpeaker: () => ({}) };
+
+const { Phones } = await import("../scripts/phones.mjs");
+const { PhoneUI } = await import("../scripts/ui-phone.mjs");
+let phoneUI;
+const phones = new Phones({ dollarRate: () => 1000, onChange: (c, b, d) => phoneUI.onCall(c, b, d), onPage: (m) => phoneUI.onPage(m) });
+phoneUI = new PhoneUI({ phones, dollarRate: () => 1000, openCard: () => {} });
+window.render = function render() { phoneUI.refresh(); phoneUI.dock(); };
+const render = window.render;
+
+// Calls as the GM's client would report them.
+const put = (c) => { phones.calls.set(c.id, c); render(); };
+const states = {
+  "Idle": () => { phones.calls.clear(); render(); },
+  "Ringing here": () => put({ id: "c1", state: "ringing", at: Date.now(), from: { kind: "place", city: "boston", id: "p3", name: "Faneuil Hall", number: "555-0105", userId: "x" }, to: { kind: "place", city: "boston", id: "p1", name: "Union Oyster House", number: "555-0120" }, ringUsers: ["u1"] }),
+  "Calling out": () => put({ id: "c2", state: "ringing", at: Date.now(), from: { kind: "place", city: "boston", id: "p2", name: "Haymarket corner", number: "555-0131", device: "payphone", userId: user.id, actorId: "a1" }, to: { kind: "gm", number: "555-0188", name: "Sal's Pizza" }, ringUsers: [], gmRings: true, coin: true }),
+  "Connected": () => put({ id: "c2", state: "connected", at: Date.now(), connectedAt: Date.now() - 65000, from: { kind: "place", city: "boston", id: "p2", name: "Haymarket corner", number: "555-0131", device: "payphone", userId: user.id, actorId: "a1" }, to: { kind: "gm", number: "555-0188", name: "Sal's Pizza" }, answeredBy: { userId: "gm", gm: true, name: "GM" }, coin: true, paid: true }),
+  "Paging": () => put({ id: "c3", state: "paging", at: Date.now(), from: { kind: "place", city: "boston", id: "p1", name: "Union Oyster House", number: "555-0120", device: "line", userId: user.id, actorId: "a1" }, to: { kind: "pager", number: "555-0142" } }),
+  "Ended, coin back": () => put({ id: "c2", state: "ended", reason: "noanswer", at: Date.now(), endedAt: Date.now(), from: { kind: "place", city: "boston", id: "p2", name: "Haymarket corner", number: "555-0131", device: "payphone", userId: user.id, actorId: "a1" }, to: { kind: "gm", number: "555-0188" }, coin: true })
+};
+const bar = document.getElementById("controls");
+for (const [label, fn] of Object.entries(states)) { const b = document.createElement("button"); b.textContent = label; b.onclick = fn; bar.append(b); }
+for (const [label, fn] of Object.entries({ "Desk phone": () => phoneUI.openPlace("boston", "p1"), "Payphone": () => phoneUI.openPlace("boston", "p2"), "Pager": () => phoneUI.openPager(pager), ...(gm ? { "Switchboard": () => phoneUI.switchboard() } : {}) })) {
+  const b = document.createElement("button"); b.textContent = label; b.onclick = fn; bar.append(b);
+}
+if (gm) { phoneUI.switchboard(); phoneUI.openPlace("boston", "p1"); }
+else { phoneUI.openPlace("boston", "p1"); phoneUI.openPlace("boston", "p2"); phoneUI.openPager(pager); }
+phoneUI.dock();
+window.phones = phones; window.phoneUI = phoneUI; window.notes = notes;
+</script>
+</body>
+</html>

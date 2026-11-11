@@ -82,5 +82,6 @@ test("paying in coins takes change", () => {
   const r = pay({ pp: 3 }, 2410);
   assert.equal(walletValue(r.after), 590);
   assert.equal(pay({ gp: 1 }, 500), null);
-  assert.equal(formatMoney(2410), "2 pp 4 gp 1 sp");
+  assert.equal(formatMoney(2410), "$2.41");
+  assert.equal(formatMoney(2410, 100), "$24.10");
 });

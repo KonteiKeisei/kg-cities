@@ -14,7 +14,12 @@ import { PartyManager, baseParty, groupMembers, partyMeta, partyTitle, scenePart
 import { installParty } from "./ui-party.mjs";
 import { TravelController } from "./travel.mjs";
 import { openTravel } from "./ui-travel.mjs";
+import { RoadView } from "./ui-roadview.mjs";
+import { installFlashBar } from "./flash-bar.mjs";
 import { metres as metresBetween } from "./geo.mjs";
+import { DEVICES, Phones, directory as phoneDirectory, givePager, migrateUnsleepingPagers, newNumber, phonesHere, placePhone, speakerAt, watchNewPagers } from "./phones.mjs";
+import { PhoneUI } from "./ui-phone.mjs";
+import { formatNumber, sameNumber } from "./phone-core.mjs";
 
 const MODULE_ID = "kg-cities";
 const SETTINGS = { look: "look", lean: "tilt", highDpi: "highDpi", businesses: "businesses", dayStart: "dayStart", nightStart: "nightStart" };
@@ -69,7 +74,29 @@ const travel = new TravelController({
   canTravel: (scene) => !!current && current.scene === scene && !!cityOf(scene)?.files?.roads,
   openDialog: (controller, ctx) => openTravel(controller, ctx, { describe: describePoint, city: cityId })
 });
+// The view out of a cab or a car, for the party inside and the GM who clicks its token.
+const roadView = new RoadView(travel);
+travel.onTrips = () => roadView.sync();
 partyManager.busy = (id) => travel.busy(id);
+
+// Phones at places, pagers on people: calls are put through by the GM in charge's client.
+const phones = new Phones({
+  dollarRate: () => travel.dollarRate(),
+  onChange: (call, before, dropped) => phoneUI.onCall(call, before, dropped),
+  onPage: (msg) => phoneUI.onPage(msg)
+});
+const phoneUI = new PhoneUI({
+  phones, dollarRate: () => travel.dollarRate(),
+  openCard: (city, id) => cards.open({ kind: "landmark", city, id }, { warnMissing: true })
+});
+/** Use a phone where this user's character is: the one there, or the first of several. */
+function phoneHere() {
+  if (game.user.isGM) return phoneUI.switchboard();
+  const here = phonesHere();
+  if (!here.length) return ui.notifications.warn("There is no phone here. Find a payphone, or a place with a phone.");
+  const e = here.find((p) => p.device === "line") ?? here[0];
+  return phoneUI.openPlace(e.city, e.id);
+}
 partyManager.stopTravel = (id) => travel.stop(id, { quiet: true });
 
 /**
@@ -188,7 +215,11 @@ function placeCardSource() {
       // An older landmark's text is its short summary until the GM writes What is known.
       const known = lm.known ?? asHtml(lm.summary);
       const journal = lm.journal ?? lm.page ?? null;
+      const phone = lm.phone?.number && DEVICES[lm.phone.kind] ? lm.phone : null;
+      const phoneEntry = phone ? placePhone(ref.city, lm.id) : null;
       return {
+        rows: phone && (game.user.isGM || vis === "discovered") ? [[DEVICES[phone.kind].label, formatNumber(phone.number)]] : [],
+        phone: phone ? { label: DEVICES[phone.kind].label, here: game.user.isGM || !!(phoneEntry && speakerAt(phoneEntry)) } : null,
         name: lm.name || "Landmark", type: haven ? "Safe haven" : "Point of interest", tone: haven ? "haven" : "gold", icon: haven ? "fa-house-chimney" : "fa-landmark",
         subtitle: [address?.text, address?.area, here ? "" : cityName].filter(Boolean).join(" · "),
         img: lm.img ?? "", known, gmNotes: lm.gmNotes ?? "", rumours: lm.rumours ?? "", visibility: vis,
@@ -196,7 +227,7 @@ function placeCardSource() {
         enterLabel: scene ? (cityOf(scene) ? `Go to ${scene.name}` : `Enter ${lm.name}`) : null,
         locate: here, canDelete: true,
         mapNote: "Where it is, its shape, glow and kind are set on the map: turn on Edit points of interest and click it.",
-        form: { name: lm.name ?? "", img: lm.img ?? "", visibility: vis, rumours: lm.rumours ?? "", known, gmNotes: lm.gmNotes ?? "", scene: lm.scene ?? "", actors: lm.actors ?? [], journal: journal ?? "", images: lm.images ?? [] }
+        form: { name: lm.name ?? "", img: lm.img ?? "", visibility: vis, rumours: lm.rumours ?? "", known, gmNotes: lm.gmNotes ?? "", scene: lm.scene ?? "", actors: lm.actors ?? [], journal: journal ?? "", images: lm.images ?? [], phoneKind: phone?.kind ?? "none", phoneNumber: phone ? formatNumber(phone.number) : "" }
       };
     },
     async save(ref, v) {
@@ -213,6 +244,15 @@ function placeCardSource() {
       if ("journal" in v) delete out.page;
       for (const k of [...CARD_KEYS, "actors", "images"]) if (out[k] == null || (Array.isArray(out[k]) && !out[k].length)) delete out[k];
       if ("known" in v) out.known ??= "";
+      // The place's phone: a line or a payphone with its number, or none.
+      if ("phoneKind" in v) {
+        if (DEVICES[v.phoneKind]?.on === "place") {
+          const number = formatNumber(v.phoneNumber) || newNumber();
+          const clash = phoneDirectory().find((e) => sameNumber(e.number, number) && !(e.kind === "place" && e.city === ref.city && e.id === lm.id));
+          if (clash) ui.notifications.warn(`KG Cities: ${number} is already ${clash.name}'s number. Calls to it reach whichever is listed first.`);
+          out.phone = { kind: v.phoneKind, number };
+        } else delete out.phone;
+      }
       await saveCityLandmarks(ref.city, list.map((l) => (l.id === lm.id ? out : l)));
     },
     async remove(ref) {
@@ -228,6 +268,8 @@ function placeCardSource() {
       return enterScene(ref.city, lm, lm?.scene ? game.scenes.get(lm.scene) : null, all);
     },
     async locate(ref) { if (ref.city === cityId && current) locate(await find(ref)); },
+    phone: (ref) => phoneUI.openPlace(ref.city, ref.id),
+    newNumber: () => newNumber(),
     async placeChoices(ref) {
       const city = ref?.city ?? cityId;
       if (!city) return [];
@@ -274,11 +316,14 @@ async function convertJournalLandmarks() {
 
 Hooks.once("ready", () => {
   listenForOpens();
+  phones.install();
+  // Unsleeping Pagers' pagers, numbers and page logs, once (installed or not).
+  migrateUnsleepingPagers().then(() => phoneUI.refresh()).catch((err) => console.error(`${MODULE_ID} | Unsleeping Pagers migration`, err));
   if (game.users.activeGM?.isSelf) convertJournalLandmarks().catch((err) => console.error(`${MODULE_ID} | journal conversion`, err));
 });
 
 /** What the map draws of the landmarks: a card's text changing does not redraw the city. */
-const DRAWN_KEY_SKIP = new Set(["img", "known", "rumours", "gmNotes", "scene", "journal", "page", "summary", "actors", "images", "visibility"]);
+const DRAWN_KEY_SKIP = new Set(["img", "known", "rumours", "gmNotes", "scene", "journal", "page", "summary", "actors", "images", "visibility", "phone"]);
 const drawnKey = () => JSON.stringify(drawnLandmarks().map((l) => Object.fromEntries(Object.entries(l).filter(([k]) => !DRAWN_KEY_SKIP.has(k)))));
 let lastDrawnKey = null;
 
@@ -304,7 +349,11 @@ function currentLook() {
 /*  Settings                                 */
 /* ---------------------------------------- */
 
+/** Which local build is running (the browser console says, at load). */
+const BUILD = "2026-11-11 phones";
+
 Hooks.once("init", () => {
+  console.info(`kg-cities | ${game.modules.get(MODULE_ID)?.version} (build ${BUILD})`);
   const register = (key, data) => game.settings.register(MODULE_ID, key, data);
   const redraw = () => drawCity();
   register(SETTINGS.look, {
@@ -350,6 +399,8 @@ Hooks.once("init", () => {
     onChange: () => {
       card.refresh();
       cards.refresh();
+      // A place's phone may have been added, changed or taken out.
+      phoneUI.refresh();
       // The way back shows the place's actors and journal: they may have changed.
       if (trail.el) trail.draw();
       // Only what the map draws redraws the city; a card's text, art or links do not.
@@ -357,6 +408,20 @@ Hooks.once("init", () => {
       else if (current) mapSearch.entries = null;
     }
   });
+  // Phones: the GM's own numbers (people and businesses not on the map), how long a phone rings,
+  // and each user's volume for rings, tones and pagers.
+  register("phoneNumbers", { scope: "world", config: false, type: Array, default: [], onChange: () => phoneUI.refresh() });
+  register("phoneRingSeconds", {
+    name: "Phones ring for", hint: "Seconds a phone rings before the caller hears no answer.",
+    scope: "world", config: true, type: Number, default: 30, range: { min: 10, max: 120, step: 5 }
+  });
+  register("phoneVolume", {
+    name: "Phone and pager volume", hint: "Rings, dial tones, keypad tones and pager alerts, on this computer. 0 is silent.",
+    scope: "client", config: true, type: Number, default: 0.6, range: { min: 0, max: 1, step: 0.05 }
+  });
+  phoneUI.install();
+  watchNewPagers();
+
   // { [city]: { edits: { placeId: {...} }, added: { id: {...} } } }: the GM's label edits.
   register("placeEdits", { scope: "world", config: false, type: Object, default: {}, onChange: () => refreshPlaces() });
 
@@ -375,6 +440,9 @@ Hooks.once("init", () => {
   registerPlaceLinks(cards);
   installParty({ manager: partyManager, isCityScene: (s) => !!cityOf(s) });
   travel.install();
+  roadView.install();
+  // Flash Token Bar 5e: the city's parties are its favourites, kept in step with splits and merges.
+  installFlashBar({ isCityScene: (s) => !!cityOf(s) });
 
   layer.onError = (err) => {
     console.warn(`${MODULE_ID} |`, err);
@@ -442,6 +510,22 @@ Hooks.once("init", () => {
       /** The party (the setting's group actor, else dnd5e's primary party), and its own title. */
       base: () => baseParty(),
       title: (actor) => partyTitle(actor)
+    },
+    /**
+     * Phones and pagers: directory() every number (place phones, pagers, the GM's numbers);
+     * open(city, id) a place's phone; here() the phone where the user's character is;
+     * switchboard() (GM); givePager(actor, "tone" | "numeric" | "alpha"); page(number, text) (GM);
+     * dial(number, { as }) (GM, from nowhere). A carried phone would be a new device kind.
+     */
+    phones: {
+      directory: () => phoneDirectory(),
+      open: (city, id) => phoneUI.openPlace(city, id),
+      here: () => phoneHere(),
+      switchboard: () => phoneUI.switchboard(),
+      givePager: (actor, model) => givePager(actor, model),
+      page: (number, text = "") => phones.pageDirect(number, { text, callback: text }),
+      dial: (number, { as = "" } = {}) => phones.dial(number, { as }),
+      calls: () => [...phones.calls.values()]
     },
     /** Open a landmark's place card, e.g. openPlaceCard("boston", "seed:..."); edit: the GM's form. */
     openPlaceCard: (city, id, { edit = false } = {}) => cards.open({ kind: "landmark", city, id }, { edit, warnMissing: true }),
@@ -584,6 +668,10 @@ Hooks.on("updateScene", (scene, changes) => {
   if (foundry.utils.hasProperty(changes, `flags.${MODULE_ID}.returnTo`) || "name" in changes || "navName" in changes) trail.draw();
   if (foundry.utils.hasProperty(changes, `flags.${MODULE_ID}`) && !foundry.utils.hasProperty(changes, `flags.${MODULE_ID}.returnTo`)) drawCity();
 });
+// The GM in charge holds the calls: when no GM is left, every call is cut.
+Hooks.on("userConnected", (user, connected) => {
+  if (user.isGM && !connected && !game.users.activeGM) phones.dropAll();
+});
 Hooks.on("updateWorldTime", () => {
   if (setting(SETTINGS.look) === LOOKS.auto) layer.setLook(currentLook());
 });
@@ -593,6 +681,12 @@ Hooks.on("updateWorldTime", () => {
 /* ---------------------------------------- */
 
 Hooks.on("getSceneControlButtons", (controls) => {
+  // Phones work on every scene: a place's interior is often not a city map.
+  if (controls.tokens) {
+    controls.tokens.tools.kgCitiesPhone = game.user.isGM
+      ? { name: "kgCitiesPhone", title: "Switchboard: calls, place phones, pagers and your numbers", icon: "fa-solid fa-tower-broadcast", order: 120, button: true, onChange: () => phoneUI.switchboard() }
+      : { name: "kgCitiesPhone", title: "Use a phone here", icon: "fa-solid fa-phone", order: 120, button: true, onChange: () => phoneHere() };
+  }
   if (!cityOf(canvas.scene)) return;
   // Search is for everyone, on the token controls players always have.
   if (controls.tokens) {

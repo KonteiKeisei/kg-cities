@@ -161,7 +161,7 @@ function travelClass() {
       const vs = w ? (t.seconds < w.seconds ? `${formatDuration(w.seconds - t.seconds)} quicker than walking` : `${formatDuration(t.seconds - w.seconds)} slower than walking`) : "";
       return `<div class="big"><span class="v">${esc(formatDuration(t.seconds))}</span><span class="k">door to door · ${esc(arrive(t.seconds))}${vs ? ` · ${esc(vs)}` : ""}</span></div>
         <ol class="legs">${legs}</ol>
-        <p class="hint">They walk to ${esc(plan.originName)} now. There, Board opens for you with ${esc(plan.destinationName)} chosen: confirm the riders and fares (${esc(formatMoney(plan.fare))} each), and when they get off they walk on to where you dropped them.</p>`;
+        <p class="hint">They walk to ${esc(plan.originName)} now. There, Board opens for you with ${esc(plan.destinationName)} chosen: confirm the riders and fares (${esc(formatMoney(plan.fare, this.controller.dollarRate()))} each), and when they get off they walk on to where you dropped them.</p>`;
     }
 
     #taxi(s, arrive) {
@@ -173,14 +173,13 @@ function travelClass() {
         i += cab.riders;
         return `<div class="cab"><b>Cab ${n + 1} · ${esc(formatDollars(cab.fare))} · ${esc(formatDollars(cab.each))} each</b><div class="seats">${riders.map((a) => chip(a)).join("")}</div></div>`;
       }).join("");
-      const copper = (d) => formatMoney(Math.round(d * s.rate));
       return `<div class="big"><span class="v">${esc(formatDuration(t.seconds))}</span><span class="k">${esc(formatMiles(this.routes.drive.metres))} by road, with a few minutes to hail one · ${esc(arrive(t.seconds))}</span></div>
         <div class="cabs">${cabs}</div>
         <div class="rows"><div><span>The meter</span><span><input type="number" name="drop" value="${s.meter.drop}" min="0" step="0.05" aria-label="Flag drop in dollars"> drop + <input type="number" name="perMile" value="${s.meter.perMile}" min="0" step="0.05" aria-label="Dollars a mile"> a mile</span></div>
-          <div><span>In all</span><span>${esc(formatDollars(t.fare))} (${esc(copper(t.fare))})</span></div>
+          <div><span>In all</span><span>${esc(formatDollars(t.fare))}</span></div>
           <div><span>Paid by</span><span><select name="payFrom">${[["riders", "Each rider, their share"], ["party", "The party's purse"], ["free", "Nobody (free)"]].filter(([k]) => k !== "party" || s.group).map(([k, l]) => `<option value="${k}" ${k === this.payFrom ? "selected" : ""}>${l}</option>`).join("")}</select></span></div></div>
         ${s.short.length ? `<p class="warn"><i class="fa-solid fa-triangle-exclamation"></i> Not enough money: ${esc(s.short.join(", "))}.</p>` : ""}
-        <p class="hint">A cab takes ${4} at most. Each pays their cab's share, in coins at ${esc(formatMoney(s.rate))} a dollar. The meter is this city's; 1986 rates are a guess, change them here.</p>`;
+        <p class="hint">A cab takes ${4} at most. Each pays their cab's share, taken from their coins. The meter is this city's; 1986 rates are a guess, change them here.</p>`;
     }
 
     #own(s, arrive) {
@@ -300,7 +299,7 @@ function travelClass() {
         return true;
       }
       if (this.tab === "walk") {
-        await this.controller.start({ token, mode: "walk", points: r.walk.points, seconds: r.walk.seconds, label: token.name, detail: formatMiles(r.walk.metres) });
+        await this.controller.start({ token, mode: "walk", points: r.walk.points, seconds: r.walk.seconds, label: token.name, detail: formatMiles(r.walk.metres), people: s.people.map((a) => a.id) });
         return true;
       }
       if (this.tab === "train") {
@@ -313,11 +312,13 @@ function travelClass() {
       }
       if (this.tab === "taxi") {
         if (!(await this.#payFare(s))) return false;
-        await this.controller.start({ token, mode: "taxi", points: r.drive.points, seconds: s.taxi.seconds, label: token.name, detail: `${s.taxi.cabs.length === 1 ? "1 cab" : `${s.taxi.cabs.length} cabs`}, ${formatDollars(s.taxi.fare)}` });
+        await this.controller.start({ token, mode: "taxi", points: r.drive.points, seconds: s.taxi.seconds, label: token.name, detail: `${s.taxi.cabs.length === 1 ? "1 cab" : `${s.taxi.cabs.length} cabs`}, ${formatDollars(s.taxi.fare)}`, people: s.people.map((a) => a.id) });
         return true;
       }
       if (!s.seating.ok) return false;
-      await this.controller.start({ token, mode: "own", points: r.drive.points, seconds: s.own, label: token.name, detail: s.seating.cars.map((c) => c.vehicle.name).join(", ") });
+      // Who sits in which car: each player sees out of their own character's.
+      const cars = s.seating.cars.map((c) => ({ vehicle: c.vehicle.id, driver: c.driver.id, riders: c.riders.map((p) => p.id) }));
+      await this.controller.start({ token, mode: "own", points: r.drive.points, seconds: s.own, label: token.name, detail: s.seating.cars.map((c) => c.vehicle.name).join(", "), people: s.people.map((a) => a.id), cars });
       return true;
     }
 
@@ -327,15 +328,15 @@ function travelClass() {
       const lines = [];
       if (this.payFrom === "party") {
         const copper = Math.round(s.taxi.fare * s.rate), r = pay(s.group.system.currency, copper);
-        if (!r) { ui.notifications.warn(`KG Cities: ${s.group.name} cannot cover ${formatMoney(copper)}.`); return false; }
+        if (!r) { ui.notifications.warn(`KG Cities: ${s.group.name} cannot cover ${formatMoney(copper, s.rate)}.`); return false; }
         await s.group.update({ "system.currency": r.after });
-        lines.push(`${s.group.name}: ${formatMoney(copper)}`);
+        lines.push(`${s.group.name}: ${formatMoney(copper, s.rate)}`);
       } else {
         const plans = s.shares.filter((x) => x.actor).map((x) => ({ actor: x.actor, copper: Math.round(x.dollars * s.rate) }));
         const results = plans.map((p) => ({ ...p, r: pay(p.actor.system?.currency, p.copper) }));
         const short = results.filter((x) => !x.r);
         if (short.length) { ui.notifications.warn(`KG Cities: not enough money: ${short.map((x) => x.actor.name).join(", ")}.`); return false; }
-        for (const x of results) { await x.actor.update({ "system.currency": x.r.after }); lines.push(`${x.actor.name}: ${formatMoney(x.copper)}`); }
+        for (const x of results) { await x.actor.update({ "system.currency": x.r.after }); lines.push(`${x.actor.name}: ${formatMoney(x.copper, s.rate)}`); }
       }
       await ChatMessage.create({ content: `<p><b>Cab fare</b>, ${esc(formatDollars(s.taxi.fare))} in all.</p><p>${lines.map(esc).join("<br>")}</p>`, whisper: game.users.filter((u) => u.isGM).map((u) => u.id) });
       return true;

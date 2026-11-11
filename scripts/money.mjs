@@ -14,21 +14,11 @@ export function walletValue(currency = {}) {
   return COINS.reduce((sum, coin) => sum + Math.max(0, Math.floor(Number(currency[coin.key]) || 0)) * coin.value, 0);
 }
 
-/** "1 gp 5 sp", "free" for nothing. Stated without electrum. */
-export function formatMoney(copper) {
-  if (!copper) return "free";
-  const parts = [];
-  let left = copper;
-  for (const coin of COINS.filter((c) => c.key !== "ep")) {
-    const n = Math.floor(left / coin.value);
-    if (n) parts.push(`${n} ${coin.label}`);
-    left -= n * coin.value;
-  }
-  return parts.join(" ");
-}
+/** "$7.22", with thousands separated. */
+export const formatDollars = (d) => `$${Math.max(0, Number(d) || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-/** "$7.22". */
-export const formatDollars = (d) => `$${(Math.round(d * 100) / 100).toFixed(2)}`;
+/** An amount in copper, always shown in dollars at `rate` copper per dollar (1000 by default). */
+export const formatMoney = (copper, rate = 1000) => formatDollars((Number(copper) || 0) / (Number(rate) || 1000));
 
 function makeChange(copper) {
   const coins = {};

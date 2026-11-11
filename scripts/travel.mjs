@@ -5,13 +5,15 @@
 // Shift-drag, or any move a module makes, is left alone.
 
 import { pointAlong, formatDuration } from "./travel-plan.mjs";
-import { familyActors, groupActor, isPrimaryGM } from "./party.mjs";
+import { familyActors, groupActor, groupMembers, isPrimaryGM } from "./party.mjs";
 
 const ID = "kg-cities";
 const esc = (s) => foundry.utils.escapeHTML(String(s ?? ""));
 /** How often the tokens step along their routes (ms), and how many steps between clock writes. */
 const STEP_MS = 1000;
 const CLOCK_EVERY = 5;
+/** On a train's clock: seconds the world may run ahead of real time before it counts as a fast-forward. */
+const JUMP_SLACK = 12;
 export const MODE_COLOURS = { walk: "#9fd3a8", train: "#7fb6ff", taxi: "#ffd84a", own: "#f0b48a" };
 const MODE_ICONS = { walk: "fa-person-walking", taxi: "fa-taxi", own: "fa-car-side" };
 const MODE_WORDS = { walk: "Walking", taxi: "By cab", own: "Driving" };
@@ -64,7 +66,7 @@ export class TravelController {
       scope: "world", config: true, type: Number, default: 1, choices: RATES, onChange: () => this.#drawPanel()
     });
     register("taxiMeters", { scope: "world", config: false, type: Object, default: {} });
-    register("trips", { scope: "world", config: false, type: Object, default: {}, onChange: () => { this.#drawLines(); this.#drawPanel(); this.#run(); } });
+    register("trips", { scope: "world", config: false, type: Object, default: {}, onChange: () => { this.#drawLines(); this.#drawPanel(); this.#run(); this.onTrips?.(); } });
     // With KG Transit: a party's way on after its train (walk from the station to where it was
     // going), by party token id: { scene, destinationId, from, to, destination, label }.
     register("onward", { scope: "world", config: false, type: Object, default: {} });
@@ -75,7 +77,7 @@ export class TravelController {
     });
 
     Hooks.on("preMoveToken", (doc, movement, operation) => this.#caught(doc, movement, operation));
-    Hooks.on("canvasReady", () => { this.#drawLines(); this.#drawPanel(); this.#run(); });
+    Hooks.on("canvasReady", () => { this.#drawLines(); this.#drawPanel(); this.#run(); this.onTrips?.(); });
     Hooks.on("canvasTearDown", () => { this.lines?.destroy({ children: true }); this.lines = null; });
     Hooks.on("pauseGame", () => this.#drawPanel());
     // Everyone's route lines shorten as the tokens move.
@@ -142,7 +144,7 @@ export class TravelController {
     if (!game.user.isGM) return;
     await this.stop(token.actor?.id ?? token.id, { quiet: true });
     await token.update({ x: destination.x, y: destination.y }, { kgCitiesTravel: true, animate: false });
-    if (keepSeconds > 0) await game.time.advance(Math.round(keepSeconds));
+    if (keepSeconds > 0) { await game.time.advance(Math.round(keepSeconds)); this.base = null; }
     this.#arrived(token, { mode: "teleport" });
   }
 
@@ -150,14 +152,21 @@ export class TravelController {
    * A trip along a route: the token travels it over `seconds` of world time.
    * { token, mode, points: [{ x, y }] (centres), seconds, label, detail }.
    */
-  async start({ token, mode, points, seconds, label, detail = "", then = null }) {
+  async start({ token, mode, points, seconds, label, detail = "", then = null, people = [], cars = null }) {
     if (!isPrimaryGM()) throw new Error("Only the GM in charge (Foundry's active GM) can send parties on their way.");
     const key = token.actor?.id ?? token.id;
     const half = { x: (token.width * token.parent.grid.size) / 2, y: (token.height * token.parent.grid.size) / 2 };
     // The route as the token's own corner, so its centre runs along the streets; fewer points for the world setting.
     const path = thin(points).map((p) => ({ x: Math.round(p.x - half.x), y: Math.round(p.y - half.y) }));
     const trips = foundry.utils.deepClone(this.trips);
-    trips[key] = { id: foundry.utils.randomID(), key, scene: token.parent.id, token: token.id, mode, label, detail, path, start: this.now(), seconds: Math.max(1, Math.round(seconds)), ...(then ? { then } : {}) };
+    // Who sees the party's view (a cab's or a car's): the players owning anyone travelling, as
+    // KG Transit decides its riders' viewers. Fixed for the trip, whatever anyone has selected.
+    const riders = people.length ? people : groupMembers(token.actor).map((a) => a.id);
+    const viewers = game.users.filter((u) => !u.isGM && riders.some((id) => game.actors.get(id)?.testUserPermission(u, "OWNER"))).map((u) => u.id);
+    trips[key] = {
+      id: foundry.utils.randomID(), key, scene: token.parent.id, token: token.id, mode, label, detail, path,
+      start: this.now(), seconds: Math.max(1, Math.round(seconds)), viewers, ...(cars ? { cars } : {}), ...(then ? { then } : {})
+    };
     await game.settings.set(ID, "trips", trips);
   }
 
@@ -179,6 +188,8 @@ export class TravelController {
     if (!trip || !isPrimaryGM()) return;
     this.pending += Math.max(0, trip.start + trip.seconds - this.now());
     await this.#tick({ step: false });
+    // Our own leap: everyone moves on by it (it is not a train's to skip).
+    this.base = null;
   }
 
   /* ---------------------------------------- */
@@ -207,8 +218,8 @@ export class TravelController {
       // One clock: while a train ride or a flight runs it (in real time), trips move with it and
       // add nothing of their own; otherwise they run it at the travel speed.
       if (step) {
-        if (this.#followingClock()) { if (this.pending) await this.#commit(); }
-        else this.pending += this.rate * (STEP_MS / 1000);
+        if (this.#followingClock()) { if (this.pending) await this.#commit(); await this.#skipJumps(); }
+        else { this.base = null; this.pending += this.rate * (STEP_MS / 1000); }
       }
       const now = this.now(), trips = this.trips, arrived = [];
       const moves = new Map(); // scene -> token updates
@@ -233,6 +244,25 @@ export class TravelController {
         for (const [trip, token] of arrived) if (token) this.#arrived(token, trip);
       } else { this.#drawLines(); this.#drawPanel(); }
     } finally { this.ticking = false; }
+  }
+
+  /**
+   * On a train's clock, trips go at real time only. When the GM fast-forwards a train (Skip,
+   * Get off next stop, Arrive), the world clock leaps minutes ahead; parties walking or driving
+   * elsewhere do not leap with it (they would all arrive at once, their views and lines gone).
+   * Their start times move on by the leap instead.
+   */
+  async #skipJumps() {
+    const world = game.time.worldTime, real = performance.now() / 1000;
+    if (!this.base) { this.base = { world, real }; return; }
+    const drift = (world - this.base.world) - (real - this.base.real);
+    // Behind real time (a pause, or the train's clock not yet written): start counting again.
+    if (drift < -JUMP_SLACK) { this.base = { world, real }; return; }
+    if (drift <= JUMP_SLACK) return;
+    this.base = { world, real };
+    const trips = foundry.utils.deepClone(this.trips);
+    for (const t of Object.values(trips)) t.start += Math.round(drift);
+    await game.settings.set(ID, "trips", trips);
   }
 
   /** A party is there: other modules hear of it (KG Transit offers the trains at a station). */
@@ -300,7 +330,7 @@ export class TravelController {
   /** The trips under way (the GM): each with how far along it is, Arrive now and Stop; the clock's speed. */
   #drawPanel() {
     const trips = Object.values(this.trips);
-    if (!game.user.isGM || !trips.length) { this.panel?.remove(); this.panel = null; return; }
+    if (!game.user.isGM || !trips.length) { this.panel?.remove(); this.panel = null; this.panelHead = this.panelRows = null; return; }
     if (!this.panel) {
       this.panel = document.createElement("section");
       this.panel.className = "kgc-ui kgc-panel kgc-trips";
@@ -314,23 +344,36 @@ export class TravelController {
       this.panel.addEventListener("change", (e) => {
         if (e.target.name === "rate") game.settings.set(ID, "travelPace", Number(e.target.value));
       });
+      this.panel.innerHTML = `<header></header><div class="trips"></div>`;
       document.body.append(this.panel);
     }
     const now = this.now();
     this.panel.style.right = `${(document.getElementById("sidebar")?.offsetWidth ?? 300) + 14}px`;
     const following = this.#followingClock();
-    this.panel.innerHTML = `<header><b>Travelling</b>${game.paused ? '<span class="paused">Paused</span>' : ""}
+    // The header (with the speed dropdown) is redrawn only when it changes, so an open dropdown
+    // stays open while the trips below tick on.
+    const head = `<b>Travelling</b>${game.paused ? '<span class="paused">Paused</span>' : ""}
       ${following ? '<span class="follow" data-tooltip="A train ride or a flight is running the clock in real time; trips move with it until it ends.">On the train\'s clock</span>'
-        : `<select name="rate" aria-label="Travel speed">${Object.entries(RATES).map(([v, l]) => `<option value="${v}" ${Number(v) === this.rate ? "selected" : ""}>${l}</option>`).join("")}</select>`}</header>
-      ${trips.map((t) => {
-        const done = Math.max(0, Math.min(1, (now - t.start) / t.seconds)), left = Math.max(0, t.start + t.seconds - now);
-        return `<div class="trip" style="--mode:${MODE_COLOURS[t.mode]}">
-          <div class="line"><i class="fa-solid ${MODE_ICONS[t.mode]}"></i><span class="who">${esc(t.label)}</span><span class="when">${esc(formatDuration(left))} left · ${esc(clockAt(t.start + t.seconds))}</span></div>
-          <div class="bar"><i style="width:${(done * 100).toFixed(1)}%"></i></div>
+        : `<select name="rate" aria-label="Travel speed">${Object.entries(RATES).map(([v, l]) => `<option value="${v}" ${Number(v) === this.rate ? "selected" : ""}>${l}</option>`).join("")}</select>`}`;
+    const header = this.panel.querySelector("header");
+    if (this.panelHead !== head) { this.panelHead = head; header.innerHTML = head; }
+    // The rows are built only when the trips change; each tick just moves their bars and times,
+    // so the buttons under the pointer stay the same buttons.
+    const list = this.panel.querySelector(".trips");
+    const rows = trips.map((t) => `<div class="trip" data-key="${esc(t.key)}" style="--mode:${MODE_COLOURS[t.mode]}">
+          <div class="line"><i class="fa-solid ${MODE_ICONS[t.mode]}"></i><span class="who">${esc(t.label)}</span><span class="when"></span></div>
+          <div class="bar"><i></i></div>
           <div class="line sub"><span>${esc(MODE_WORDS[t.mode])}${t.detail ? ` · ${esc(t.detail)}` : ""}</span>
             <button type="button" class="btn small" data-act="arrive" data-key="${esc(t.key)}" data-tooltip="Run the clock on to their arrival (every trip moves on too)">Arrive now</button>
-            <button type="button" class="btn small ghost" data-act="stop" data-key="${esc(t.key)}" data-tooltip="Stop them where they are">Stop</button></div></div>`;
-      }).join("")}`;
+            <button type="button" class="btn small ghost" data-act="stop" data-key="${esc(t.key)}" data-tooltip="Stop them where they are">Stop</button></div></div>`).join("");
+    if (this.panelRows !== rows) { this.panelRows = rows; list.innerHTML = rows; }
+    for (const t of trips) {
+      const row = list.querySelector(`.trip[data-key="${CSS.escape(t.key)}"]`);
+      if (!row) continue;
+      const done = Math.max(0, Math.min(1, (now - t.start) / t.seconds)), left = Math.max(0, t.start + t.seconds - now);
+      row.querySelector(".when").textContent = `${formatDuration(left)} left · ${clockAt(t.start + t.seconds)}`;
+      row.querySelector(".bar i").style.width = `${(done * 100).toFixed(1)}%`;
+    }
   }
 }
 

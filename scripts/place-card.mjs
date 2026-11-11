@@ -110,10 +110,18 @@ const FIELDS = [
   { name: "scene", label: "Scene (Enter takes everyone there)", type: "doc", doc: "Scene", icon: "fa-map", group: "links" },
   { name: "actors", label: "Actors (who you meet here)", type: "docs", doc: "Actor", icon: "fa-user", group: "links" },
   { name: "journal", label: "Journal (optional, opens from the card)", type: "doc", doc: "JournalEntry", icon: "fa-book-open", group: "links" },
-  { name: "images", label: "Pictures", type: "images", group: "links" }
+  { name: "images", label: "Pictures", type: "images", group: "links" },
+  { name: "phoneKind", label: "Phone", type: "phonekind", group: "phone" },
+  { name: "phoneNumber", label: "Its number", type: "phonenumber", group: "phone" }
 ];
-const GROUPS = [["identity", ""], ["who", "Who sees it"], ["text", "Text"], ["links", "Links"]];
-const FORM_TABS = [["text", "Text", "fa-pen-nib", ["identity", "who", "text"]], ["links", "Links", "fa-link", ["links"]]];
+const GROUPS = [["identity", ""], ["who", "Who sees it"], ["text", "Text"], ["links", "Links"], ["phone", "Phone"]];
+const FORM_TABS = [["text", "Text", "fa-pen-nib", ["identity", "who", "text"]], ["links", "Links", "fa-link", ["links", "phone"]]];
+const PHONE_KINDS = [["none", "None"], ["line", "Phone"], ["payphone", "Payphone"]];
+const PHONE_HINT = {
+  none: "No phone here.",
+  line: "A phone: it rings for the players whose characters are here, and they can call out. Listed in the phone book once the place is Discovered.",
+  payphone: "A payphone: calls out cost a quarter (911 and the operator are free). It rings for whoever is here. Not in the phone book."
+};
 
 /** A rich text field's preview on the form. */
 const preview = (html) => (html ? `<div class="text">${inlineLinks(html)}</div>` : `<span class="empty">Nothing written yet.</span>`);
@@ -347,6 +355,7 @@ function cardClass() {
         scene ? `<button type="button" class="btn primary" data-act="enter-all" data-tooltip="Activate it: everyone goes there"><i class="fa-solid fa-users"></i> ${esc(d.enterLabel ?? `Enter ${d.name}`)}</button><button type="button" class="btn" data-act="enter" data-tooltip="View it, only you"><i class="fa-solid fa-eye"></i> View</button>` : "",
         d.locate ? `<button type="button" class="btn" data-act="locate" aria-label="Show it on the map" data-tooltip="Show it on the map"><i class="fa-solid fa-location-crosshairs"></i></button>` : "",
         journal ? `<button type="button" class="btn" data-act="journal" data-tooltip="Open ${esc(journal.name)}"><i class="fa-solid fa-book-open"></i> Journal</button>` : "",
+        d.phone && !rumoured ? `<button type="button" class="btn" data-act="phone" ${d.phone.here ? "" : "disabled"} data-tooltip="${esc(d.phone.here ? `Use the ${d.phone.label.toLowerCase()}` : "Only once you are there")}"><i class="fa-solid fa-phone"></i> ${esc(d.phone.label)}</button>` : "",
         `<span class="grow"></span>`,
         gm && d.img ? `<button type="button" class="btn" data-act="share" aria-label="Show the art to players" data-tooltip="Show the art to players"><i class="fa-solid fa-image"></i></button>` : "",
         gm ? `<button type="button" class="btn" data-act="edit"><i class="fa-solid fa-pen-to-square"></i> Edit</button>` : ""
@@ -380,6 +389,11 @@ function cardClass() {
         if (f.type === "rich") return `<div class="field rich">${label}<input type="hidden" name="${f.name}" value="${esc(v)}">
           <div class="preview" data-act="write" data-field="${f.name}" data-tooltip="Edit the text">${preview(v)}</div>
           <div class="inline"><button type="button" class="btn small" data-act="write" data-field="${f.name}"><i class="fa-solid fa-pen-nib"></i> Edit text</button>${f.hint ? `<p class="hint">${f.hint}</p>` : ""}</div></div>`;
+        if (f.type === "phonekind") return `<div class="field phone-kind"><input type="hidden" name="${f.name}" value="${esc(v || "none")}">
+          <div class="seg" role="radiogroup" aria-label="${esc(f.label)}">${PHONE_KINDS.map(([k, l]) => `<button type="button" role="radio" aria-checked="${k === (v || "none")}" class="${k === (v || "none") ? "on" : ""}" data-act="phone-kind" data-value="${k}">${l}</button>`).join("")}</div>
+          <p class="hint phone-hint">${PHONE_HINT[v || "none"]}</p></div>`;
+        if (f.type === "phonenumber") return `<div class="field" ${form.phoneKind && form.phoneKind !== "none" ? "" : "hidden"} data-phone-number>${label}<div class="phone-field"><input type="text" name="${f.name}" value="${esc(v)}" placeholder="555-0142">
+          <button type="button" class="btn small" data-act="new-number"><i class="fa-solid fa-shuffle"></i> New number</button></div></div>`;
         if (f.type === "doc") return `<div class="field">${label}<div class="drop" data-drop="${f.doc}" data-field="${f.name}">${docBox(f, v)}</div></div>`;
         if (f.type === "docs" || f.type === "images") return `<div class="field">${label}<div class="drop list" data-drop="${f.doc ?? "image"}" data-field="${f.name}">${listBox(f, Array.isArray(v) ? v : [])}</div></div>`;
         return `<div class="field">${label}<input type="text" name="${f.name}" value="${esc(v)}"></div>`;
@@ -524,6 +538,23 @@ function cardClass() {
           box.querySelector(".vis-hint").textContent = VIS_HINT[b.dataset.value] ?? "";
           return this.#markDirty();
         }
+        case "phone-kind": {
+          const box = b.closest(".field"), form = b.closest("form");
+          box.querySelector("input").value = b.dataset.value;
+          for (const x of box.querySelectorAll("[data-act=phone-kind]")) { x.classList.toggle("on", x === b); x.setAttribute("aria-checked", x === b); }
+          box.querySelector(".phone-hint").textContent = PHONE_HINT[b.dataset.value] ?? "";
+          const num = form.querySelector("[data-phone-number]");
+          num.hidden = b.dataset.value === "none";
+          const input = num.querySelector("input");
+          if (!num.hidden && !input.value) input.value = deps.newNumber?.() ?? "";
+          return this.#markDirty();
+        }
+        case "new-number": {
+          const input = b.closest(".field").querySelector("input");
+          input.value = deps.newNumber?.() ?? "";
+          return this.#markDirty();
+        }
+        case "phone": return deps.phone?.(this.ref);
         case "clear": {
           const box = b.closest("[data-drop]");
           box.innerHTML = docBox(FIELDS.find((x) => x.name === box.dataset.field), "");
