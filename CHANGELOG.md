@@ -14,6 +14,8 @@
   first move showed them as dates). Worlds already moved get only what was missed.
 - **Your pager** button in the token controls for players carrying one, besides the pager at the
   bottom right of the map.
+- Phones at places with long names (Massachusetts General Hospital) no longer spill past their
+  window: the name is shortened instead.
 
 ## 0.11.0
 

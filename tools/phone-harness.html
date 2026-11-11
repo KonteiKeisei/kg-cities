@@ -12,6 +12,8 @@
 <style>
   body { margin: 0; min-height: 100vh; background: #2b3340 radial-gradient(circle at 30% 20%, #3b4656, #1a2029); font-family: Signika, system-ui, sans-serif; }
   .application { position: absolute; display: flex; flex-direction: column; }
+  /* As Foundry 13 lays out a window's content. */
+  .window-content { display: flex; flex-direction: column; overflow: hidden; }
   .window-header { display: flex; gap: 8px; padding: 6px 10px; font-size: 13px; }
   .window-header .close { margin-left: auto; cursor: pointer; background: none; border: 0; color: inherit; }
   #controls { position: fixed; left: 12px; bottom: 12px; display: flex; flex-wrap: wrap; gap: 6px; max-width: 60vw; }
@@ -49,7 +51,7 @@ const pager = {
 items.set("i1", pager);
 const actors = new Coll([["a1", actor]]);
 const landmarks = { boston: { list: [
-  { id: "p1", name: "Union Oyster House", lat: 42.3612, lon: -71.0569, phone: { kind: "line", number: "555-0120" }, visibility: "discovered" },
+  { id: "p1", name: "Massachusetts General Hospital", lat: 42.3612, lon: -71.0569, phone: { kind: "line", number: "555-0120" }, visibility: "discovered" },
   { id: "p2", name: "Haymarket corner", lat: 42.3618, lon: -71.0581, phone: { kind: "payphone", number: "555-0131" }, visibility: "discovered" },
   { id: "p3", name: "Faneuil Hall", lat: 42.3600, lon: -71.0560, phone: { kind: "line", number: "555-0105" }, visibility: "discovered" }
 ] } };
