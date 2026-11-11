@@ -1,5 +1,25 @@
 # KG Cities changelog
 
+## 0.12.0
+
+- **The phones' photographs are back** (from Unsleeping Pagers): a payphone is its weathered
+  payphone and a desk phone its cream push-button phone, with their own keys pressable on the
+  picture (lit while pressed) and the number on the phone's card, beside the same lit screen,
+  coin slot, book and buttons as before. The **dial tone** plays when you pick up, until the first
+  key; keypad tones on every key.
+- **Placing payphones** (GM): Switchboard, Places, **Place a payphone** (or a phone), then click
+  the map. It goes there as a tile with a fresh number, and its name box opens ready to type
+  ("Payphone outside O'Malley's"). Show finds it on the map; remove deletes it. **No Monk's Active
+  Tiles needed**: anyone clicks a phone tile to use it (players from beside it).
+- **Answering machines**: when a player calls a place you are told (a notice and a soft ring),
+  and the call strip and switchboard offer **Machine** beside Answer. The caller hears the tone and
+  writes a message (the quarter is spent: the machine picked up). Messages wait on that place's
+  phone for you and anyone there, to read and erase; only you see who left each one. The
+  switchboard counts them.
+- Lists no longer cut off: in every book and directory a long name shortens and its number
+  always shows.
+- Tile phones can be named in the switchboard, so the books can tell them apart.
+
 ## 0.11.1
 
 - **Payphones on Tiles**: a Tile on any scene can be a payphone or a phone (switchboard, Places:

@@ -6,7 +6,7 @@
 
 import {
   DEVICES, ENDINGS, PAGER_MODELS, SERVICES, TILE, actorsAt, makeTilePhone, setTilePhone, bookOf, directory, formatNumber, givePager, myPagers, nameFor,
-  newNumber, pagerOf, phonesHere, placePhone, restorePager, sameNumber, setPagerContacts, sound, SOUND, speakerAt
+  newNumber, pagerOf, phonesHere, placePhone, restorePager, sameNumber, setPagerContacts, sound, SOUND, speakerAt, stopSound
 } from "./phones.mjs";
 import { contact, coinCopper, digits, duplicates, findContact, mergeBooks, putContact, sortBook } from "./phone-core.mjs";
 import { formatMoney, walletValue } from "./money.mjs";
@@ -14,6 +14,14 @@ import { uiBounds } from "./ui-trail.mjs";
 
 const ID = "kg-cities";
 const esc = (s) => foundry.utils.escapeHTML(String(s ?? ""));
+/**
+ * The phones' photographs (from Unsleeping Pagers) and where their keys are on them, in percent of
+ * the picture: key centres by column and row, a key's width, and the number card's centre.
+ */
+const ART = {
+  payphone: { src: `modules/${ID}/assets/phones/payphone.webp`, w: 977, h: 1610, cols: [47.8, 53.1, 58.5], rows: [39.1, 42.2, 45.3, 48.3], key: 4.8, plate: [52.7, 28.0] },
+  line: { src: `modules/${ID}/assets/phones/desk-phone.webp`, w: 562, h: 893, cols: [36.1, 49.8, 63.5], rows: [44.8, 54.6, 64.0, 73.3], key: 11, plate: [50.2, 81.2] }
+};
 const KEYS = [["1", ""], ["2", "ABC"], ["3", "DEF"], ["4", "GHI"], ["5", "JKL"], ["6", "MNO"], ["7", "PRS"], ["8", "TUV"], ["9", "WXY"], ["*", ""], ["0", "OPER"], ["#", ""]];
 
 /** The world clock as "9:42 PM" (Calendaria's when it drives the clock). */
@@ -68,6 +76,9 @@ export class PhoneUI {
     // A Tile made a phone (or not), or selected for the switchboard's buttons.
     for (const h of ["createTile", "updateTile", "deleteTile"]) Hooks.on(h, () => this.refresh());
     Hooks.on("controlTile", () => { if (this.board?.tab === "places") this.board.redraw(); });
+    // Phone tiles answer a click on the map themselves (no other module needed).
+    Hooks.on("canvasReady", () => this.#watchTiles());
+    Hooks.on("canvasTearDown", () => this.cancelPlacing());
     // Tokens moving change who is at a phone.
     for (const h of ["updateToken", "createToken", "deleteToken", "canvasReady"]) Hooks.on(h, () => this.refresh({ only: "place" }));
     // The GM's numbers and the places' phones are world settings.
@@ -88,6 +99,11 @@ export class PhoneUI {
   /** A call changed: redraw, and open the place's phone for those it rings for. */
   onCall(call, before, dropped) {
     const me = game.user.id;
+    // The GM hears of every call to a place, to answer it or send it to the machine.
+    if (game.user.isGM && !dropped && call.state === "ringing" && before?.state !== "ringing" && call.to?.kind === "place" && call.from?.userId !== me) {
+      ui.notifications.info(`${endLabel(call.from)} is calling ${call.to.name}. Answer it or send it to the machine from the call strip.`);
+      sound(SOUND.ring, { vol: 0.25 });
+    }
     if (!dropped && call.state === "ringing" && before?.state !== "ringing" && call.to?.kind === "place" && call.ringUsers?.includes(me)) {
       this.openPlace(call.to.city, call.to.id, { ringing: true });
       ui.notifications.info(`The phone is ringing at ${call.to.name}.`);
@@ -144,6 +160,88 @@ export class PhoneUI {
     return this.openPlace(TILE, tile.uuid);
   }
 
+  /* ---------------------------------------- */
+  /*  Phone tiles on the map                   */
+  /* ---------------------------------------- */
+
+  /** The phone tile at a canvas point on the scene on screen, or null (hidden ones only for the GM). */
+  #tileAt(pt) {
+    return canvas.scene?.tiles.find((t) => t.flags?.[ID]?.phone?.number && (game.user.isGM || !t.hidden)
+      && pt.x >= t.x && pt.x <= t.x + t.width && pt.y >= t.y && pt.y <= t.y + t.height) ?? null;
+  }
+
+  /** A click on a phone tile (on the token layer, not on a token or the interface) opens it; the pointer shows it can. */
+  #watchTiles() {
+    const stage = canvas?.stage, view = canvas?.app?.view;
+    if (!stage || !view) return;
+    const onMap = (e) => { const dom = e.nativeEvent?.target ?? e.originalEvent?.target; return !dom || dom === view; };
+    const onToken = (e) => { for (let at = e.target; at && at !== stage; at = at.parent) if (at.document?.documentName === "Token") return true; return false; };
+    const usable = (e) => !this.placing && canvas.tokens?.active && onMap(e) && !onToken(e);
+    let down = null, pointing = false;
+    stage.on("pointerdown", (e) => {
+      if (this.placing) return this.#place(e);
+      down = e.button === 0 && usable(e) ? { x: e.global.x, y: e.global.y, t: Date.now(), tile: this.#tileAt(e.getLocalPosition(stage)) } : null;
+    });
+    stage.on("pointerup", (e) => {
+      const d = down;
+      down = null;
+      if (!d?.tile || Math.hypot(e.global.x - d.x, e.global.y - d.y) > 6 || Date.now() - d.t > 500) return;
+      this.openTile(d.tile.uuid);
+    });
+    stage.on("pointermove", (e) => {
+      const over = !!(usable(e) && this.#tileAt(e.getLocalPosition(stage)));
+      if (over === pointing) return;
+      pointing = over;
+      view.style.cursor = over ? "pointer" : "";
+    });
+  }
+
+  /**
+   * The GM places a payphone (kind "payphone") or phone ("line") on the scene on screen: the next
+   * click on the map puts it there, as a tile with a fresh number; Esc or a right click cancels.
+   */
+  startPlacing(kind = "payphone") {
+    if (!game.user.isGM || !canvas?.scene) return ui.notifications.warn("KG Cities: open the scene to place it on first.");
+    this.cancelPlacing();
+    this.placing = { kind };
+    this.board?.minimize?.();
+    const bar = document.createElement("div");
+    bar.id = "kgc-place-bar";
+    bar.className = "kgc-ui kgc-panel";
+    bar.innerHTML = `<i class="fa-solid ${kind === "payphone" ? "fa-coins" : "fa-phone"}"></i><span>Click the map where the ${kind === "payphone" ? "payphone" : "phone"} goes.</span><button type="button" class="btn small" data-act="cancel">Cancel <span class="kbd">Esc</span></button>`;
+    bar.querySelector("[data-act=cancel]").addEventListener("click", () => this.cancelPlacing());
+    document.body.append(bar);
+    this.placing.keys = (e) => { if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); this.cancelPlacing(); } };
+    this.placing.menu = (e) => { e.preventDefault(); this.cancelPlacing(); };
+    window.addEventListener("keydown", this.placing.keys, true);
+    canvas.app.view.addEventListener("contextmenu", this.placing.menu);
+    canvas.app.view.style.cursor = "crosshair";
+  }
+
+  cancelPlacing({ reopen = true } = {}) {
+    if (!this.placing) return;
+    window.removeEventListener("keydown", this.placing.keys, true);
+    canvas?.app?.view?.removeEventListener("contextmenu", this.placing.menu);
+    if (canvas?.app?.view) canvas.app.view.style.cursor = "";
+    document.getElementById("kgc-place-bar")?.remove();
+    this.placing = null;
+    if (reopen && this.board?.rendered) this.board.maximize?.();
+  }
+
+  async #place(e) {
+    if (e.button !== 0) return;
+    const { kind } = this.placing;
+    const at = e.getLocalPosition(canvas.stage), size = canvas.scene.grid?.size ?? 100;
+    this.cancelPlacing({ reopen: false });
+    const number = newNumber();
+    const [tile] = await canvas.scene.createEmbeddedDocuments("Tile", [{
+      texture: { src: `modules/${ID}/assets/phones/payphone.svg` }, x: Math.round(at.x - size / 2), y: Math.round(at.y - size / 2), width: size, height: size,
+      flags: { [ID]: { phone: { kind, number, name: "" } } }
+    }]);
+    ui.notifications.info(`KG Cities: ${kind === "payphone" ? "payphone" : "phone"} ${number} placed. Name it in the switchboard so the books can tell it apart.`);
+    this.switchboard({ tab: "places", focus: tile?.uuid });
+  }
+
   /** The GM opened a phone for this player. */
   onOpen(msg) { return this.#open(`place:${msg.city}:${msg.id}`, { kind: "place", city: msg.city, id: msg.id }); }
 
@@ -183,11 +281,14 @@ export class PhoneUI {
     return this.openPlace(e.city, e.id, { number });
   }
 
-  switchboard({ dial = "", tab = null } = {}) {
+  switchboard({ dial = "", tab = null, focus = null } = {}) {
     if (!game.user.isGM) return;
     if (!this.board?.rendered) { this.board = new (boardClass())({ ui: this }); }
     if (dial) { this.board.dialed = digits(dial); this.board.tab = "calls"; }
     if (tab) this.board.tab = tab;
+    // A phone just placed: its name box, ready to type in.
+    this.board.focus = focus;
+    if (this.board.minimized) this.board.maximize?.();
     this.board.render({ force: true });
     this.board.bringToFront?.();
   }
@@ -248,16 +349,18 @@ export class PhoneUI {
         if (b.dataset.act === "answer") this.phones.answer(id);
         else if (b.dataset.act === "hangup") this.phones.hangup(id);
         else if (b.dataset.act === "intercept") this.phones.intercept(id);
+        else if (b.dataset.act === "machine") this.phones.machine(id);
         else if (b.dataset.act === "board") this.switchboard({ tab: "calls" });
       });
       document.body.append(el);
     }
     el.innerHTML = calls.map((c) => {
       const ring = c.state === "ringing", nobody = ring && c.to?.kind === "place" && !c.ringUsers?.length;
-      const state = ring ? (c.gmRings ? "Ringing for you" : nobody ? "Ringing, nobody there" : "Ringing") : c.state === "paging" ? "Paging" : c.state === "connected" ? `Connected ${since(c.connectedAt)}` : "Dialing";
+      const state = ring ? (c.gmRings ? "Ringing for you" : nobody ? "Ringing, nobody there" : "Ringing") : c.state === "paging" ? "Paging" : c.state === "connected" ? `Connected ${since(c.connectedAt)}` : c.state === "machine" ? "Leaving a message" : "Dialing";
       const buttons = [
         ring && c.from?.userId !== game.user.id ? `<button type="button" class="btn small primary" data-act="answer" data-call="${c.id}"><i class="fa-solid fa-phone"></i> Answer</button>` : "",
         ring && c.to?.kind === "none" ? `<button type="button" class="btn small" data-act="intercept" data-call="${c.id}">Not in service</button>` : "",
+        ring && c.to?.kind === "place" && c.from?.userId !== game.user.id ? `<button type="button" class="btn small" data-act="machine" data-call="${c.id}" data-tooltip="Send it to the answering machine: the caller leaves a written message"><i class="fa-solid fa-voicemail"></i> Machine</button>` : "",
         `<button type="button" class="btn small danger" data-act="hangup" data-call="${c.id}" aria-label="Hang up" data-tooltip="Hang up"><i class="fa-solid fa-phone-slash"></i></button>`
       ].join("");
       return `<div class="strip-call ${ring ? "ringing" : ""}"><i class="fa-solid ${ring ? "fa-bell" : "fa-phone-volume"}"></i>
@@ -283,7 +386,8 @@ function deviceClass() {
     static DEFAULT_OPTIONS = { tag: "div", classes: ["kgc-ui", "kgc-device-window"], window: { icon: "fa-solid fa-phone", resizable: false }, position: { width: 330, height: "auto" } };
 
     constructor(options) {
-      super({ id: `kgc-dev-${foundry.utils.randomID()}` });
+      // A place's phone shows its photograph beside the console; a pager is the console alone.
+      super({ id: `kgc-dev-${foundry.utils.randomID()}`, position: { width: options.kind === "pager" ? 330 : 660 } });
       Object.assign(this, { ui: options.ui, key: options.key, kind: options.kind, city: options.city, placeId: options.id, uuid: options.uuid });
       this.dialed = digits(options.number ?? "");
       this.tab = options.kind === "pager" ? "pages" : "keypad";
@@ -316,9 +420,16 @@ function deviceClass() {
         content.addEventListener("keydown", (e) => this.#key(e));
         content.addEventListener("submit", (e) => e.preventDefault());
         content.tabIndex = -1;
+        // Picking up a phone: the dial tone, until the first key.
+        if (this.kind === "place") {
+          const e = placePhone(this.city, this.placeId);
+          if (e && this.#mode(e).mode === "idle" && (game.user.isGM || speakerAt(e))) sound(SOUND.dial, { loop: this.dialKey, once: true, vol: 0.6 });
+        }
       }
       this.#draw(content);
     }
+
+    get dialKey() { return `dial:${this.key}`; }
 
     #draw(content = this.element?.querySelector(".window-content")) {
       if (!content) return;
@@ -330,6 +441,7 @@ function deviceClass() {
     _onClose(options) {
       super._onClose?.(options);
       this.ui.windows.delete(this.key);
+      stopSound(this.dialKey);
       // Walking away from a ringing phone lets it ring; hanging up the receiver ends your call.
       const call = this.kind === "place" ? this.phones.onPlace(this.city, this.placeId) : null;
       if (call && call.state !== "ended") {
@@ -392,9 +504,17 @@ function deviceClass() {
           actions = this.#hangupBtn(); break;
         case "incoming": status = "RINGING"; blink = true; main = '<i class="fa-solid fa-bell"></i>'; sub = gm ? esc(`From ${endLabel(call.from)}`) : "Someone is calling.";
           actions = `<button type="button" class="call stop" data-act="let-ring">Let it ring</button><button type="button" class="call go" data-act="pickup"><i class="fa-solid fa-phone"></i> Pick up</button>`; break;
+        case "machine": {
+          // The caller reached the answering machine: they write what they would have said.
+          status = "MACHINE"; main = '<i class="fa-solid fa-voicemail"></i> BEEP'; sub = esc(call.greeting ?? "Please leave a message after the tone.");
+          body = `<div class="dev-form"><textarea data-keep="machineText" maxlength="500" placeholder="Your message: who you are, what you want, a number to call back"></textarea></div>`;
+          actions = `${this.#hangupBtn()}<button type="button" class="call go" data-act="leave"><i class="fa-solid fa-microphone-lines"></i> Leave message</button>`;
+          break;
+        }
         case "inuse": {
           const who = call.answeredBy?.userId ? call.answeredBy.name : call.from?.actorId ? game.actors.get(call.from.actorId)?.name : "";
-          status = "IN USE"; main = '<i class="fa-solid fa-phone-volume"></i>'; sub = esc(who ? `${who} is on the phone.` : "Someone is on the phone.");
+          status = "IN USE"; main = '<i class="fa-solid fa-phone-volume"></i>';
+          sub = esc(call.state === "machine" ? "The answering machine is taking a message." : who ? `${who} is on the phone.` : "Someone is on the phone.");
           if (gm) actions = this.#hangupBtn("Cut the line");
           break;
         }
@@ -406,17 +526,39 @@ function deviceClass() {
         }
       }
       const canKey = ["idle", "paging", "connected"].includes(mode) && (gm || speaker) && !(mode === "paging" && this.paging !== "numeric");
-      if (!body) body = this.tab === "book" && mode === "idle" ? this.#bookPane(speaker, e) : this.#keypad(!canKey);
+      // The keys are on the phone's picture; the console beside it lists the book while idle.
+      if (!body) body = mode === "idle" ? `${this.#messages(e, gm || !!speaker)}<h5>${gm ? "Directory" : "Address book"}</h5>${this.#bookPane(speaker, e)}` : "";
       const coin = pay ? this.#coinSlot(speaker, mode) : "";
-      return `<div class="kgc-device skin-${e.device}">
+      return `<div class="kgc-phone skin-${e.device}">
+        ${this.#art(e, !canKey)}
+        <div class="kgc-device skin-${e.device} console">
         <div class="dev-top"><span class="dev-brand">${esc(e.name)}</span><span class="dev-sub">${esc(formatNumber(e.number))}</span></div>
         ${this.#screen(status, main, sub, blink)}
         ${coin}
-        ${mode === "idle" ? tabs([["keypad", "Keypad", "fa-table-cells"], ["book", gm ? "Directory" : "Address book", "fa-address-book"]], this.tab) : ""}
-        <div class="dev-body">${body}</div>
+        ${body ? `<div class="dev-body">${body}</div>` : ""}
         ${actions ? `<div class="dev-actions">${actions}</div>` : ""}
         ${speaker ? `<p class="dev-foot"><i class="fa-solid fa-user"></i> ${esc(speaker.name)}${pay ? ` · ${esc(formatMoney(walletValue(speaker.system?.currency), this.ui.dollarRate()))}` : ""}</p>` : ""}
-      </div>`;
+      </div></div>`;
+    }
+
+    /** The answering machine's messages, for the GM and whoever is at the phone; newest first. */
+    #messages(e, mayRead) {
+      const list = [...(e.messages ?? [])].reverse();
+      if (!list.length || !mayRead) return "";
+      const gm = game.user.isGM;
+      return `<h5><i class="fa-solid fa-voicemail"></i> Messages (${list.length})</h5><ul class="dev-list messages">${list.map((m) => `<li><div class="page"><span class="when">${esc(when(m))}</span><span class="text msg">${esc(m.text)}</span>${gm && m.from ? `<span class="from">${esc(m.from)}${m.fromNumber ? `, from ${esc(formatNumber(m.fromNumber))}` : ""} (only you see who)</span>` : ""}</div>
+        <button type="button" class="mini" data-act="erase" data-value="${esc(m.id)}" data-tooltip="Erase"><i class="fa-solid fa-xmark"></i></button></li>`).join("")}</ul>`;
+    }
+
+    /** The phone itself: its photograph, with its own keys pressable (lit while pressed) and its number on the card. */
+    #art(e, disabled) {
+      const art = ART[e.device] ?? ART.line;
+      const keys = KEYS.map(([k], i) => {
+        const [x, y] = [art.cols[i % 3], art.rows[Math.floor(i / 3)]];
+        return `<button type="button" class="art-key" data-act="key" data-value="${k}" style="left:${x}%;top:${y}%;width:${art.key}%" aria-label="${k}" ${disabled ? "disabled" : ""}></button>`;
+      }).join("");
+      return `<div class="phone-art" style="aspect-ratio:${art.w} / ${art.h}"><img src="${esc(foundry.utils.getRoute(art.src))}" alt="${esc(DEVICES[e.device].label)}" draggable="false">${keys}
+        <span class="art-number" style="left:${art.plate[0]}%;top:${art.plate[1]}%">${esc(formatNumber(e.number))}</span></div>`;
     }
 
     #screen(status, main, sub, blink = false) {
@@ -529,7 +671,10 @@ function deviceClass() {
     #press(k) {
       const e = placePhone(this.city, this.placeId), { mode } = this.#mode(e);
       if (!game.user.isGM && !speakerAt(e)) return;
+      stopSound(this.dialKey);
       sound(SOUND.key(k), { vol: 0.5 });
+      // The key lights on the phone's picture, once this press has redrawn the window.
+      queueMicrotask(() => this.element?.querySelector(`.art-key[data-value="${CSS.escape(k)}"]`)?.classList.add("lit"));
       if (mode === "connected") return;
       if (mode === "paging" && k === "#") return this.#sendPage();
       if (mode !== "idle" && mode !== "paging") return;
@@ -591,6 +736,7 @@ function deviceClass() {
         case "call": {
           const speaker = game.user.isGM ? null : speakerAt(place);
           if (!game.user.isGM && !speaker) return ui.notifications.warn(`You need to be at ${place.name} to use its phone.`);
+          stopSound(this.dialKey);
           const id = this.phones.dial(this.dialed, { from: { city: this.city, id: this.placeId }, actorId: speaker?.id ?? null, coin: this.coin });
           if (!id) ui.notifications.warn("No dial tone: the GM needs to be here to connect calls.");
           this.dialed = "";
@@ -601,6 +747,13 @@ function deviceClass() {
         case "let-ring": { const { call } = this.#mode(place); if (call) this.phones.silence(call.id); return this.close(); }
         case "use-own": this.dialed = digits(place.number); return this.redraw();
         case "send-page": return this.#sendPage();
+        case "leave": {
+          const { call } = this.#mode(place), text = this.element.querySelector('[data-keep="machineText"]')?.value ?? "";
+          if (!text.trim()) return ui.notifications.warn("Write your message first, or hang up.");
+          if (call) this.phones.leave(call.id, text);
+          return;
+        }
+        case "erase": return this.phones.erase(this.city, this.placeId, v);
         case "edit": this.editing = v; return this.redraw();
         case "contact-cancel": this.editing = null; return this.redraw();
         case "contact-save": return this.#saveContact(b.closest("[data-contact]"));
@@ -664,6 +817,12 @@ function boardClass() {
       content.innerHTML = `${tabs([["calls", "Calls", "fa-phone-volume"], ["places", "Places", "fa-landmark"], ["pagers", "Pagers", "fa-pager"], ["numbers", "Your numbers", "fa-address-book"]], this.tab)}
         ${dup.length ? `<p class="warn"><i class="fa-solid fa-triangle-exclamation"></i> Given out twice: ${dup.map(([n, l]) => `${esc(formatNumber(n))} (${l.map((x) => esc(x.name)).join(", ")})`).join("; ")}. Calls reach the first.</p>` : ""}
         <div class="dev-body sb-body">${panes[this.tab]()}</div>`;
+      if (this.focus) {
+        const input = content.querySelector(`[data-act-change="tile-name"][data-id="${CSS.escape(this.focus)}"]`);
+        this.focus = null;
+        input?.scrollIntoView({ block: "nearest" });
+        input?.focus();
+      }
     }
 
     #calls() {
@@ -675,6 +834,7 @@ function boardClass() {
         return `<tr class="${ring ? "ringing" : ""}"><td>${esc(endLabel(c.from))}</td><td><i class="fa-solid fa-arrow-right"></i></td><td>${esc(endLabel(c.to))}${ring && c.to?.kind === "place" ? `<small>${c.ringUsers?.length ? `Ringing for ${c.ringUsers.map((u) => esc(game.users.get(u)?.name)).join(", ")}` : "Nobody is there"}</small>` : ""}</td><td>${state}</td>
           <td class="acts">${ring && c.from?.userId !== game.user.id ? `<button type="button" class="btn small primary" data-act="answer" data-call="${c.id}">Answer</button>` : ""}
           ${ring && c.to?.kind === "none" ? `<button type="button" class="btn small" data-act="intercept" data-call="${c.id}">Not in service</button>` : ""}
+          ${ring && c.to?.kind === "place" && c.from?.userId !== game.user.id ? `<button type="button" class="btn small" data-act="machine" data-call="${c.id}"><i class="fa-solid fa-voicemail"></i> Machine</button>` : ""}
           ${pagingMine ? `<input data-keep="pageText:${c.id}" placeholder="Message or number"><button type="button" class="btn small primary" data-act="send-page" data-call="${c.id}">Send</button>` : ""}
           ${c.state !== "ended" ? `<button type="button" class="btn small danger" data-act="hangup" data-call="${c.id}">Hang up</button>` : ""}</td></tr>`;
       }).join("");
@@ -688,17 +848,23 @@ function boardClass() {
       const where = (x) => (x.tile ? game.scenes.get(x.sceneId)?.name ?? "" : x.city);
       const list = dir.filter((x) => x.kind === "place").sort((a, b) => where(a).localeCompare(where(b)) || a.name.localeCompare(b.name));
       const selected = canvas?.tiles?.controlled?.length ?? 0;
-      const tools = `<div class="sb-dial"><button type="button" class="btn" data-act="tile-phone" data-value="payphone" ${selected ? "" : "disabled"}><i class="fa-solid fa-coins"></i> Selected tile: payphone</button>
-          <button type="button" class="btn" data-act="tile-phone" data-value="line" ${selected ? "" : "disabled"}><i class="fa-solid fa-phone"></i> Selected tile: phone</button></div>
-        <p class="hint">Places on the city map get phones on their cards (Edit, Links). A phone can also be a Tile on any scene: select it (Tiles layer) and use the buttons above. Tokens on it or within a square and a half are at it. Players open it with <b>Use a phone here</b> in the token controls, or by clicking it with Monk's Active Tiles running the macro <b>Unsleeping Payphone Tile</b> (moved over), or one with this command: <code>game.modules.get("kg-cities").api.phones.openTile(tile.document.uuid, { actorId: token?.actor?.id })</code>.</p>`;
+      const tools = `<div class="sb-place">
+          <button type="button" class="btn primary" data-act="place" data-value="payphone"><i class="fa-solid fa-coins"></i> Place a payphone</button>
+          <button type="button" class="btn" data-act="place" data-value="line"><i class="fa-solid fa-phone"></i> Place a phone</button>
+          <span class="grow"></span>
+          <button type="button" class="btn ghost small" data-act="tile-phone" data-value="payphone" ${selected ? "" : "disabled"} data-tooltip="Turn the tile selected on the Tiles layer into a payphone">Selected tile to payphone</button>
+        </div>
+        <p class="hint">Place one, then click the map where it stands on this scene. Anyone with a character beside it clicks it to use it; <b>Use a phone here</b> in the token controls works too. Move or resize it like any tile. Places on the city map get phones on their cards (Edit, Links).</p>`;
       if (!list.length) return `${tools}<p class="empty">No phones yet.</p>`;
       return `${tools}<table class="sb-table"><thead><tr><th>Place</th><th>Phone</th><th>Who is there</th><th></th></tr></thead><tbody>${list.map((x) => {
         const people = [...actorsAt(x)].filter((a) => a.type !== "group" && a.hasPlayerOwner).map((a) => a.name);
         const busy = this.phones.onPlace(x.city, x.id);
         const number = x.tile ? `<input class="num" data-act-change="tile-number" data-id="${esc(x.id)}" value="${esc(formatNumber(x.number))}">` : esc(formatNumber(x.number));
-        return `<tr><td>${esc(x.name)}<small>${esc(where(x))}${x.tile ? ", tile" : ""}</small></td><td>${number}<small>${esc(DEVICES[x.device].label)}${busy && busy.state !== "ended" ? ", in use" : ""}</small></td><td>${people.length ? esc(people.join(", ")) : '<span class="faint">Nobody</span>'}</td>
+        // A tile's phone is named here ("Payphone outside O'Malley's"), so the books can tell them apart.
+        const name = x.tile ? `<input data-act-change="tile-name" data-id="${esc(x.id)}" value="${esc(game.scenes.get(x.sceneId)?.tiles.find((t) => t.uuid === x.id)?.flags?.[ID]?.phone?.name ?? "")}" placeholder="${esc(x.name)}">` : esc(x.name);
+        return `<tr><td>${name}<small>${esc(where(x))}${x.tile ? ", tile" : ""}</small></td><td>${number}<small>${esc(DEVICES[x.device].label)}${busy && busy.state !== "ended" ? ", in use" : ""}${x.messages?.length ? `, <b>${x.messages.length} message${x.messages.length === 1 ? "" : "s"}</b>` : ""}</small></td><td>${people.length ? esc(people.join(", ")) : '<span class="faint">Nobody</span>'}</td>
           <td class="acts"><button type="button" class="btn small" data-act="ring" data-value="${esc(x.number)}"><i class="fa-solid fa-bell"></i> Ring</button><button type="button" class="btn small" data-act="open-place" data-city="${esc(x.city)}" data-id="${esc(x.id)}" data-tooltip="Use its phone"><i class="fa-solid fa-phone"></i></button>${x.tile
-            ? `<button type="button" class="btn small danger" data-act="tile-remove" data-id="${esc(x.id)}" data-tooltip="No longer a phone"><i class="fa-solid fa-trash"></i></button>`
+            ? `<button type="button" class="btn small" data-act="tile-show" data-id="${esc(x.id)}" data-tooltip="Show it on the map"><i class="fa-solid fa-location-crosshairs"></i></button><button type="button" class="btn small danger" data-act="tile-remove" data-id="${esc(x.id)}" data-tooltip="No longer a phone"><i class="fa-solid fa-trash"></i></button>`
             : `<button type="button" class="btn small" data-act="card" data-city="${esc(x.city)}" data-id="${esc(x.id)}" data-tooltip="Its card"><i class="fa-solid fa-landmark"></i></button>`}</td></tr>`;
       }).join("")}</tbody></table>`;
     }
@@ -751,6 +917,11 @@ function boardClass() {
         await item?.update({ [`flags.${ID}.pager.number`]: n });
         return this.redraw();
       }
+      if (act === "tile-name") {
+        const tile = await fromUuid(el.dataset.id);
+        if (tile) await setTilePhone(tile, { name: el.value.trim() });
+        return this.redraw();
+      }
       if (act === "tile-number") {
         const tile = await fromUuid(el.dataset.id), n = formatNumber(el.value);
         if (directory().some((x) => sameNumber(x.number, n) && x.id !== el.dataset.id)) ui.notifications.warn(`KG Cities: ${n} is already given out.`);
@@ -772,6 +943,7 @@ function boardClass() {
         case "answer": return this.phones.answer(call);
         case "hangup": return this.phones.hangup(call);
         case "intercept": return this.phones.intercept(call);
+        case "machine": return this.phones.machine(call);
         case "send-page": { const t = this.element.querySelector(`[data-keep="pageText:${call}"]`)?.value ?? ""; return this.phones.page(call, { text: t, callback: t }); }
         case "ring": this.tab = "calls"; this.phones.dial(b.dataset.value, { as: "" }); return this.redraw();
         case "open-place": return this.ui.openPlace(b.dataset.city, b.dataset.id);
@@ -782,7 +954,23 @@ function boardClass() {
           ui.notifications.info(`KG Cities: ${tiles.length} tile${tiles.length === 1 ? " is" : "s are"} now ${b.dataset.value === "payphone" ? "a payphone" : "a phone"}.`);
           return this.redraw();
         }
-        case "tile-remove": { const t = await fromUuid(b.dataset.id); if (t) await setTilePhone(t, null); return this.redraw(); }
+        case "tile-remove": {
+          const t = await fromUuid(b.dataset.id);
+          if (!t) return;
+          const placed = t.texture?.src?.includes(`modules/${ID}/assets/phones/`);
+          // One placed from here goes entirely; a tile of your own only stops being a phone.
+          if (!(await foundry.applications.api.DialogV2.confirm({ window: { title: "Remove the phone" }, content: `<p>${placed ? "Delete this phone's tile from its scene?" : "This tile stays; it is just no longer a phone."}</p>`, rejectClose: false }))) return;
+          await (placed ? t.delete() : setTilePhone(t, null));
+          return this.redraw();
+        }
+        case "tile-show": {
+          const t = await fromUuid(b.dataset.id);
+          if (!t) return;
+          if (t.parent?.id !== canvas.scene?.id) await t.parent.view();
+          canvas.animatePan({ x: t.x + t.width / 2, y: t.y + t.height / 2, duration: 600 });
+          return this.minimize?.();
+        }
+        case "place": return this.ui.startPlacing(b.dataset.value);
         case "open-pager": return this.ui.openPager(game.actors.get(b.dataset.actor)?.items.get(b.dataset.item));
         case "page": {
           const input = this.element.querySelector(`[data-keep="gmPage:${b.dataset.item}"]`), t = input?.value ?? "";

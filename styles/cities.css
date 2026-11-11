@@ -585,13 +585,32 @@ a.kgc-link:hover { background: rgba(255, 201, 74, 0.22); text-shadow: none; }
 .kgc-device .dev-list li:hover { background: rgba(255, 255, 255, 0.05); }
 .kgc-device .dev-list li.empty { color: var(--kgc-muted); font-style: italic; padding: 6px 8px; }
 .kgc-device .dev-list .pick { all: unset; flex: 1; min-width: 0; display: flex; justify-content: space-between; gap: 8px; padding: 6px 6px; cursor: pointer; font-size: 13.5px; }
-.kgc-device .dev-list .pick span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.kgc-device .dev-list .num { font-family: "Courier New", monospace; color: var(--kgc-muted); white-space: nowrap; }
+/* A row's name shortens; its number always shows in full. The list never grows wider than its box. */
+.kgc-device .dev-body { overflow-x: hidden; }
+.kgc-device .dev-list { grid-template-columns: minmax(0, 1fr); }
+.kgc-device .dev-list li { min-width: 0; }
+.kgc-device .dev-list .pick span:first-child { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kgc-device .dev-list .num { flex: none; font-family: "Courier New", monospace; color: var(--kgc-muted); white-space: nowrap; }
+.kgc-device .dev-list .mini { flex: none; }
+
+/* A place's phone: its photograph (keys pressable on it) beside the console. */
+.kgc-phone { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 14px; align-items: start; }
+.kgc-phone .phone-art { position: relative; width: 100%; line-height: 0; user-select: none; }
+.kgc-phone .phone-art > img { display: block; width: 100%; height: auto; border: 0; filter: drop-shadow(6px 10px 8px rgba(0, 0, 0, 0.55)); pointer-events: none; }
+.kgc-phone .art-key { all: unset; position: absolute; aspect-ratio: 1 / 0.95; transform: translate(-50%, -50%); border-radius: 4px; cursor: pointer; }
+.kgc-phone .art-key:hover:not(:disabled), .kgc-phone .art-key:focus-visible { background: rgba(255, 229, 121, 0.16); box-shadow: 0 0 0 1px #ffe78b, 0 0 8px #e8bf51; }
+.kgc-phone .art-key.lit { animation: kgc-key 0.22s ease-out; }
+.kgc-phone .art-key:disabled { cursor: default; }
+@keyframes kgc-key { from { background: rgba(255, 229, 121, 0.5); box-shadow: 0 0 12px #ffd56b; } to { background: transparent; box-shadow: none; } }
+.kgc-phone .art-number { position: absolute; transform: translate(-50%, -50%); padding: 2px 6px; white-space: nowrap; font: 700 11px/1.2 "Courier New", monospace; color: #1f1d16; }
+.kgc-phone.skin-payphone .art-number { font-size: 9px; color: #1d2714; background: #a9b58c; border-radius: 2px; box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.4); }
+.kgc-phone > .console { align-self: stretch; }
 .kgc-device .dev-list .mini { all: unset; padding: 6px 7px; border-radius: 6px; color: var(--kgc-muted); cursor: pointer; }
 .kgc-device .dev-list .mini:hover, .kgc-device .dev-list .mini:focus-visible { color: var(--kgc-gold); background: rgba(255, 255, 255, 0.06); outline: none; }
 .kgc-device .dev-list .page { flex: 1; min-width: 0; display: grid; grid-template-columns: auto 1fr; column-gap: 8px; padding: 6px 4px; font-size: 13px; }
 .kgc-device .dev-list .page .when { color: var(--kgc-muted); font: 12px "Courier New", monospace; }
 .kgc-device .dev-list .page .text { font-family: "Courier New", monospace; font-weight: 700; overflow-wrap: anywhere; }
+.kgc-device .dev-list .page .text.msg { font: 400 13px/1.4 Signika, sans-serif; }
 .kgc-device .dev-list .page .from { grid-column: 2; color: var(--kgc-muted); font-size: 12px; }
 .kgc-device .dev-list li.edit { display: grid; gap: 6px; padding: 8px; background: rgba(255, 201, 74, 0.06); }
 .kgc-device .dev-list li.edit .row { display: flex; gap: 6px; align-items: center; }
@@ -634,7 +653,14 @@ a.kgc-link:hover { background: rgba(255, 201, 74, 0.22); text-shadow: none; }
 #kgc-call-strip .who span > i { margin: 0 4px; color: var(--kgc-muted); font-size: 11px; }
 #kgc-call-strip .who small { color: var(--kgc-muted); font-size: 11.5px; }
 
+/* Placing a phone on the map (GM): what the next click does. */
+#kgc-place-bar { position: fixed; z-index: 97; top: 70px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 14px; font-size: 14px; }
+#kgc-place-bar > i { color: var(--kgc-gold); }
+
 /* The switchboard (GM) */
+.kgc-switchboard .sb-place { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.kgc-switchboard .sb-place .grow { flex: 1; }
+.kgc-switchboard .btn.primary, .kgc-switchboard .btn.danger, .kgc-switchboard .btn.ghost { width: auto; }
 .kgc-switchboard .window-content { padding: 0; display: flex; flex-direction: column; background: none; color: var(--kgc-text); }
 .kgc-switchboard .dev-tabs { display: flex; gap: 4px; padding: 0 12px; border-bottom: 1px solid var(--kgc-line); }
 .kgc-switchboard .dev-tabs button { all: unset; padding: 9px 12px; font-size: 13px; color: var(--kgc-muted); border-bottom: 2px solid transparent; cursor: pointer; }
@@ -665,6 +691,6 @@ a.kgc-link:hover { background: rgba(255, 201, 74, 0.22); text-shadow: none; }
 .kgc-place-card .phone-kind { margin-bottom: 8px; }
 
 @media (prefers-reduced-motion: reduce) {
-  #kgc-pager-dock.buzz, #kgc-call-strip .strip-call.ringing > i { animation: none; }
+  #kgc-pager-dock.buzz, #kgc-call-strip .strip-call.ringing > i, .kgc-phone .art-key.lit { animation: none; }
   .kgc-device .dev-screen.blink .lcd-main, .kgc-device .dev-screen.blink .lcd-status span:first-child { animation: none; }
 }

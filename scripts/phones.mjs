@@ -39,7 +39,7 @@ const isPrimaryGM = () => !!game.user?.isGM && game.users.activeGM?.id === game.
 export const ENDINGS = {
   hangup: "Call ended.", noanswer: "No answer.", busy: "Busy signal.", incomplete: "Your call cannot be completed as dialed.",
   none: "The number you have reached is not in service.", coin: "Please deposit 25 cents.", gm: "No dial tone.", sent: "Page sent.",
-  declined: "Call ended.", gone: "The line went dead."
+  declined: "Call ended.", gone: "The line went dead.", left: "Message left."
 };
 
 /* ---------------------------------------- */
@@ -79,7 +79,7 @@ export function directory() {
   for (const [city, rec] of Object.entries(saved)) {
     for (const lm of rec?.list ?? []) {
       if (!lm?.phone?.number || !DEVICES[lm.phone.kind]) continue;
-      out.push({ kind: "place", device: lm.phone.kind, number: lm.phone.number, city, id: lm.id, name: lm.name, lat: lm.lat, lon: lm.lon, scene: lm.scene ?? null, tone: lm.tone, visibility: lm.visibility ?? (lm.hidden ? "hidden" : "discovered") });
+      out.push({ kind: "place", device: lm.phone.kind, number: lm.phone.number, messages: lm.phone.messages ?? [], city, id: lm.id, name: lm.name, lat: lm.lat, lon: lm.lon, scene: lm.scene ?? null, tone: lm.tone, visibility: lm.visibility ?? (lm.hidden ? "hidden" : "discovered") });
     }
   }
   // Phones on Tiles (a payphone on a battle map or street corner): the tile's own record.
@@ -87,7 +87,7 @@ export function directory() {
     for (const t of scene.tiles) {
       const ph = t.flags?.[ID]?.phone;
       if (!ph?.number || DEVICES[ph.kind]?.on !== "place") continue;
-      out.push({ kind: "place", device: ph.kind, number: ph.number, city: TILE, id: t.uuid, tile: t.uuid, sceneId: scene.id, name: ph.name || `${DEVICES[ph.kind].label}, ${scene.name}`, visibility: "discovered" });
+      out.push({ kind: "place", device: ph.kind, number: ph.number, messages: ph.messages ?? [], city: TILE, id: t.uuid, tile: t.uuid, sceneId: scene.id, name: ph.name || `${DEVICES[ph.kind].label}, ${scene.name}`, visibility: "discovered" });
     }
   }
   for (const actor of game.actors) {
@@ -175,11 +175,11 @@ export const phonesHere = (user = game.user) => directory().filter((e) => e.kind
 const loops = new Map();
 const volume = () => { try { return Number(game.settings.get(ID, "phoneVolume")) ?? 0.6; } catch { return 0.6; } };
 
-/** Play a sound once, or looped under a key until stopped. */
-export async function sound(src, { loop = null, vol = 1 } = {}) {
+/** Play a sound once, or under a key until stopped: looped, unless `once` (a dial tone: stoppable, not repeated). */
+export async function sound(src, { loop = null, vol = 1, once = false } = {}) {
   if (!src || volume() <= 0) return null;
   if (loop) stopSound(loop);
-  const s = await foundry.audio.AudioHelper.play({ src, volume: volume() * vol, loop: !!loop, autoplay: true }, false).catch(() => null);
+  const s = await foundry.audio.AudioHelper.play({ src, volume: volume() * vol, loop: !!loop && !once, autoplay: true }, false).catch(() => null);
   if (loop && s) {
     if (loops.has(loop)) s.stop(); // a newer one started meanwhile
     else loops.set(loop, s);
@@ -248,6 +248,12 @@ export class Phones {
   }
   answer(callId, { actorId = null } = {}) { return this.#ask({ op: "answer", callId, actorId }); }
   hangup(callId) { return this.#ask({ op: "hangup", callId }); }
+  /** The GM: a place's ringing phone goes to its answering machine. */
+  machine(callId) { return this.#ask({ op: "machine", callId }); }
+  /** The caller leaves a written message on the machine. */
+  leave(callId, text) { return this.#ask({ op: "leave", callId, text }); }
+  /** Erase a message from a place's machine (the GM, or someone there). */
+  erase(city, id, messageId) { return this.#ask({ op: "erase", city, id, messageId }); }
   /** The GM: an unlisted number plays the intercept now. */
   intercept(callId) { return this.#ask({ op: "intercept", callId }); }
   /** Send a page on a call that reached a pager: text (alphanumeric) or callback digits. */
@@ -293,6 +299,8 @@ export class Phones {
     if (!ringingHere) stopSound(key("ring"));
     if (callerWaits && before?.state !== "ringing") sound(SOUND.ringback, { loop: key("ringback"), vol: 0.6 });
     if (!callerWaits) stopSound(key("ringback"));
+    // The answering machine's tone, for its caller.
+    if (call.state === "machine" && before?.state !== "machine" && call.from?.userId === me) sound(SOUND.beep, { vol: 0.7 });
   }
 
   /** The GM opens a phone on a player's screen. */
@@ -364,6 +372,31 @@ export class Phones {
         return this.#end(call, "hangup");
       }
       case "intercept": if (call && user.isGM && call.state === "ringing") return this.#end(call, "none"); return;
+      case "machine": {
+        if (!call || !user.isGM || call.state !== "ringing" || call.to?.kind !== "place") return;
+        // The machine picks up: the call goes through, so a payphone keeps its quarter.
+        if (call.coin && !(await this.#coin(call.from.actorId))) return this.#end(call, "coin");
+        clearTimeout(this.timers.get(`ring:${call.id}`));
+        Object.assign(call, { state: "machine", connectedAt: Date.now(), paid: !!call.coin, greeting: `You've reached ${call.to.name}. Please leave a message after the tone.` });
+        // Nobody records forever: the machine hangs up after five minutes.
+        this.timers.set(`ring:${call.id}`, setTimeout(() => { const c = this.calls.get(call.id); if (c?.state === "machine") this.#end(c, "hangup"); }, 5 * 60 * 1000));
+        return this.#send(call);
+      }
+      case "leave": {
+        if (!call || call.state !== "machine" || call.from?.userId !== user.id) return;
+        const text = String(msg.text ?? "").trim().slice(0, 500);
+        if (text) {
+          const actor = game.actors.get(call.from.actorId);
+          await addMessage(call.to, { id: foundry.utils.randomID(), at: Date.now(), time: game.time.worldTime, text, from: actor?.name ?? user.name, fromNumber: call.from.number ?? "" });
+        }
+        return this.#end(call, text ? "left" : "hangup");
+      }
+      case "erase": {
+        const place = placePhone(msg.city, msg.id);
+        if (!place) return;
+        if (!user.isGM && !game.actors.some((a) => a.testUserPermission(user, "OWNER") && actorsAt(place).has(a))) return;
+        return setMessages(place, (place.messages ?? []).filter((m) => m.id !== msg.messageId));
+      }
       case "page": return this.#page(call, msg, user);
       case "pageDirect": {
         if (!user.isGM) return;
@@ -437,6 +470,31 @@ export class Phones {
   dropAll() {
     for (const c of this.calls.values()) if (c.state !== "ended") this.#state({ ...c, state: "ended", reason: "gone", endedAt: Date.now() });
   }
+}
+
+/* ---------------------------------------- */
+/*  Answering machines                       */
+/* ---------------------------------------- */
+
+/**
+ * A place's machine messages: { id, at, time, text, from, fromNumber }, newest last. "from" and
+ * "fromNumber" are for the GM; an answering machine of the time only has what the caller said.
+ * Kept on the place's phone record (the landmark's, or the tile's). The GM in charge writes them.
+ */
+async function setMessages(place, messages) {
+  if (place.tile) {
+    const tile = fromUuidSync(place.tile, { strict: false });
+    return tile?.update({ [`flags.${ID}.phone.messages`]: messages });
+  }
+  const all = clone(game.settings.get(ID, "landmarks") ?? {});
+  const lm = all[place.city]?.list?.find((l) => l.id === place.id);
+  if (!lm?.phone) return;
+  lm.phone.messages = messages;
+  return game.settings.set(ID, "landmarks", all);
+}
+async function addMessage(to, message) {
+  const place = placePhone(to.city, to.id);
+  if (place) await setMessages(place, [...(place.messages ?? []), message].slice(-30));
 }
 
 /* ---------------------------------------- */

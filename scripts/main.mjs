@@ -251,7 +251,8 @@ function placeCardSource() {
           const number = formatNumber(v.phoneNumber) || newNumber();
           const clash = phoneDirectory().find((e) => sameNumber(e.number, number) && !(e.kind === "place" && e.city === ref.city && e.id === lm.id));
           if (clash) ui.notifications.warn(`KG Cities: ${number} is already ${clash.name}'s number. Calls to it reach whichever is listed first.`);
-          out.phone = { kind: v.phoneKind, number };
+          // Kept: the answering machine's messages.
+          out.phone = { ...(lm.phone ?? {}), kind: v.phoneKind, number };
         } else delete out.phone;
       }
       await saveCityLandmarks(ref.city, list.map((l) => (l.id === lm.id ? out : l)));
@@ -351,7 +352,7 @@ function currentLook() {
 /* ---------------------------------------- */
 
 /** Which local build is running (the browser console says, at load). */
-const BUILD = "2026-11-11 tile-phones";
+const BUILD = "2026-11-11 phone-art-machines";
 
 Hooks.once("init", () => {
   console.info(`kg-cities | ${game.modules.get(MODULE_ID)?.version} (build ${BUILD})`);

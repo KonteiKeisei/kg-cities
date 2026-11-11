@@ -53,7 +53,8 @@ const actors = new Coll([["a1", actor]]);
 const landmarks = { boston: { list: [
   { id: "p1", name: "Massachusetts General Hospital", lat: 42.3612, lon: -71.0569, phone: { kind: "line", number: "555-0120" }, visibility: "discovered" },
   { id: "p2", name: "Haymarket corner", lat: 42.3618, lon: -71.0581, phone: { kind: "payphone", number: "555-0131" }, visibility: "discovered" },
-  { id: "p3", name: "Faneuil Hall", lat: 42.3600, lon: -71.0560, phone: { kind: "line", number: "555-0105" }, visibility: "discovered" }
+  { id: "p3", name: "Faneuil Hall", lat: 42.3600, lon: -71.0560, phone: { kind: "line", number: "555-0105" }, visibility: "discovered" },
+  { id: "p4", name: "Payphone, The City of Boston (Legacy) by the Old State House", lat: 42.3588, lon: -71.0575, phone: { kind: "line", number: "(617) 555-0166" }, visibility: "discovered" }
 ] } };
 // A city scene 1000 px square over a box around Haymarket; Leonard's token stands on both p1 and p2.
 const bounds = { north: 42.3700, south: 42.3500, west: -71.0700, east: -71.0450 };
@@ -71,7 +72,7 @@ globalThis.foundry = {
     randomID: () => Math.random().toString(36).slice(2, 12), deepClone: (v) => structuredClone(v),
     hasProperty: () => false,
     setProperty(o, path, v) { const ks = path.split("."); let t = o; for (const k of ks.slice(0, -1)) t = t[k] ??= {}; t[ks.at(-1)] = v; },
-    getRoute: (p) => p
+    getRoute: (p) => String(p).replace(/^modules\/kg-cities\//, "../")
   },
   audio: { AudioHelper: { play: async () => null } },
   applications: { api: { ApplicationV2: class {
@@ -99,7 +100,7 @@ globalThis.foundry = {
 };
 globalThis.game = {
   user, users: Object.assign(new Coll([[user.id, user]]), { activeGM: { id: "gm" } }),
-  actors, scenes: [scene],
+  actors, scenes: Object.assign([scene], { get: (id) => (scene.id === id ? scene : undefined) }),
   settings: { get: (m, k) => ({ landmarks, phoneNumbers: [{ id: "n1", name: "Sal's Pizza", number: "555-0188", note: "Fence, back room" }], phoneRingSeconds: 30, phoneVolume: 0 }[k]) },
   time: { worldTime: 0 }, socket: { on() {}, emit(_, m) { notes.push(m); } }
 };
