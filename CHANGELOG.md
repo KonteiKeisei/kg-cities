@@ -1,5 +1,20 @@
 # KG Cities changelog
 
+## 0.11.1
+
+- **Payphones on Tiles**: a Tile on any scene can be a payphone or a phone (switchboard, Places:
+  select the tile, then Selected tile: payphone). Tokens on it or within a square and a half are at
+  it. Players open it with Use a phone here, or by clicking it through Monk's Active Tiles (Execute
+  Macro with `api.phones.openTile`); clicked by the GM for a player's token, it opens on that
+  player's screen. The switchboard lists tile phones with their scene, and changes or removes them.
+- **More from Unsleeping Pagers** (its later versions): payphone Tiles keep their numbers as KG
+  Cities payphones, and its "Unsleeping Payphone Tile" macro now opens them, so existing Monk's
+  Active Tiles triggers work again; players' address books go into their characters' books and
+  pagers; pagers keep their arcane tier on record; page times are read as the world clock's (the
+  first move showed them as dates). Worlds already moved get only what was missed.
+- **Your pager** button in the token controls for players carrying one, besides the pager at the
+  bottom right of the map.
+
 ## 0.11.0
 
 Folds in Unsleeping Pagers as the city's communications. Phones belong to places; pagers belong

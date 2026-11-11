@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { OLD_MODELS, coinCopper, duplicates, formatNumber, freeNumber, fromOldLog, mergeBooks, pageFor, putContact, reach, sameNumber } from "../scripts/phone-core.mjs";
+import { OLD_MODELS, coinCopper, duplicates, formatNumber, freeNumber, fromOldBook, fromOldLog, mergeBooks, pageFor, putContact, reach, sameNumber } from "../scripts/phone-core.mjs";
 
 test("numbers format as dialled in 1986", () => {
   assert.equal(formatNumber("5550142"), "555-0142");
@@ -62,6 +62,14 @@ test("an Unsleeping Pagers log becomes pages and contacts", () => {
   assert.equal(recent[1].callback, "555-0163");
   assert.deepEqual(contacts.map((c) => `${c.name} ${c.number}`), ["Bebe 555-0163"]);
   assert.equal(OLD_MODELS.alphanumeric, "alpha");
+});
+
+test("later Unsleeping Pagers logs keep the world clock's time; address books become contacts", () => {
+  const { recent } = fromOldLog([{ fromName: "A", fromNumber: "6175550198", message: "x", time: 900 }, { fromName: "B", fromNumber: "", message: "y", time: 300 }]);
+  assert.deepEqual(recent.map((r) => [r.text, r.time]), [["y", 300], ["x", 900]]);
+  assert.equal(recent[1].callback, "(617) 555-0198");
+  const book = fromOldBook({ "617-555-0198": "Sal", "": "nobody", "5550100": "" });
+  assert.deepEqual(book.map((c) => `${c.name} ${c.number}`), ["Sal (617) 555-0198"]);
 });
 
 test("a payphone takes a quarter", () => {

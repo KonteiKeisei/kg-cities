@@ -58,7 +58,7 @@ const bounds = { north: 42.3700, south: 42.3500, west: -71.0700, east: -71.0450 
 const { makeFrame, latLonToScene } = await import("../scripts/geo.mjs");
 const rect = { x: 0, y: 0, width: 1000, height: 1000 };
 const at = latLonToScene(makeFrame(bounds, rect), 42.3615, -71.0575);
-const scene = { id: "s1", flags: { "kg-cities": { city: "boston", bounds } }, getFlag(s, k) { return this.flags[s]?.[k]; }, dimensions: { sceneRect: rect }, grid: { size: 100 },
+const scene = { id: "s1", tiles: [], flags: { "kg-cities": { city: "boston", bounds } }, getFlag(s, k) { return this.flags[s]?.[k]; }, dimensions: { sceneRect: rect }, grid: { size: 100 },
   tokens: [{ x: at.x - 50, y: at.y - 50, width: 1, height: 1, actor, actorId: "a1" }] };
 
 const user = { id: gm ? "gm" : "u1", name: gm ? "GM" : "Konte", isGM: gm, active: true, character: gm ? null : actor };

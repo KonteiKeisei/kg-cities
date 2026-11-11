@@ -5,7 +5,7 @@
 // pager in the world).
 
 import {
-  DEVICES, ENDINGS, PAGER_MODELS, SERVICES, actorsAt, bookOf, directory, formatNumber, givePager, myPagers, nameFor,
+  DEVICES, ENDINGS, PAGER_MODELS, SERVICES, TILE, actorsAt, makeTilePhone, setTilePhone, bookOf, directory, formatNumber, givePager, myPagers, nameFor,
   newNumber, pagerOf, phonesHere, placePhone, restorePager, sameNumber, setPagerContacts, sound, SOUND, speakerAt
 } from "./phones.mjs";
 import { contact, coinCopper, digits, duplicates, findContact, mergeBooks, putContact, sortBook } from "./phone-core.mjs";
@@ -65,6 +65,9 @@ export class PhoneUI {
     Hooks.on("updateActor", (a, ch) => { if (foundry.utils.hasProperty(ch, `flags.${ID}.book`) || "system" in ch) this.refresh(); });
     for (const h of ["collapseSidebar", "renderSidebar", "renderHotbar", "canvasReady"]) Hooks.on(h, () => this.#placeDock());
     window.addEventListener("resize", () => this.#placeDock());
+    // A Tile made a phone (or not), or selected for the switchboard's buttons.
+    for (const h of ["createTile", "updateTile", "deleteTile"]) Hooks.on(h, () => this.refresh());
+    Hooks.on("controlTile", () => { if (this.board?.tab === "places") this.board.redraw(); });
     // Tokens moving change who is at a phone.
     for (const h of ["updateToken", "createToken", "deleteToken", "canvasReady"]) Hooks.on(h, () => this.refresh({ only: "place" }));
     // The GM's numbers and the places' phones are world settings.
@@ -125,6 +128,32 @@ export class PhoneUI {
     return this.#open(`place:${city}:${id}`, { kind: "place", city, id, number });
   }
 
+  /**
+   * A phone on a Tile (Monk's Active Tiles runs this from its macro). On the GM's screen with the
+   * clicking token's actor played by someone, it opens on that player's screen instead.
+   */
+  async openTile(uuid, { actorId = null } = {}) {
+    const tile = uuid ? await fromUuid(uuid).catch(() => null) : null;
+    if (!tile) return ui.notifications.warn("KG Cities: that payphone tile could not be found.");
+    if (!tile.flags?.[ID]?.phone) return ui.notifications.warn(game.user.isGM ? "KG Cities: this tile is not a phone yet. Select it and use the switchboard's Places tab." : "This phone is out of order.");
+    const actor = actorId ? game.actors.get(actorId) : null;
+    if (game.user.isGM && actor) {
+      const player = game.users.find((u) => u.active && !u.isGM && (u.character?.id === actor.id || actor.testUserPermission(u, "OWNER")));
+      if (player) { this.phones.openFor(player.id, TILE, tile.uuid); return ui.notifications.info(`KG Cities: the phone opened for ${player.name}.`); }
+    }
+    return this.openPlace(TILE, tile.uuid);
+  }
+
+  /** The GM opened a phone for this player. */
+  onOpen(msg) { return this.#open(`place:${msg.city}:${msg.id}`, { kind: "place", city: msg.city, id: msg.id }); }
+
+  /** This player's pager (the first, when they carry several). */
+  openMyPager() {
+    const item = myPagers()[0];
+    if (!item) return ui.notifications.warn("Your character does not carry a pager.");
+    return this.openPager(item);
+  }
+
   openPager(item) {
     if (!pagerOf(item)) return;
     if (!game.user.isGM && !item.isOwner) return ui.notifications.warn("That pager is not yours.");
@@ -169,6 +198,9 @@ export class PhoneUI {
 
   dock() {
     const pagers = game.user.isGM ? [] : myPagers();
+    // The token controls' Pager button comes and goes with the pager.
+    if (this.pagerCount !== undefined && !!this.pagerCount !== !!pagers.length) ui.controls?.render?.();
+    this.pagerCount = pagers.length;
     let el = document.getElementById("kgc-pager-dock");
     if (!pagers.length) { el?.remove(); return; }
     if (!el) {
@@ -653,13 +685,21 @@ function boardClass() {
     }
 
     #places(dir) {
-      const list = dir.filter((x) => x.kind === "place").sort((a, b) => a.city.localeCompare(b.city) || a.name.localeCompare(b.name));
-      if (!list.length) return `<p class="empty">No place has a phone yet. Open a place's card, Edit, and give it one under Links.</p>`;
-      return `<table class="sb-table"><thead><tr><th>Place</th><th>Phone</th><th>Who is there</th><th></th></tr></thead><tbody>${list.map((x) => {
+      const where = (x) => (x.tile ? game.scenes.get(x.sceneId)?.name ?? "" : x.city);
+      const list = dir.filter((x) => x.kind === "place").sort((a, b) => where(a).localeCompare(where(b)) || a.name.localeCompare(b.name));
+      const selected = canvas?.tiles?.controlled?.length ?? 0;
+      const tools = `<div class="sb-dial"><button type="button" class="btn" data-act="tile-phone" data-value="payphone" ${selected ? "" : "disabled"}><i class="fa-solid fa-coins"></i> Selected tile: payphone</button>
+          <button type="button" class="btn" data-act="tile-phone" data-value="line" ${selected ? "" : "disabled"}><i class="fa-solid fa-phone"></i> Selected tile: phone</button></div>
+        <p class="hint">Places on the city map get phones on their cards (Edit, Links). A phone can also be a Tile on any scene: select it (Tiles layer) and use the buttons above. Tokens on it or within a square and a half are at it. Players open it with <b>Use a phone here</b> in the token controls, or by clicking it with Monk's Active Tiles running the macro <b>Unsleeping Payphone Tile</b> (moved over), or one with this command: <code>game.modules.get("kg-cities").api.phones.openTile(tile.document.uuid, { actorId: token?.actor?.id })</code>.</p>`;
+      if (!list.length) return `${tools}<p class="empty">No phones yet.</p>`;
+      return `${tools}<table class="sb-table"><thead><tr><th>Place</th><th>Phone</th><th>Who is there</th><th></th></tr></thead><tbody>${list.map((x) => {
         const people = [...actorsAt(x)].filter((a) => a.type !== "group" && a.hasPlayerOwner).map((a) => a.name);
         const busy = this.phones.onPlace(x.city, x.id);
-        return `<tr><td>${esc(x.name)}<small>${esc(x.city)}</small></td><td>${esc(formatNumber(x.number))}<small>${esc(DEVICES[x.device].label)}${busy && busy.state !== "ended" ? ", in use" : ""}</small></td><td>${people.length ? esc(people.join(", ")) : '<span class="faint">Nobody</span>'}</td>
-          <td class="acts"><button type="button" class="btn small" data-act="ring" data-value="${esc(x.number)}"><i class="fa-solid fa-bell"></i> Ring</button><button type="button" class="btn small" data-act="open-place" data-city="${esc(x.city)}" data-id="${esc(x.id)}" data-tooltip="Use its phone"><i class="fa-solid fa-phone"></i></button><button type="button" class="btn small" data-act="card" data-city="${esc(x.city)}" data-id="${esc(x.id)}" data-tooltip="Its card"><i class="fa-solid fa-landmark"></i></button></td></tr>`;
+        const number = x.tile ? `<input class="num" data-act-change="tile-number" data-id="${esc(x.id)}" value="${esc(formatNumber(x.number))}">` : esc(formatNumber(x.number));
+        return `<tr><td>${esc(x.name)}<small>${esc(where(x))}${x.tile ? ", tile" : ""}</small></td><td>${number}<small>${esc(DEVICES[x.device].label)}${busy && busy.state !== "ended" ? ", in use" : ""}</small></td><td>${people.length ? esc(people.join(", ")) : '<span class="faint">Nobody</span>'}</td>
+          <td class="acts"><button type="button" class="btn small" data-act="ring" data-value="${esc(x.number)}"><i class="fa-solid fa-bell"></i> Ring</button><button type="button" class="btn small" data-act="open-place" data-city="${esc(x.city)}" data-id="${esc(x.id)}" data-tooltip="Use its phone"><i class="fa-solid fa-phone"></i></button>${x.tile
+            ? `<button type="button" class="btn small danger" data-act="tile-remove" data-id="${esc(x.id)}" data-tooltip="No longer a phone"><i class="fa-solid fa-trash"></i></button>`
+            : `<button type="button" class="btn small" data-act="card" data-city="${esc(x.city)}" data-id="${esc(x.id)}" data-tooltip="Its card"><i class="fa-solid fa-landmark"></i></button>`}</td></tr>`;
       }).join("")}</tbody></table>`;
     }
 
@@ -711,6 +751,12 @@ function boardClass() {
         await item?.update({ [`flags.${ID}.pager.number`]: n });
         return this.redraw();
       }
+      if (act === "tile-number") {
+        const tile = await fromUuid(el.dataset.id), n = formatNumber(el.value);
+        if (directory().some((x) => sameNumber(x.number, n) && x.id !== el.dataset.id)) ui.notifications.warn(`KG Cities: ${n} is already given out.`);
+        if (tile) await setTilePhone(tile, { number: n });
+        return this.redraw();
+      }
       const key = { "gm-name": "name", "gm-number": "number", "gm-note": "note" }[act];
       if (key) await this.#saveNumbers((list) => list.map((n) => (n.id === el.dataset.id ? { ...n, [key]: key === "number" ? formatNumber(el.value) : el.value.trim() } : n)));
     }
@@ -730,6 +776,13 @@ function boardClass() {
         case "ring": this.tab = "calls"; this.phones.dial(b.dataset.value, { as: "" }); return this.redraw();
         case "open-place": return this.ui.openPlace(b.dataset.city, b.dataset.id);
         case "card": return this.ui.openCard(b.dataset.city, b.dataset.id);
+        case "tile-phone": {
+          const tiles = canvas?.tiles?.controlled ?? [];
+          for (const t of tiles) await makeTilePhone(t.document, b.dataset.value);
+          ui.notifications.info(`KG Cities: ${tiles.length} tile${tiles.length === 1 ? " is" : "s are"} now ${b.dataset.value === "payphone" ? "a payphone" : "a phone"}.`);
+          return this.redraw();
+        }
+        case "tile-remove": { const t = await fromUuid(b.dataset.id); if (t) await setTilePhone(t, null); return this.redraw(); }
         case "open-pager": return this.ui.openPager(game.actors.get(b.dataset.actor)?.items.get(b.dataset.item));
         case "page": {
           const input = this.element.querySelector(`[data-keep="gmPage:${b.dataset.item}"]`), t = input?.value ?? "";

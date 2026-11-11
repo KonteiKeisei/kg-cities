@@ -11,10 +11,12 @@
 import { makeFrame, metres, sceneToLatLon } from "./geo.mjs";
 import { groupMembers } from "./party.mjs";
 import { pay, walletValue } from "./money.mjs";
-import { DEVICES, OLD_MODELS, PAGER_MODELS, SERVICES, coinCopper, digits, findContact, formatNumber, freeNumber, fromOldLog, mergeBooks, pageFor, pushRecent, reach, sameNumber } from "./phone-core.mjs";
+import { DEVICES, OLD_MODELS, PAGER_MODELS, REAL_MS, SERVICES, coinCopper, digits, findContact, formatNumber, freeNumber, fromOldBook, fromOldLog, mergeBooks, pageFor, pushRecent, reach, sameNumber } from "./phone-core.mjs";
 
 const ID = "kg-cities";
 const SOCKET = `module.${ID}`;
+/** The "city" of a phone on a Tile: its id is the tile's uuid. */
+export const TILE = "tile";
 /** How near a place a token must be to be at it (on the city map), in metres: about 300 feet. */
 const NEAR_M = 90;
 /** An unlisted number gives up and plays the intercept after this long, unless the GM answers. */
@@ -80,6 +82,14 @@ export function directory() {
       out.push({ kind: "place", device: lm.phone.kind, number: lm.phone.number, city, id: lm.id, name: lm.name, lat: lm.lat, lon: lm.lon, scene: lm.scene ?? null, tone: lm.tone, visibility: lm.visibility ?? (lm.hidden ? "hidden" : "discovered") });
     }
   }
+  // Phones on Tiles (a payphone on a battle map or street corner): the tile's own record.
+  for (const scene of game.scenes) {
+    for (const t of scene.tiles) {
+      const ph = t.flags?.[ID]?.phone;
+      if (!ph?.number || DEVICES[ph.kind]?.on !== "place") continue;
+      out.push({ kind: "place", device: ph.kind, number: ph.number, city: TILE, id: t.uuid, tile: t.uuid, sceneId: scene.id, name: ph.name || `${DEVICES[ph.kind].label}, ${scene.name}`, visibility: "discovered" });
+    }
+  }
   for (const actor of game.actors) {
     for (const item of pagersOn(actor)) {
       const p = pagerOf(item);
@@ -112,6 +122,17 @@ const tokenActors = (t) => [t.actor, ...(t.actor?.type === "group" ? groupMember
 export function actorsAt(place) {
   const here = new Set();
   if (!place) return here;
+  // A phone on a Tile: tokens on its scene standing on it, or within a square and a half of it.
+  if (place.tile) {
+    const t = fromUuidSync(place.tile, { strict: false }), scene = t?.parent;
+    if (!scene) return here;
+    const size = scene.grid?.size ?? 100, pad = size * 1.5;
+    for (const tok of scene.tokens) {
+      const x = tok.x + ((tok.width ?? 1) * size) / 2, y = tok.y + ((tok.height ?? 1) * size) / 2;
+      if (x >= t.x - pad && x <= t.x + t.width + pad && y >= t.y - pad && y <= t.y + t.height + pad) for (const a of tokenActors(tok)) here.add(a);
+    }
+    return here;
+  }
   for (const scene of game.scenes) {
     const c = cityOf(scene);
     if (scene.id === place.scene) {
@@ -193,6 +214,8 @@ export class Phones {
       if (msg.op === "state") return this.#state(msg.call);
       if (msg.op === "paged") return this.#paged(msg);
       if (msg.op === "notice") { if (msg.userId === game.user.id) ui.notifications.info(msg.text); return; }
+      // The GM opened a phone for this player (a Tile clicked on their behalf).
+      if (msg.op === "open") { if (msg.userId === game.user.id && game.users.get(msg.from)?.isGM) this.deps.onOpen?.(msg); return; }
       if (isPrimaryGM()) this.#decide(msg).catch((err) => console.error(`${ID} | phone`, err));
     });
   }
@@ -271,6 +294,9 @@ export class Phones {
     if (callerWaits && before?.state !== "ringing") sound(SOUND.ringback, { loop: key("ringback"), vol: 0.6 });
     if (!callerWaits) stopSound(key("ringback"));
   }
+
+  /** The GM opens a phone on a player's screen. */
+  openFor(userId, city, id) { game.socket.emit(SOCKET, { action: "phone", op: "open", userId, from: game.user.id, city, id }); }
 
   /** Let it ring, here only: the bell stops for this user. */
   silence(callId) { stopSound(`ring:${callId}`); }
@@ -490,7 +516,7 @@ export async function migrateUnsleepingPagers() {
     let number = formatNumber(old(actor)?.pagerNumber ?? "");
     for (const item of items) {
       const model = OLD_MODELS[old(item).pagerType] ?? "numeric";
-      const pager = { model, number: digits(number).length >= 3 ? number : newNumber(), contacts: clone(bookOf(actor)), recent: [], unread: 0, alert: "beep", migrated: OLD };
+      const pager = { model, tier: Number(old(item).pagerTier) || 0, number: digits(number).length >= 3 ? number : newNumber(), contacts: clone(bookOf(actor)), recent: [], unread: 0, alert: "beep", migrated: OLD };
       number = ""; // a second pager on the same actor gets a number of its own
       await item.update({ [`flags.${ID}.pager`]: pager, ...(art(item.img) ? {} : { img: `modules/${ID}/${PAGER_MODELS[model].img}` }) });
       pagers++;
@@ -505,17 +531,81 @@ export async function migrateUnsleepingPagers() {
     if (!item) continue;
     const { recent, contacts } = fromOldLog(log, () => foundry.utils.randomID());
     const p = pagerOf(item);
-    const merged = [...recent, ...(p.recent ?? [])].sort((a, b) => (a.at ?? 0) - (b.at ?? 0)).slice(-30);
+    const merged = [...recent, ...(p.recent ?? [])].sort((a, b) => pageOrder(a) - pageOrder(b)).slice(-30);
     await item.update({ [`flags.${ID}.pager.recent`]: merged, [`flags.${ID}.pager.contacts`]: mergeBooks(p.contacts ?? [], contacts) });
     await item.parent.setFlag(ID, "book", mergeBooks(bookOf(item.parent), contacts));
     await user.update({ [`flags.${ID}.pagerLogMigrated`]: true });
     pages += recent.length;
   }
-  if (pagers || pages) {
-    ui.notifications.info(`KG Cities: moved ${pagers} pager${pagers === 1 ? "" : "s"} and ${pages} page${pages === 1 ? "" : "s"} over from Unsleeping Pagers. You can disable that module.`, { permanent: true });
+
+  // Players' address books (kept per user there) into their character's, and its pagers' memories.
+  let books = 0;
+  for (const user of game.users) {
+    if (user.isGM || user.flags?.[ID]?.addressBookMigrated) continue;
+    const entries = fromOldBook(old(user)?.addressBook, () => foundry.utils.randomID());
+    const actor = user.character ?? myActors(user)[0];
+    if (!entries.length || !actor) continue;
+    await actor.setFlag(ID, "book", mergeBooks(bookOf(actor), entries));
+    for (const item of pagersOn(actor)) await item.update({ [`flags.${ID}.pager.contacts`]: mergeBooks(pagerOf(item).contacts ?? [], entries) });
+    await user.update({ [`flags.${ID}.addressBookMigrated`]: true });
+    books++;
+  }
+
+  // Pagers moved by the first version of this: their tier, and page times read as the world clock's.
+  for (const actor of game.actors) {
+    for (const item of pagersOn(actor)) {
+      const p = pagerOf(item);
+      if (p.migrated !== OLD) continue;
+      const update = {};
+      if (p.tier == null && old(item)?.pagerTier != null) update[`flags.${ID}.pager.tier`] = Number(old(item).pagerTier) || 0;
+      const fixed = (p.recent ?? []).map((r) => (!Number.isFinite(r.time) && r.at > 0 && r.at < REAL_MS ? { ...r, time: r.at, at: 0 } : r));
+      if (fixed.some((r, i) => r !== p.recent[i])) update[`flags.${ID}.pager.recent`] = fixed;
+      if (Object.keys(update).length) await item.update(update);
+    }
+  }
+
+  // Payphone Tiles: the number on the tile becomes the tile's KG Cities payphone.
+  let phones = 0;
+  for (const scene of game.scenes) {
+    const updates = scene.tiles.filter((t) => old(t)?.payphoneNumber && !t.flags?.[ID]?.phone)
+      .map((t) => ({ _id: t.id, [`flags.${ID}.phone`]: { kind: "payphone", number: formatNumber(old(t).payphoneNumber), name: "" } }));
+    if (updates.length) { await scene.updateEmbeddedDocuments("Tile", updates); phones += updates.length; }
+  }
+  // The payphone macro Monk's Active Tiles runs now opens KG Cities' payphone.
+  let macros = 0;
+  for (const m of game.macros) {
+    if (!String(m.command ?? "").includes(`"${OLD}").api.openPayphone`)) continue;
+    await m.update({ command: TILE_MACRO, img: `modules/${ID}/assets/phones/payphone.svg` });
+    macros++;
+  }
+
+  const moved = [[pagers, "pager"], [pages, "page"], [books, "address book"], [phones, "payphone"], [macros, "payphone macro"]].filter(([n]) => n).map(([n, w]) => `${n} ${w}${n === 1 ? "" : "s"}`);
+  if (moved.length) {
+    ui.notifications.info(`KG Cities: moved over from Unsleeping Pagers: ${moved.join(", ")}. You can disable that module.`, { permanent: true });
     if (game.modules.get(OLD)?.active) ui.notifications.warn("KG Cities: Unsleeping Pagers is still enabled. Disable it, or players see two pagers.", { permanent: true });
   }
-  return { pagers, pages };
+  return { pagers, pages, books, phones, macros };
+}
+
+/** Where a page falls in time: the world clock's seconds, or a real date. */
+const pageOrder = (r) => (Number.isFinite(r.time) ? r.time : (r.at ?? 0) / 1000);
+
+/** The macro a Tile runs (Monk's Active Tiles: Execute Macro) to open its phone for the token that clicked it. */
+export const TILE_MACRO = `const s = typeof scope !== "undefined" ? scope : {};
+const t = s.tile?.document ?? s.tile ?? (typeof tile !== "undefined" ? (tile?.document ?? tile) : null);
+const tok = s.token?.document ?? s.token ?? (typeof token !== "undefined" ? (token?.document ?? token) : null);
+await game.modules.get("kg-cities").api.phones.openTile(t?.uuid, { actorId: tok?.actor?.id ?? tok?.actorId ?? null });`;
+
+/** Make a Tile a phone (kind: "payphone" or "line"), with a fresh number unless it has one. */
+export async function makeTilePhone(tile, kind = "payphone") {
+  const have = tile.flags?.[ID]?.phone;
+  await tile.update({ [`flags.${ID}.phone`]: { kind, number: have?.number || newNumber(), name: have?.name ?? "" } });
+}
+
+/** Give a Tile's phone a new number or name, or take it out (null). */
+export async function setTilePhone(tile, change) {
+  if (change === null) return tile.update({ [`flags.${ID}.-=phone`]: null });
+  return tile.update({ [`flags.${ID}.phone`]: { ...(tile.flags?.[ID]?.phone ?? {}), ...change } });
 }
 
 export { SERVICES, DEVICES, PAGER_MODELS, formatNumber, sameNumber };

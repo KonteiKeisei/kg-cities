@@ -160,23 +160,30 @@ export function putContact(book = [], c, { remove = false } = {}) {
 export const OLD_MODELS = { tone: "tone", numeric: "numeric", alphanumeric: "alpha" };
 
 /**
- * An Unsleeping Pagers log (a user's received pages: { fromName, fromNumber, message, time } with
- * time in real milliseconds) as pages and contacts: { recent, contacts }. Senders with a number
- * become contacts (the GM's master pager does not); pages keep their real time, as `at`.
+ * An Unsleeping Pagers log (a user's received pages: { fromName, fromNumber, message, time }) as
+ * pages and contacts: { recent, contacts }. Its later versions kept the world clock's time (in
+ * seconds) as `time`; the first ones a real date (in milliseconds), kept here as `at`. Senders with
+ * a number become contacts (the GM's master pager does not).
  */
+export const REAL_MS = 1e11;
 export function fromOldLog(history = [], makeId = () => Math.random().toString(36).slice(2, 10)) {
   const recent = [], contacts = [];
   for (const h of Array.isArray(history) ? history : []) {
     const text = String(h?.message ?? "").trim();
     if (!text) continue;
-    const number = digits(h.fromNumber);
-    recent.push({ id: makeId(), at: Number(h.time) || 0, text, callback: number.length >= 7 ? formatNumber(number) : "" });
+    const number = digits(h.fromNumber), t = Number(h.time) || 0;
+    recent.push({ id: makeId(), ...(t > REAL_MS ? { at: t } : { time: t, at: 0 }), text, callback: number.length >= 7 ? formatNumber(number) : "" });
     const name = String(h.fromName ?? "").trim();
     if (number.length >= 7 && name && !/master pager/i.test(name) && !findContact(contacts, number)) contacts.push(contact({ name, number }, makeId));
   }
-  recent.sort((a, b) => a.at - b.at);
+  recent.sort((a, b) => (a.time ?? a.at / 1000) - (b.time ?? b.at / 1000));
   return { recent, contacts };
 }
+
+/** An Unsleeping Pagers address book ({ number: name }, per user) as contacts. */
+export const fromOldBook = (book = {}, makeId) => Object.entries(book && typeof book === "object" ? book : {})
+  .filter(([n, name]) => digits(n).length >= 3 && String(name ?? "").trim())
+  .map(([number, name]) => contact({ name, number }, makeId));
 
 /** The newest `max` entries of a list kept oldest first, with `entry` added. */
 export const pushRecent = (list = [], entry, max = 30) => [...list, entry].slice(-max);

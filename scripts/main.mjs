@@ -17,7 +17,7 @@ import { openTravel } from "./ui-travel.mjs";
 import { RoadView } from "./ui-roadview.mjs";
 import { installFlashBar } from "./flash-bar.mjs";
 import { metres as metresBetween } from "./geo.mjs";
-import { DEVICES, Phones, directory as phoneDirectory, givePager, migrateUnsleepingPagers, newNumber, phonesHere, placePhone, speakerAt, watchNewPagers } from "./phones.mjs";
+import { DEVICES, Phones, directory as phoneDirectory, givePager, migrateUnsleepingPagers, myPagers, newNumber, phonesHere, placePhone, speakerAt, watchNewPagers } from "./phones.mjs";
 import { PhoneUI } from "./ui-phone.mjs";
 import { formatNumber, sameNumber } from "./phone-core.mjs";
 
@@ -83,7 +83,8 @@ partyManager.busy = (id) => travel.busy(id);
 const phones = new Phones({
   dollarRate: () => travel.dollarRate(),
   onChange: (call, before, dropped) => phoneUI.onCall(call, before, dropped),
-  onPage: (msg) => phoneUI.onPage(msg)
+  onPage: (msg) => phoneUI.onPage(msg),
+  onOpen: (msg) => phoneUI.onOpen(msg)
 });
 const phoneUI = new PhoneUI({
   phones, dollarRate: () => travel.dollarRate(),
@@ -350,7 +351,7 @@ function currentLook() {
 /* ---------------------------------------- */
 
 /** Which local build is running (the browser console says, at load). */
-const BUILD = "2026-11-11 phones";
+const BUILD = "2026-11-11 tile-phones";
 
 Hooks.once("init", () => {
   console.info(`kg-cities | ${game.modules.get(MODULE_ID)?.version} (build ${BUILD})`);
@@ -520,6 +521,10 @@ Hooks.once("init", () => {
     phones: {
       directory: () => phoneDirectory(),
       open: (city, id) => phoneUI.openPlace(city, id),
+      /** A phone on a Tile, for the token's actor that clicked it (Monk's Active Tiles' Execute Macro). */
+      openTile: (uuid, { actorId = null } = {}) => phoneUI.openTile(uuid, { actorId }),
+      /** This player's pager. */
+      pager: () => phoneUI.openMyPager(),
       here: () => phoneHere(),
       switchboard: () => phoneUI.switchboard(),
       givePager: (actor, model) => givePager(actor, model),
@@ -686,6 +691,10 @@ Hooks.on("getSceneControlButtons", (controls) => {
     controls.tokens.tools.kgCitiesPhone = game.user.isGM
       ? { name: "kgCitiesPhone", title: "Switchboard: calls, place phones, pagers and your numbers", icon: "fa-solid fa-tower-broadcast", order: 120, button: true, onChange: () => phoneUI.switchboard() }
       : { name: "kgCitiesPhone", title: "Use a phone here", icon: "fa-solid fa-phone", order: 120, button: true, onChange: () => phoneHere() };
+    // A player's pager, besides the one at the bottom right of the map.
+    if (!game.user.isGM && myPagers().length) {
+      controls.tokens.tools.kgCitiesPager = { name: "kgCitiesPager", title: "Your pager", icon: "fa-solid fa-pager", order: 121, button: true, onChange: () => phoneUI.openMyPager() };
+    }
   }
   if (!cityOf(canvas.scene)) return;
   // Search is for everyone, on the token controls players always have.
