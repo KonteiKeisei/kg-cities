@@ -45,7 +45,9 @@ export async function shrinkPlacedPhones() {
  * the picture: key centres by column and row, a key's width, and the number card's centre.
  */
 const ART = {
-  payphone: { src: `modules/${ID}/assets/phones/payphone.webp`, w: 977, h: 1610, cols: [47.8, 53.1, 58.5], rows: [39.1, 42.2, 45.3, 48.3], key: 4.8, plate: [52.7, 28.0] },
+  // The payphone's whole picture is tall and its keys tiny: it is shown close up, its face from
+  // the coin slot down past the keypad (crop: left, top, right, bottom, in percent).
+  payphone: { src: `modules/${ID}/assets/phones/payphone.webp`, w: 977, h: 1610, cols: [47.8, 53.1, 58.5], rows: [39.1, 42.2, 45.3, 48.3], key: 4.8, plate: [52.7, 28.0], crop: [33, 10, 73, 54] },
   line: { src: `modules/${ID}/assets/phones/desk-phone.webp`, w: 562, h: 893, cols: [36.1, 49.8, 63.5], rows: [44.8, 54.6, 64.0, 73.3], key: 11, plate: [50.2, 81.2] }
 };
 const KEYS = [["1", ""], ["2", "ABC"], ["3", "DEF"], ["4", "GHI"], ["5", "JKL"], ["6", "MNO"], ["7", "PRS"], ["8", "TUV"], ["9", "WXY"], ["*", ""], ["0", "OPER"], ["#", ""]];
@@ -417,7 +419,7 @@ function deviceClass() {
 
     constructor(options) {
       // A place's phone shows its photograph beside the console; a pager is the console alone.
-      super({ id: `kgc-dev-${foundry.utils.randomID()}`, position: { width: options.kind === "pager" ? 330 : 660 } });
+      super({ id: `kgc-dev-${foundry.utils.randomID()}`, position: { width: options.kind === "pager" ? 330 : 720 } });
       Object.assign(this, { ui: options.ui, key: options.key, kind: options.kind, city: options.city, placeId: options.id, uuid: options.uuid });
       this.dialed = digits(options.number ?? "");
       this.tab = options.kind === "pager" ? "pages" : "keypad";
@@ -587,8 +589,12 @@ function deviceClass() {
         const [x, y] = [art.cols[i % 3], art.rows[Math.floor(i / 3)]];
         return `<button type="button" class="art-key" data-act="key" data-value="${k}" style="left:${x}%;top:${y}%;width:${art.key}%" aria-label="${k}" ${disabled ? "disabled" : ""}></button>`;
       }).join("");
-      return `<div class="phone-art" style="aspect-ratio:${art.w} / ${art.h}"><img src="${esc(foundry.utils.getRoute(art.src))}" alt="${esc(DEVICES[e.device].label)}" draggable="false">${keys}
-        <span class="art-number" style="left:${art.plate[0]}%;top:${art.plate[1]}%">${esc(formatNumber(e.number))}</span></div>`;
+      // A close-up: the box shows the crop; the picture (with its keys) is scaled and shifted inside it.
+      const [x0, y0, x1, y1] = art.crop ?? [0, 0, 100, 100], cw = (x1 - x0) / 100, ch = (y1 - y0) / 100;
+      const inner = `left:${(-x0 / (x1 - x0)) * 100}%;top:${(-y0 / (y1 - y0)) * 100}%;width:${100 / cw}%;height:${100 / ch}%`;
+      return `<div class="phone-art ${art.crop ? "close-up" : ""}" style="aspect-ratio:${art.w * cw} / ${art.h * ch}"><div class="art-inner" style="${inner}">
+        <img src="${esc(foundry.utils.getRoute(art.src))}" alt="${esc(DEVICES[e.device].label)}" draggable="false">${keys}
+        <span class="art-number" style="left:${art.plate[0]}%;top:${art.plate[1]}%">${esc(formatNumber(e.number))}</span></div></div>`;
     }
 
     #screen(status, main, sub, blink = false) {

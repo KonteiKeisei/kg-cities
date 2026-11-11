@@ -1,5 +1,16 @@
 # KG Cities changelog
 
+## 0.12.3
+
+- **The payphone's keypad is big enough to use**: the payphone is shown close up (its coin
+  slot, instruction card and keypad), its keys about 38 px instead of 12. The desk phone stays
+  whole, a little larger. The phone window is a little wider to fit.
+- **Travel lines keep their width when you zoom**: after a reload with trips under way (and the
+  game paused), the routes were drawn for the far-out zoom of the first moment and stayed huge.
+  They are now drawn again whenever the zoom changes.
+- **Click a party's row in the Travelling panel** to select its token and go to it on the map
+  (its scene first, when it is elsewhere); its street view comes up as when you click the token.
+
 ## 0.12.2
 
 - **The Travelling panel moves and locks**: drag it by its title anywhere on screen, lock it

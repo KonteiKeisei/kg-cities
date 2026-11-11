@@ -467,6 +467,8 @@ a.kgc-link:hover { background: rgba(255, 201, 74, 0.22); text-shadow: none; }
 .kgc-trips header b.grip::before { content: "\f58e"; font: 900 11px "Font Awesome 6 Free"; color: var(--kgc-faint); margin-right: 7px; }
 .kgc-trips.dragging { opacity: 0.92; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6); }
 .kgc-trips header .lock { padding: 2px 6px; color: var(--kgc-muted); }
+.kgc-trips .trip { cursor: pointer; margin: 0 -6px; padding-left: 6px; padding-right: 6px; border-radius: 6px; }
+.kgc-trips .trip:hover { background: rgba(255, 255, 255, 0.05); }
 .kgc-trips.locked header .lock { color: var(--kgc-gold); }
 .kgc-trips header .paused { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #ffcf70; }
 .kgc-trips select { height: 26px; font-size: 12px; color: var(--kgc-text); background: #151b28; border: 1px solid var(--kgc-line-2); border-radius: 6px; }
@@ -605,16 +607,19 @@ a.kgc-link:hover { background: rgba(255, 201, 74, 0.22); text-shadow: none; }
 .kgc-device .dev-list .mini { flex: none; }
 
 /* A place's phone: its photograph (keys pressable on it) beside the console. */
-.kgc-phone { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 14px; align-items: start; }
+.kgc-phone { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 14px; align-items: start; }
 .kgc-phone .phone-art { position: relative; width: 100%; line-height: 0; user-select: none; }
-.kgc-phone .phone-art > img { display: block; width: 100%; height: auto; border: 0; filter: drop-shadow(6px 10px 8px rgba(0, 0, 0, 0.55)); pointer-events: none; }
+.kgc-phone .phone-art.close-up { overflow: hidden; border-radius: 10px; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5), 0 8px 18px rgba(0, 0, 0, 0.5); }
+.kgc-phone .art-inner { position: absolute; }
+.kgc-phone .art-inner > img { display: block; width: 100%; height: 100%; border: 0; pointer-events: none; }
+.kgc-phone .phone-art:not(.close-up) .art-inner > img { filter: drop-shadow(6px 10px 8px rgba(0, 0, 0, 0.55)); }
 .kgc-phone .art-key { all: unset; position: absolute; aspect-ratio: 1 / 0.95; transform: translate(-50%, -50%); border-radius: 4px; cursor: pointer; }
 .kgc-phone .art-key:hover:not(:disabled), .kgc-phone .art-key:focus-visible { background: rgba(255, 229, 121, 0.16); box-shadow: 0 0 0 1px #ffe78b, 0 0 8px #e8bf51; }
 .kgc-phone .art-key.lit { animation: kgc-key 0.22s ease-out; }
 .kgc-phone .art-key:disabled { cursor: default; }
 @keyframes kgc-key { from { background: rgba(255, 229, 121, 0.5); box-shadow: 0 0 12px #ffd56b; } to { background: transparent; box-shadow: none; } }
 .kgc-phone .art-number { position: absolute; transform: translate(-50%, -50%); padding: 2px 6px; white-space: nowrap; font: 700 11px/1.2 "Courier New", monospace; color: #1f1d16; }
-.kgc-phone.skin-payphone .art-number { font-size: 9px; color: #1d2714; background: #a9b58c; border-radius: 2px; box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.4); }
+.kgc-phone.skin-payphone .art-number { font-size: 12px; color: #1d2714; background: #a9b58c; border-radius: 2px; box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.4); }
 .kgc-phone > .console { align-self: stretch; }
 .kgc-device .dev-list .mini { all: unset; padding: 6px 7px; border-radius: 6px; color: var(--kgc-muted); cursor: pointer; }
 .kgc-device .dev-list .mini:hover, .kgc-device .dev-list .mini:focus-visible { color: var(--kgc-gold); background: rgba(255, 255, 255, 0.06); outline: none; }

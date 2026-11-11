@@ -86,6 +86,13 @@ export class TravelController {
     Hooks.on("preMoveToken", (doc, movement, operation) => this.#caught(doc, movement, operation));
     Hooks.on("canvasReady", () => { this.#drawLines(); this.#drawPanel(); this.#run(); this.onTrips?.(); });
     Hooks.on("canvasTearDown", () => { this.lines?.destroy({ children: true }); this.lines = null; });
+    // The lines' thickness is set for the zoom they were drawn at: drawn again when it changes
+    // (once a frame at most), or a reload's first drawing, zoomed far out, stays huge when zoomed in.
+    Hooks.on("canvasPan", (c, view) => {
+      const zoom = view?.scale ?? canvas.stage?.scale.x;
+      if (zoom === this.linesZoom || this.linesFrame || !Object.keys(this.trips).length) return;
+      this.linesFrame = requestAnimationFrame(() => { this.linesFrame = 0; this.#drawLines(); });
+    });
     Hooks.on("pauseGame", () => this.#drawPanel());
     // The GM skipping time (not the trips' own running of the clock).
     Hooks.on("updateWorldTime", (worldTime, delta) => this.#clockMoved(worldTime, delta).catch((err) => console.warn(`${ID} | travel`, err)));
@@ -357,6 +364,7 @@ export class TravelController {
       canvas.interface?.addChild(this.lines);
     }
     const g = this.lines.clear(), now = this.now(), zoom = canvas.stage.scale.x || 1;
+    this.linesZoom = zoom;
     for (const trip of Object.values(this.trips)) {
       if (trip.scene !== canvas.scene?.id) continue;
       const token = canvas.scene.tokens.get(trip.token);
@@ -378,7 +386,8 @@ export class TravelController {
       this.panel.setAttribute("aria-label", "Parties travelling");
       this.panel.addEventListener("click", (e) => {
         const b = e.target.closest("[data-act]");
-        if (!b) return;
+        // A trip's row (not its buttons): select that party and go to it.
+        if (!b) { const row = e.target.closest(".trip[data-key]"); if (row) this.#focusTrip(row.dataset.key).catch((err) => console.warn(`${ID} | travel`, err)); return; }
         const run = { arrive: () => this.arriveNow(b.dataset.key), stop: () => this.stop(b.dataset.key), lock: () => this.#lockPanel() }[b.dataset.act];
         run?.().catch((err) => ui.notifications.error(`KG Cities: ${err.message}`));
       });
@@ -404,7 +413,7 @@ export class TravelController {
     // The rows are built only when the trips change; each tick just moves their bars and times,
     // so the buttons under the pointer stay the same buttons.
     const list = this.panel.querySelector(".trips");
-    const rows = trips.map((t) => `<div class="trip" data-key="${esc(t.key)}" style="--mode:${MODE_COLOURS[t.mode]}">
+    const rows = trips.map((t) => `<div class="trip" data-key="${esc(t.key)}" style="--mode:${MODE_COLOURS[t.mode]}" data-tooltip="Select them and go to them on the map">
           <div class="line"><i class="fa-solid ${MODE_ICONS[t.mode]}"></i><span class="who">${esc(t.label)}</span><span class="when"></span></div>
           <div class="bar"><i></i></div>
           <div class="line sub"><span>${esc(MODE_WORDS[t.mode])}${t.detail ? ` · ${esc(t.detail)}` : ""}</span>
@@ -419,6 +428,25 @@ export class TravelController {
       row.querySelector(".bar i").style.width = `${(done * 100).toFixed(1)}%`;
     }
     this.#placePanel();
+  }
+
+  /**
+   * Select a travelling party's token and centre the map on it (viewing its scene first when it is
+   * elsewhere). Selecting it shows its street view, as clicking the token does.
+   */
+  async #focusTrip(key) {
+    const trip = this.trips[key];
+    if (!trip) return;
+    const scene = game.scenes.get(trip.scene);
+    if (!scene) return;
+    if (canvas.scene?.id !== scene.id) {
+      await scene.view();
+      await new Promise((r) => Hooks.once("canvasReady", r));
+    }
+    const token = canvas.tokens?.get(trip.token);
+    if (!token) return ui.notifications.warn(`KG Cities: ${trip.label}'s token is not on its scene.`);
+    token.control({ releaseOthers: true });
+    await canvas.animatePan({ x: token.center.x, y: token.center.y, duration: 500 });
   }
 
   /** This user's place for the panel: { left, top, locked }. */
