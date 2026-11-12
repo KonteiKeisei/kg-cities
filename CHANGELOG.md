@@ -1,5 +1,9 @@
 # KG Cities changelog
 
+## 0.13.3
+
+- **Pay stubs and bills are readable in the chat**: Foundry's chat tables (dark striped rows, light text) were painting over them. They keep their paper look now: dark type on cream, deductions in red, totals ruled.
+
 ## 0.13.2
 
 - **Dropdown lists are readable**: an open list showed pale text on white, readable only on the highlighted line. Lists in every KG Cities window (Payroll, the switchboard, the phones) are now light text on the dark panel, the chosen one in gold.

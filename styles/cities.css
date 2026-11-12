@@ -786,7 +786,7 @@ a.kgc-link:hover { background: rgba(255, 201, 74, 0.22); text-shadow: none; }
 .kgc-stub td:last-child { text-align: right; white-space: nowrap; padding-left: 8px; }
 .kgc-stub tr.sum td { border-top: 1px dashed #a9a38a; }
 .kgc-stub tr.tax td { color: #7a2d2d; }
-.kgc-stub tr.net td { border-top: 1px solid #2b2a24; font-weight: 700; }
+.kgc-stub tr.net td { border-top: 1px solid #2b2a24 !important; font-weight: 700; }
 .kgc-stub tr.side td { color: #3d5a2f; font-style: italic; }
 .kgc-stub-note { margin: 4px 0 0; font-size: 12px; }.kgc-payroll .pr-home { border: 1px solid var(--kgc-line-2); border-radius: 10px; padding: 10px 12px; background: rgba(255, 255, 255, 0.02); display: grid; gap: 6px; }
 .kgc-payroll .pr-budget { width: 100%; font-size: 12.5px; border-collapse: collapse; background: none; border: 0; margin-top: 4px; }
@@ -800,3 +800,19 @@ a.kgc-link:hover { background: rgba(255, 201, 74, 0.22); text-shadow: none; }
 .kgc-ui select, .kgc-switchboard select, .kgc-device select { color-scheme: dark; }
 .kgc-ui select option, .kgc-ui select optgroup { background-color: #151b27; color: #e8edf3; }
 .kgc-ui select option:checked { background-color: #3a3220; color: #ffe08a; }
+/* Pay stubs in Foundry's chat: its table styles (striped dark rows, light text, header colours)
+   are more specific than a plain class, so the stub's paper look is pinned down here. */
+.kgc-stub.kgc-stub, .kgc-stub.kgc-stub * { color: #2b2a24 !important; text-shadow: none !important; font-family: "Courier New", monospace !important; }
+.kgc-stub.kgc-stub i { font-family: var(--fa-style-family, "Font Awesome 6 Free") !important; }
+.kgc-stub.kgc-stub table, .kgc-stub.kgc-stub tbody, .kgc-stub.kgc-stub thead,
+.kgc-stub.kgc-stub tr, .kgc-stub.kgc-stub tr:nth-child(n), .kgc-stub.kgc-stub tr:hover,
+.kgc-stub.kgc-stub td, .kgc-stub.kgc-stub th { background: transparent !important; border-color: transparent !important; color: #2b2a24 !important; text-shadow: none !important; }
+.kgc-stub.kgc-stub table { border: 0; margin: 4px 0 0; }
+.kgc-stub.kgc-stub td { border: 0; padding: 1px 0; font-size: 12px; line-height: 1.35; }
+.kgc-stub.kgc-stub header { color: #2b2a24 !important; }
+.kgc-stub.kgc-stub .kgc-stub-job, .kgc-stub.kgc-stub .kgc-stub-roll, .kgc-stub.kgc-stub .kgc-stub-roll * { color: #55523f !important; }
+.kgc-stub.kgc-stub tr.sum td { border-top: 1px dashed #a9a38a !important; }
+.kgc-stub.kgc-stub tr.tax td { color: #8a2a2a !important; }
+.kgc-stub.kgc-stub tr.net td { border-top: 1px solid #2b2a24 !important; font-weight: 700; color: #1d1c17 !important; }
+.kgc-stub.kgc-stub tr.side td { color: #3d5a2f !important; font-style: italic; }
+.kgc-stub.kgc-stub.bills header b { color: #8a2a2a !important; }
