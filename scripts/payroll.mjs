@@ -19,8 +19,20 @@ export const jobsOf = (actor) => (actor?.flags?.[ID]?.payroll?.jobs ?? []).map((
 export const stubsOf = (actor) => [...(actor?.flags?.[ID]?.payroll?.stubs ?? [])].sort((a, b) => (b.time ?? 0) - (a.time ?? 0));
 /** The paper checks a character holds, not yet cashed. */
 export const checksOf = (actor) => actor?.items?.filter((i) => i.flags?.[ID]?.check) ?? [];
-/** The characters on the payroll: player characters, and anyone given a job. */
-export const payrollActors = () => game.actors.filter((a) => a.type !== "group" && (a.hasPlayerOwner || jobsOf(a).length)).sort((a, b) => a.name.localeCompare(b.name));
+const byName = (a, b) => a.name.localeCompare(b.name);
+/** Player characters: a "character" a player owns (not their vehicles, companions or summons). */
+export const isPlayerCharacter = (a) => a.type === "character" && a.hasPlayerOwner;
+/** Actors the GM put on the payroll by hand (dragged in): NPCs, a vehicle that earns, anyone. */
+export const isListed = (a) => a.flags?.[ID]?.payroll?.listed === true || (a.flags?.[ID]?.payroll?.listed !== false && (a.flags?.[ID]?.payroll?.jobs?.length ?? 0) > 0);
+export const playerCharacters = () => game.actors.filter(isPlayerCharacter).sort(byName);
+export const otherPayroll = () => game.actors.filter((a) => !isPlayerCharacter(a) && isListed(a)).sort(byName);
+/** Everyone paid or billed on the clock: the player characters, and anyone put on the payroll. */
+export const payrollActors = () => [...playerCharacters(), ...otherPayroll()];
+
+/** Put an actor on the payroll by hand, or take it off (its jobs and bills stop with it). */
+export async function setListed(actor, listed) {
+  await actor.update({ [`flags.${ID}.payroll.listed`]: !!listed });
+}
 
 export async function saveJobs(actor, jobs) {
   await actor.update({ [`flags.${ID}.payroll.jobs`]: jobs.map((j) => makeJob(j)) });

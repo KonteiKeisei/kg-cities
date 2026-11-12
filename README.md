@@ -53,7 +53,7 @@ Phones belong to places; pagers belong to people.
 
 ## Payroll and living costs
 
-Characters get paid on the world clock, and pay their bills out of it. **Payroll** in the token controls (the GM); players get **Your pay**.
+Characters get paid on the world clock, and pay their bills out of it. **Payroll** in the token controls (the GM); players get **Your pay**. The list is the player characters (a player's vehicles and companions are left out); drag any other actor in from the Actors sidebar to put them on the payroll, under **Others**.
 
 - **Jobs** go on a character: hourly, weekly, yearly, per job, per word, or an allowance. Each pays weekly, biweekly, monthly, every so many days, or only when you press **Pay now**. Each pays in **cash** (to the wallet) or by **paper check** (an item, cashed from Your pay). It can be **on the books** (1986 federal and Massachusetts income tax and FICA come out) or off them. A job can also have union dues, an **in-season** span (a hockey salary is paid October to April), and a number of paydays left.
 - **Payday rolls**: a die, plus a skill or ability if you like, read against your own results ("2 to 5: half the hours", "page one: 25¢ a word"). **Bonuses and risks**: an amount or a percent, on the next payday only, every payday, or by chance (1 in 6 he gets stiffed). They can be **cash on the side**: untaxed and to the wallet, like a garbage man's side deliveries.

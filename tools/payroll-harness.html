@@ -56,7 +56,11 @@ const actors = new Coll([
   ["bk", makeActor("bk", "Luc Tremblay (biker)", { sp: 30 })],
   ["gb", makeActor("gb", "Sal Russo (garbage man)", {})],
   ["mc", makeActor("mc", "Seamus O'Rourke (mechanic)", {})],
-  ["rp", makeActor("rp", "Walt Brennan (reporter)", {})]
+  ["rp", makeActor("rp", "Walt Brennan (reporter)", {})],
+  // Not player characters: a player's vehicle and companion, and an NPC; none should be listed.
+  ["van", Object.assign(makeActor("van", "1986 Swinger (vehicle)", {}), { type: "vehicle" })],
+  ["cpr", Object.assign(makeActor("cpr", "CPR - Eldritch Cannon", {}), { type: "npc" })],
+  ["sal", Object.assign(makeActor("sal", "Sal's Pizza owner (NPC)", {}), { type: "npc", hasPlayerOwner: false })]
 ]);
 const byUuid = (u) => { for (const a of actors) for (const i of a.items) if (i.uuid === u) return i; return null; };
 

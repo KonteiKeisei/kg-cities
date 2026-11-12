@@ -3,7 +3,7 @@
 // start one from. A player's Your pay: their characters' jobs, pay stubs, and checks to cash.
 
 import { BOSTON, DAY, FOOD, GUIDE, HOUSING, MEDIAN_1986, MIN_WAGE_MA, NEIGHBORHOODS, PAY_TYPES, PRESETS, SCHEDULES, VEHICLES, computePay, describeRate, dollars, guideJob, homeBills, makeJob, weekly, weeklyTakeHome } from "./payroll-core.mjs";
-import { checksOf, dateLabel, homeOf, jobsOf, monthList, payrollActors, saveHome, saveJobs, skillChoices, stubHtml, stubsOf } from "./payroll.mjs";
+import { checksOf, dateLabel, homeOf, isPlayerCharacter, jobsOf, monthList, otherPayroll, payrollActors, playerCharacters, saveHome, saveJobs, setListed, skillChoices, stubHtml, stubsOf } from "./payroll.mjs";
 import { walletValue } from "./money.mjs";
 
 const ID = "kg-cities";
@@ -97,6 +97,7 @@ function boardClass() {
       this.cat = "Blue collar";
       this.boston = true;
       this.q = "";
+      this.othersOpen = otherPayroll().length > 0;
     }
     get payroll() { return this.ui.payroll; }
     get actor() {
@@ -112,6 +113,9 @@ function boardClass() {
         content.addEventListener("click", (e) => this.#click(e));
         content.addEventListener("change", (e) => this.#change(e));
         content.addEventListener("input", (e) => this.#input(e));
+        content.addEventListener("dragover", (e) => { e.preventDefault(); content.querySelector(".pr-drop")?.classList.add("hot"); });
+        content.addEventListener("dragleave", () => content.querySelector(".pr-drop")?.classList.remove("hot"));
+        content.addEventListener("drop", (e) => this.#drop(e));
       }
       this.#draw(content);
     }
@@ -126,14 +130,34 @@ function boardClass() {
     /* -------- Characters -------- */
 
     #people() {
-      const list = payrollActors(), actor = this.actor;
-      if (!list.length) return `<p class="empty pad">No characters yet. Player characters show here; so does anyone you give a job.</p>`;
-      const side = list.map((a) => {
+      const pcs = playerCharacters(), others = otherPayroll(), actor = this.actor;
+      const who = (a) => {
         const jobs = jobsOf(a).filter((j) => j.active);
         const next = jobs.map((j) => j.next).filter((t) => Number.isFinite(t)).sort((x, y) => x - y)[0];
         return `<button type="button" class="pr-who ${a === actor ? "on" : ""}" data-act="who" data-id="${a.id}"><img src="${esc(a.img)}" alt=""><span><b>${esc(a.name)}</b><small>${jobs.length ? `${jobs.length} job${jobs.length === 1 ? "" : "s"}${next ? ` · ${esc(dateLabel(next))}` : ""}` : "No job"}</small></span></button>`;
-      }).join("");
-      return `<div class="pr-split"><aside class="pr-side pr-scroll">${side}</aside><section class="pr-main pr-scroll">${this.draft ? this.#editor(actor) : this.#jobs(actor)}</section></div>`;
+      };
+      const side = `${pcs.map(who).join("") || `<p class="empty">No player characters yet.</p>`}
+        <div class="pr-others ${this.othersOpen ? "open" : ""}">
+          <button type="button" class="pr-others-head" data-act="others" aria-expanded="${!!this.othersOpen}"><i class="fa-solid fa-chevron-${this.othersOpen ? "down" : "right"}"></i> Others <span class="faint">${others.length || ""}</span></button>
+          ${this.othersOpen ? `${others.map(who).join("")}<div class="pr-drop"><i class="fa-solid fa-hand-pointer"></i> Drag an actor here from the Actors sidebar to put them on the payroll</div>` : ""}
+        </div>`;
+      const main = actor ? (this.draft ? this.#editor(actor) : this.#jobs(actor)) : `<p class="empty">Nobody on the payroll yet. Player characters show here; drag anyone else in.</p>`;
+      return `<div class="pr-split"><aside class="pr-side pr-scroll">${side}</aside><section class="pr-main pr-scroll">${main}</section></div>`;
+    }
+
+    /** An actor dragged from the sidebar (or a token's) goes on the payroll, under Others. */
+    async #drop(e) {
+      let data;
+      try { data = JSON.parse(e.dataTransfer.getData("text/plain")); } catch { return; }
+      if (data?.type !== "Actor") return;
+      e.preventDefault();
+      const actor = data.uuid ? await fromUuid(data.uuid) : game.actors.get(data.id);
+      if (!actor) return;
+      if (!isPlayerCharacter(actor)) { await setListed(actor, true); this.othersOpen = true; }
+      this.actorId = actor.id;
+      this.draft = null;
+      this.tab = "people";
+      this.redraw();
     }
 
     #jobs(actor) {
@@ -149,7 +173,8 @@ function boardClass() {
             <button type="button" class="btn small" data-act="toggle" data-id="${j.id}">${j.active ? '<i class="fa-solid fa-pause"></i> Pause' : '<i class="fa-solid fa-play"></i> Resume'}</button><span class="grow"></span><button type="button" class="btn small danger" data-act="remove" data-id="${j.id}" aria-label="Remove the job"><i class="fa-solid fa-trash"></i></button></footer></article>`;
       }).join("");
       return `<div class="pr-head"><h3>${esc(actor.name)}</h3>${wallet ? `<span class="pr-wallet"><i class="fa-solid fa-wallet"></i> ${wallet}</span>` : ""}<span class="grow"></span>
-          <button type="button" class="btn" data-act="new"><i class="fa-solid fa-plus"></i> New job</button><button type="button" class="btn" data-act="tab" data-value="guide"><i class="fa-solid fa-book-open"></i> From the guide</button></div>
+          <button type="button" class="btn" data-act="new"><i class="fa-solid fa-plus"></i> New job</button><button type="button" class="btn" data-act="tab" data-value="guide"><i class="fa-solid fa-book-open"></i> From the guide</button>
+          ${isPlayerCharacter(actor) ? "" : `<button type="button" class="btn ghost" data-act="unlist" data-tooltip="Take off the payroll"><i class="fa-solid fa-user-minus"></i></button>`}</div>
         ${cards || `<p class="empty">No job. Make one, or pick one from the 1986 guide.</p>`}
         ${this.#home(actor, jobs)}
         ${checks.length ? `<h4>Checks not cashed</h4><div class="pr-checks">${checks.map((i) => `<div class="pr-check"><img src="${esc(i.img)}" alt=""><span>${esc(i.flags[ID].check.from)}<small>${esc(dateLabel(i.flags[ID].check.time))}</small></span><b>${dollars(i.flags[ID].check.amount)}</b><button type="button" class="btn small" data-act="cash" data-uuid="${i.uuid}">Cash it</button></div>`).join("")}</div>` : ""}
@@ -368,6 +393,12 @@ function boardClass() {
       switch (act) {
         case "tab": this.tab = el.dataset.value; return this.redraw();
         case "who": this.actorId = el.dataset.id; this.draft = null; return this.redraw();
+        case "others": this.othersOpen = !this.othersOpen; return this.redraw();
+        case "unlist": {
+          if (!(await foundry.applications.api.DialogV2.confirm({ window: { title: "Take off the payroll" }, content: `<p>Take <b>${esc(actor.name)}</b> off the payroll? Their jobs and bills stop; put them back by dragging them in again.</p>` }))) return;
+          this.actorId = null;
+          return setListed(actor, false);
+        }
         case "cat": this.cat = el.dataset.value; return this.redraw();
         case "new": return this.#edit({ title: "New job", type: "hourly", rate: MIN_WAGE_MA, units: 40 }, true);
         case "edit": { const j = jobs().find((x) => x.id === el.dataset.id); return j && this.#edit(j); }

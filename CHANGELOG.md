@@ -1,5 +1,9 @@
 # KG Cities changelog
 
+## 0.13.4
+
+- **Payroll lists only player characters**: a player's vehicles, companions and summons (an Eldritch Cannon) are left out. Drag any other actor in from the Actors sidebar to put them on the payroll, in a collapsible **Others** section; take them off again with the button beside their name.
+
 ## 0.13.3
 
 - **Pay stubs and bills are readable in the chat**: Foundry's chat tables (dark striped rows, light text) were painting over them. They keep their paper look now: dark type on cream, deductions in red, totals ruled.
