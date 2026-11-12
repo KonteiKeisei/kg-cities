@@ -1,5 +1,9 @@
 # KG Cities changelog
 
+## 0.13.2
+
+- **Dropdown lists are readable**: an open list showed pale text on white, readable only on the highlighted line. Lists in every KG Cities window (Payroll, the switchboard, the phones) are now light text on the dark panel, the chosen one in gold.
+
 ## 0.13.1
 
 - **The job guide's search types forwards**: each letter redrew the window and put the cursor back at the start, so "garbage" came out "egabrag". The cursor now stays where you are typing.

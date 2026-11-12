@@ -795,3 +795,8 @@ a.kgc-link:hover { background: rgba(255, 201, 74, 0.22); text-shadow: none; }
 .kgc-payroll .pr-sum .neg b { color: var(--kgc-danger); }
 .kgc-payroll .warn-line { margin: 4px 0 0; font-size: 12.5px; color: #ffcf70; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .kgc-stub.bills header b { color: #7a2d2d; }
+/* Dropdown lists: the browser draws an open list itself; told the menus are dark, it draws them
+   dark, and every option is light text on the panel's colour (not the window's pale text on white). */
+.kgc-ui select, .kgc-switchboard select, .kgc-device select { color-scheme: dark; }
+.kgc-ui select option, .kgc-ui select optgroup { background-color: #151b27; color: #e8edf3; }
+.kgc-ui select option:checked { background-color: #3a3220; color: #ffe08a; }
