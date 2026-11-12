@@ -51,6 +51,17 @@ Phones belong to places; pagers belong to people.
 - Calls are put through by the GM's client: with no GM logged in there is no dial tone.
 - **Coming from Unsleeping Pagers**: disable it, update KG Cities, and log in as GM. Its pagers, numbers, page logs, address books and payphone Tiles move over once (it need not be installed), its payphone macro is pointed at KG Cities so Monk's Active Tiles triggers keep working, and you are told what moved. Its arcane tiers and Phone Patch are not part of KG Cities.
 
+## Payroll and living costs
+
+Characters get paid on the world clock, and pay their bills out of it. **Payroll** in the token controls (the GM); players get **Your pay**.
+
+- **Jobs** go on a character: hourly, weekly, yearly, per job, per word, or an allowance. Each pays weekly, biweekly, monthly, every so many days, or only when you press **Pay now**. Each pays in **cash** (to the wallet) or by **paper check** (an item, cashed from Your pay). It can be **on the books** (1986 federal and Massachusetts income tax and FICA come out) or off them. A job can also have union dues, an **in-season** span (a hockey salary is paid October to April), and a number of paydays left.
+- **Payday rolls**: a die, plus a skill or ability if you like, read against your own results ("2 to 5: half the hours", "page one: 25¢ a word"). **Bonuses and risks**: an amount or a percent, on the next payday only, every payday, or by chance (1 in 6 he gets stiffed). They can be **cash on the side**: untaxed and to the wallet, like a garbage man's side deliveries.
+- **The 1986 job guide**: about 125 jobs with their median weekly pay from the Bureau of Labor Statistics' 1986 survey, plus 10% for Boston if you like. There are also ready-made jobs the survey doesn't count (an NHL salary, cash work with no papers, a newspaper stringer by the word, an allowance), and your own saved jobs. **Use** fills in the job editor. Union jobs come with dues.
+- **Pay stubs** go to the chat for the character's owners and the GM: the payday roll, gross, each deduction and net. A time skip pays every payday it passed, in order.
+- **Living costs**: where the character lives (rent, a mortgage, owned, with family, or nowhere; 20 Boston neighborhoods), heat, lights and phone, a vehicle (its insurance and its gas in city driving), groceries (the USDA's four food plans, times the mouths to feed), and any bills you add. A **dependant** pays no rent, utilities or groceries. Every figure can be changed. Turn on **Charge these bills** and they come out of the wallet weekly (rent and other monthly bills every 30 days). Anything they can't cover is **owed** and paid first next time. The panel shows what they take home in a week, what their bills come to, and what's left.
+- The 1986 figures: wages from the Bureau of Labor Statistics, Monthly Labor Review, June 1987. Federal tax by the 1986 rate schedule for a single person, with the $1,080 exemption. FICA was 7.15% up to $42,000. Massachusetts took 5% over its exemption. Gas was about 85¢ a gallon. **Rents, mortgages, insurance and union dues are estimates.** Groceries are the USDA food plans brought back to 1986 prices, also an estimate.
+
 ## The 1980s
 
 Each city's 1986: towers built since are hidden (from their construction dates in OpenStreetMap), rail lines and stations end where they ended then, and the Las Vegas Strip is the Strip of the Sands, the Dunes and the Desert Inn, the later resorts cleared to bare ground. New York has the World Trade Center as it stood; Boston has the elevated Central Artery and the period's place names.
@@ -67,6 +78,7 @@ Each city's 1986: towers built since are hidden (from their construction dates i
 | Map tile server | Optional: your own server of OpenMapTiles-schema vector tiles (a TileJSON address). Empty uses OpenFreeMap. |
 | Phones ring for | Seconds a phone rings before the caller hears no answer. |
 | Phone and pager volume | Rings, tones and pager alerts, per computer. |
+| Cashing paychecks | Players cash their checks at once, or you approve each one (a bank, ID, or not here). |
 
 ## For other modules
 

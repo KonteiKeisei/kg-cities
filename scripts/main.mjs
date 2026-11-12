@@ -20,6 +20,8 @@ import { metres as metresBetween } from "./geo.mjs";
 import { DEVICES, Phones, directory as phoneDirectory, givePager, migrateUnsleepingPagers, myPagers, newNumber, phonesHere, placePhone, speakerAt, watchNewPagers } from "./phones.mjs";
 import { PhoneUI } from "./ui-phone.mjs";
 import { formatNumber, sameNumber } from "./phone-core.mjs";
+import { Payroll, jobsOf, saveJobs } from "./payroll.mjs";
+import { PayrollUI } from "./ui-payroll.mjs";
 
 const MODULE_ID = "kg-cities";
 const SETTINGS = { look: "look", lean: "tilt", highDpi: "highDpi", businesses: "businesses", dayStart: "dayStart", nightStart: "nightStart" };
@@ -90,6 +92,10 @@ const phoneUI = new PhoneUI({
   phones, dollarRate: () => travel.dollarRate(),
   openCard: (city, id) => cards.open({ kind: "landmark", city, id }, { warnMissing: true })
 });
+// Paychecks: jobs on characters, paid on the world clock by the GM in charge's client.
+const payroll = new Payroll({ dollarRate: () => travel.dollarRate(), onChange: () => payrollUI.refresh() });
+const payrollUI = new PayrollUI({ payroll, dollarRate: () => travel.dollarRate() });
+
 /** Use a phone where this user's character is: the one there, or the first of several. */
 function phoneHere() {
   if (game.user.isGM) return phoneUI.switchboard();
@@ -319,6 +325,9 @@ async function convertJournalLandmarks() {
 Hooks.once("ready", () => {
   listenForOpens();
   phones.install();
+  payroll.install();
+  // Paydays that came while nobody was on.
+  payroll.runDue();
   // Unsleeping Pagers' pagers, numbers and page logs, once (installed or not).
   migrateUnsleepingPagers().then(() => phoneUI.refresh()).catch((err) => console.error(`${MODULE_ID} | Unsleeping Pagers migration`, err));
   if (game.users.activeGM?.isSelf) convertJournalLandmarks().catch((err) => console.error(`${MODULE_ID} | journal conversion`, err));
@@ -352,7 +361,7 @@ function currentLook() {
 /* ---------------------------------------- */
 
 /** Which local build is running (the browser console says, at load). */
-const BUILD = "2026-11-11 payphone-close-up";
+const BUILD = "2026-11-11 payroll";
 
 Hooks.once("init", () => {
   console.info(`kg-cities | ${game.modules.get(MODULE_ID)?.version} (build ${BUILD})`);
@@ -423,6 +432,15 @@ Hooks.once("init", () => {
   });
   phoneUI.install();
   watchNewPagers();
+
+  // Payroll: the GM's own jobs for the guide, and how a paper check is cashed.
+  register("payTemplates", { scope: "world", config: false, type: Array, default: [], onChange: () => payrollUI.refresh() });
+  register("payCheckCashing", {
+    name: "Cashing paychecks",
+    hint: "A paper check a job pays with is an item on the character. Cashed by the player at once, or handed to you to decide (at a bank, with ID, or not here).",
+    scope: "world", config: true, type: String, default: "anywhere",
+    choices: { anywhere: "The player cashes it at once", gm: "The GM approves each one" }
+  });
 
   // { [city]: { edits: { placeId: {...} }, added: { id: {...} } } }: the GM's label edits.
   register("placeEdits", { scope: "world", config: false, type: Object, default: {}, onChange: () => refreshPlaces() });
@@ -532,6 +550,18 @@ Hooks.once("init", () => {
       page: (number, text = "") => phones.pageDirect(number, { text, callback: text }),
       dial: (number, { as = "" } = {}) => phones.dial(number, { as }),
       calls: () => [...phones.calls.values()]
+    },
+    /**
+     * Payroll: jobs on characters (flags.kg-cities.payroll.jobs), paid on the world clock. open()
+     * is the GM's Payroll or a player's Your pay; jobs(actor) and setJobs(actor, jobs) read and
+     * write them; payNow(actor, jobId) pays one outside its schedule; runDue() pays what is due.
+     */
+    payroll: {
+      open: (actorId = null) => payrollUI.open({ actorId }),
+      jobs: (actor) => jobsOf(actor),
+      setJobs: (actor, jobs) => saveJobs(actor, jobs),
+      payNow: (actor, jobId) => payroll.payNow(actor, jobId),
+      runDue: () => payroll.runDue()
     },
     /** Open a landmark's place card, e.g. openPlaceCard("boston", "seed:..."); edit: the GM's form. */
     openPlaceCard: (city, id, { edit = false } = {}) => cards.open({ kind: "landmark", city, id }, { edit, warnMissing: true }),
@@ -696,6 +726,10 @@ Hooks.on("getSceneControlButtons", (controls) => {
     if (!game.user.isGM && myPagers().length) {
       controls.tokens.tools.kgCitiesPager = { name: "kgCitiesPager", title: "Your pager", icon: "fa-solid fa-pager", order: 121, button: true, onChange: () => phoneUI.openMyPager() };
     }
+    controls.tokens.tools.kgCitiesPayroll = {
+      name: "kgCitiesPayroll", title: game.user.isGM ? "Payroll: jobs, paydays and the 1986 job guide" : "Your pay: jobs, pay stubs and checks",
+      icon: "fa-solid fa-money-check-dollar", order: 122, button: true, onChange: () => payrollUI.open()
+    };
   }
   if (!cityOf(canvas.scene)) return;
   // Search is for everyone, on the token controls players always have.

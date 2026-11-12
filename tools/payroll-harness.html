@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Payroll harness</title>
+<!-- The payroll's real windows and paydays (scripts/payroll.mjs, ui-payroll.mjs) over a small
+     stand-in for Foundry: a 1986 calendar, dnd5e wallets, rolls and a chat log.
+     python tools/serve.py, then http://127.0.0.1:8779/tools/payroll-harness.html -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="../styles/cities.css">
+<style>
+  body { margin: 0; min-height: 100vh; background: #2b3340 radial-gradient(circle at 30% 20%, #3b4656, #1a2029); font-family: Signika, system-ui, sans-serif; color: #dde; }
+  .application { position: absolute; display: flex; flex-direction: column; }
+  .window-content { display: flex; flex-direction: column; overflow: hidden; flex: 1; min-height: 0; }
+  .window-header { display: flex; gap: 8px; padding: 6px 10px; font-size: 13px; }
+  .window-header .close { margin-left: auto; cursor: pointer; background: none; border: 0; color: inherit; }
+  #controls { position: fixed; left: 12px; bottom: 12px; display: flex; flex-wrap: wrap; gap: 6px; max-width: 60vw; align-items: center; }
+  #controls button { padding: 6px 10px; border-radius: 6px; border: 1px solid #556; background: #1b2230; color: #dde; cursor: pointer; }
+  #chat { position: fixed; right: 10px; top: 10px; bottom: 10px; width: 300px; overflow-y: auto; background: #12161f; border: 1px solid #334; border-radius: 8px; padding: 8px; font-size: 13px; }
+  #chat .msg { border-bottom: 1px solid #334; padding: 6px 0; }
+  #chat .msg > b { color: #ffe08a; }
+</style>
+</head>
+<body>
+<div id="controls"><b id="clock"></b></div>
+<div id="chat"></div>
+<script type="module">
+class Coll extends Map { filter(f) { return [...this.values()].filter(f); } find(f) { return [...this.values()].find(f); } some(f) { return [...this.values()].some(f); } map(f) { return [...this.values()].map(f); } [Symbol.iterator]() { return this.values(); } get contents() { return [...this.values()]; } }
+const hooks = {};
+const fire = (name, ...args) => (hooks[name] ?? []).forEach((f) => f(...args));
+const getP = (o, path) => path.split(".").reduce((t, k) => t?.[k], o);
+const setP = (o, path, v) => { const ks = path.split("."); let t = o; for (const k of ks.slice(0, -1)) t = t[k] ??= {}; t[ks.at(-1)] = v; };
+
+function makeActor(id, name, wallet) {
+  const items = new Coll();
+  const a = {
+    id, name, type: "character", hasPlayerOwner: true, isOwner: true, items, img: "../assets/phones/payphone.svg",
+    system: { currency: { pp: 0, gp: 0, ep: 0, sp: 0, cp: 0, ...wallet }, skills: { inv: { total: 4 } }, abilities: { int: { mod: 2 } } },
+    flags: {},
+    testUserPermission: () => true,
+    async update(d) { for (const [k, v] of Object.entries(d)) setP(this, k, structuredClone(v)); fire("updateActor", this, Object.fromEntries(Object.keys(d).map((k) => [k, true]))); },
+    async createEmbeddedDocuments(type, list) {
+      for (const data of list) {
+        const iid = Math.random().toString(36).slice(2, 10);
+        const item = { ...structuredClone(data), id: iid, uuid: `Actor.${id}.Item.${iid}`, parent: a, async delete() { items.delete(iid); fire("deleteItem", item); } };
+        items.set(iid, item); fire("createItem", item);
+      }
+    }
+  };
+  return a;
+}
+const actors = new Coll([
+  ["hk", makeActor("hk", "Mikey Doyle (hockey)", {})],
+  ["kid", makeActor("kid", "Dennis (lives with mom)", { gp: 2 })],
+  ["bk", makeActor("bk", "Luc Tremblay (biker)", { sp: 30 })],
+  ["gb", makeActor("gb", "Sal Russo (garbage man)", {})],
+  ["mc", makeActor("mc", "Seamus O'Rourke (mechanic)", {})],
+  ["rp", makeActor("rp", "Walt Brennan (reporter)", {})]
+]);
+const byUuid = (u) => { for (const a of actors) for (const i of a.items) if (i.uuid === u) return i; return null; };
+
+// 1986, from Monday, October 13 at 9 AM.
+const EPOCH = Date.UTC(1986, 9, 13, 9);
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const calendar = {
+  months: { values: MONTHS.map((name) => ({ name })) }, days: { values: DAYS.map((name) => ({ name })) },
+  timeToComponents(t) { const d = new Date(EPOCH + t * 1000); return { year: 1986, month: d.getUTCMonth(), dayOfMonth: d.getUTCDate() - 1, dayOfWeek: d.getUTCDay(), hour: d.getUTCHours(), minute: d.getUTCMinutes() }; }
+};
+
+const user = { id: "gm", name: "GM", isGM: true, active: true };
+const settings = { payTemplates: [], payCheckCashing: "anywhere" };
+globalThis.CONFIG = { DND5E: { skills: { inv: { label: "Investigation" }, ath: { label: "Athletics" }, per: { label: "Persuasion" }, ste: { label: "Stealth" } }, abilities: { str: { label: "Strength" }, int: { label: "Intelligence" }, cha: { label: "Charisma" } } } };
+globalThis.foundry = {
+  utils: {
+    escapeHTML: (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])),
+    randomID: () => Math.random().toString(36).slice(2, 12), deepClone: (v) => structuredClone(v),
+    hasProperty: (o, p) => getP(o, p) !== undefined || Object.keys(o).some((k) => k === p || k.startsWith(p + ".") || p.startsWith(k + ".")),
+    setProperty: setP
+  },
+  applications: { api: {
+    DialogV2: { confirm: async ({ content }) => { console.info("confirm:", content.replace(/<[^>]+>/g, "")); return true; } },
+    ApplicationV2: class {
+      constructor(o = {}) { this.options = { ...this.constructor.DEFAULT_OPTIONS, ...o }; }
+      render() {
+        if (!this.element) {
+          const el = document.createElement("div");
+          el.className = `application ${(this.options.classes ?? []).join(" ")}`;
+          const n = document.querySelectorAll(".application").length;
+          el.style.left = `${20 + n * 40}px`; el.style.top = `${20 + n * 30}px`; el.style.width = `${this.options.position?.width ?? 330}px`;
+          if (this.options.position?.height > 0) el.style.height = `${this.options.position.height}px`;
+          el.innerHTML = `<header class="window-header"><span class="window-title"></span><button class="close">✕</button></header><section class="window-content"></section>`;
+          el.querySelector(".close").onclick = () => this.close();
+          document.body.append(el);
+          this.element = el;
+        }
+        this.element.querySelector(".window-title").textContent = this.options.window?.title ?? "";
+        this._replaceHTML("", this.element.querySelector(".window-content"));
+        this.rendered = true;
+        return this;
+      }
+      bringToFront() {}
+      close() { this.element?.remove(); this.element = null; this.rendered = false; }
+    }
+  } }
+};
+globalThis.game = {
+  user, users: Object.assign(new Coll([[user.id, user]]), { activeGM: { id: "gm" } }),
+  actors, system: { id: "dnd5e" }, documentTypes: { Item: ["loot"] },
+  i18n: { localize: (s) => s },
+  settings: { get: (m, k) => settings[k], set: async (m, k, v) => { settings[k] = structuredClone(v); payrollUI.refresh(); } },
+  time: { worldTime: 0, calendar }, socket: { on() {}, emit() {} }
+};
+globalThis.ui = { notifications: { info: (t) => log("Notice", t), warn: (t) => log("Warning", t) } };
+globalThis.Hooks = { on(n, f) { (hooks[n] ??= []).push(f); }, once() {}, callAll: fire };
+globalThis.fromUuid = async (u) => byUuid(u);
+globalThis.Roll = class { constructor(f) { this.formula = f; } async evaluate() { let t = 0; for (const m of this.formula.replace(/\s+/g, "").matchAll(/([+-]?)(\d*)d(\d+)|([+-]?)(\d+)/g)) { if (m[3]) { const s = m[1] === "-" ? -1 : 1; for (let i = 0; i < (Number(m[2]) || 1); i++) t += s * (1 + Math.floor(Math.random() * Number(m[3]))); } else t += (m[4] === "-" ? -1 : 1) * Number(m[5]); } this.total = t; return this; } };
+const chat = document.getElementById("chat");
+function log(who, html) { const d = document.createElement("div"); d.className = "msg"; d.innerHTML = `<b>${who}</b>${html.startsWith("<") ? html : `<div>${html}</div>`}`; chat.prepend(d); }
+globalThis.ChatMessage = { create: async (m) => log(m.speaker?.alias ?? "Chat", m.content) };
+
+const { Payroll } = await import("../scripts/payroll.mjs");
+const { PayrollUI } = await import("../scripts/ui-payroll.mjs");
+const { PRESETS, GUIDE, guideJob, makeJob, DAY } = await import("../scripts/payroll-core.mjs");
+const { dateLabel } = await import("../scripts/payroll.mjs");
+let payrollUI;
+const payroll = new Payroll({ dollarRate: () => 1000, onChange: () => payrollUI.refresh() });
+payrollUI = new PayrollUI({ payroll, dollarRate: () => 1000 });
+payroll.install();
+
+// The table's six, as the GM would set them up.
+const preset = (t) => makeJob({ ...PRESETS.find((p) => p.title === t), next: 4 * DAY });
+const give = (id, jobs) => actors.get(id).update({ "flags.kg-cities.payroll.jobs": jobs });
+await give("hk", [preset("NHL player, league average")]);
+await give("kid", [preset("Allowance from mom")]);
+await give("bk", [preset("Cash work, no papers")]);
+await give("gb", [makeJob({ ...guideJob(GUIDE["Blue collar"][0]), employer: "City of Boston, Public Works", next: 4 * DAY, bonuses: [{ label: "Side delivery (no questions)", amount: 300, when: "once", cash: true }] })]);
+await give("mc", [makeJob({ ...guideJob(GUIDE["Blue collar"][1]), employer: "Flanagan's Garage", paid: "cash", next: 4 * DAY,
+  roll: { formula: "2d6", label: "How busy the shop is", bands: [{ upTo: 4, factor: 0.85, text: "Slow week: sent home early" }, { upTo: 9, factor: 1, text: "Steady" }, { upTo: 12, factor: 1.2, text: "Slammed: overtime" }] } })]);
+await give("rp", [makeJob({ ...PRESETS.find((p) => p.title === "Newspaper stringer"), next: 11 * DAY })]);
+
+// Their households: bills start the day after the first payday.
+const home = (id, h) => actors.get(id).update({ "flags.kg-cities.payroll.home": { on: true, next: 6 * DAY, rentNext: 6 * DAY, ...h } });
+await home("hk", { housing: "mortgage", hood: "charlestown", vehicle: "car", food: "liberal" });
+await home("kid", { dependant: true, vehicle: "oldcar" });
+await home("bk", { housing: "rent", hood: "eastie", housingCost: 200, vehicle: "motorcycle", food: "thrifty" });
+await home("gb", { housing: "rent", hood: "dorchester", vehicle: "truck", food: "low", people: 2 });
+await home("mc", { housing: "rent", hood: "southie", vehicle: "oldcar", food: "low" });
+await home("rp", { housing: "rent", hood: "jp", vehicle: "car", food: "low" });
+
+const clock = document.getElementById("clock");
+const tick = async (days) => { game.time.worldTime += days * DAY; clock.textContent = dateLabel(game.time.worldTime); fire("updateWorldTime", game.time.worldTime, days * DAY); await payroll.running; payrollUI.refresh(); };
+clock.textContent = dateLabel(0);
+const bar = document.getElementById("controls");
+for (const [label, fn] of Object.entries({
+  "+1 day": () => tick(1), "+1 week": () => tick(7), "+3 months": () => tick(91),
+  "Payroll (GM)": () => payrollUI.open(), "Your pay (player)": () => { user.isGM = false; payrollUI.openMine(); user.isGM = true; }
+})) { const b = document.createElement("button"); b.textContent = label; b.onclick = fn; bar.append(b); }
+payrollUI.open();
+window.payroll = payroll; window.payrollUI = payrollUI; window.tick = tick; window.actors = actors; window.settings = settings;
+</script>
+</body>
+</html>

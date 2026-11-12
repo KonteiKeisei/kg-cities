@@ -27,6 +27,12 @@ function makeChange(copper) {
   return coins;
 }
 
+/** A wallet with `copper` more in it, in the fewest coins (a paycheck cashed). */
+export function addCopper(currency, copper) {
+  const add = makeChange(Math.max(0, Math.round(Number(copper) || 0)));
+  return Object.fromEntries(COINS.map((c) => [c.key, Math.max(0, Math.floor(Number(currency?.[c.key]) || 0)) + add[c.key]]));
+}
+
 /**
  * Pay `price` (copper) from a wallet: exactly when the coins allow, else overpaying as little as
  * possible and taking change; among equal amounts, the fewest coins. { paid, change, after } or

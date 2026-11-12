@@ -1,5 +1,17 @@
 # KG Cities changelog
 
+## 0.13.0
+
+- **Payroll**: characters get paid on the world clock.
+  - Jobs pay by the hour, week, year, job or word, or as an allowance: weekly, biweekly, monthly, every so many days, or when the GM says.
+  - Paid in cash to the wallet, or by paper check (an item, cashed from **Your pay**, or approved by the GM).
+  - On the books, the 1986 federal tax (by the rate schedule), FICA and Massachusetts tax come out, plus union dues.
+  - Payday rolls (a die plus a skill, against your own results), and bonuses and risks: once, every payday or by chance, taxed or as cash on the side.
+  - Seasons: a hockey salary is paid October to April.
+  - Pay stubs go to the chat. A time skip pays every payday it passed.
+- **The 1986 job guide**: about 125 jobs at their median weekly pay from the Bureau of Labor Statistics' 1986 survey (with Boston's +10% if wanted), ready-made jobs for what the survey doesn't count, and your own saved jobs. One click starts a job from any of them.
+- **Living costs**: rent or a mortgage by Boston neighborhood, utilities, a vehicle's insurance and gas, groceries by the USDA food plans, and any bills you add. A dependant pays only for their own vehicle. Charged from the wallet weekly and monthly; what can't be covered is owed. A budget shows take-home pay, bills and what's left each week.
+
 ## 0.12.3
 
 - **The payphone's keypad is big enough to use**: the payphone is shown close up (its coin

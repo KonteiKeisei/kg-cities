@@ -710,3 +710,88 @@ a.kgc-link:hover { background: rgba(255, 201, 74, 0.22); text-shadow: none; }
   #kgc-pager-dock.buzz, #kgc-call-strip .strip-call.ringing > i, .kgc-phone .art-key.lit { animation: none; }
   .kgc-device .dev-screen.blink .lcd-main, .kgc-device .dev-screen.blink .lcd-status span:first-child { animation: none; }
 }
+
+/* ---------------------------------------- */
+/*  Payroll                                  */
+/* ---------------------------------------- */
+
+.kgc-payroll .window-content { padding: 0; display: flex; flex-direction: column; }
+.kgc-payroll .pr-body { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.kgc-payroll .pad { padding: 12px 14px; }
+.kgc-payroll .pr-scroll { overflow-y: auto; }
+.kgc-payroll .grow { flex: 1; }
+.kgc-payroll h3 { margin: 0; font-size: 16px; border: 0; color: var(--kgc-text); }
+.kgc-payroll h3 small { color: var(--kgc-muted); font-size: 12.5px; font-weight: 400; }
+.kgc-payroll h4 { margin: 14px 0 6px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--kgc-muted); font-weight: 600; border: 0; }
+.kgc-payroll .pr-split { flex: 1; min-height: 0; display: grid; grid-template-columns: 210px minmax(0, 1fr); }
+.kgc-payroll .pr-side { border-right: 1px solid var(--kgc-line); padding: 8px; display: flex; flex-direction: column; gap: 4px; }
+.kgc-payroll .pr-who { all: unset; display: flex; gap: 8px; align-items: center; padding: 6px 8px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; }
+.kgc-payroll .pr-who:hover { background: rgba(255, 255, 255, 0.05); }
+.kgc-payroll .pr-who.on { border-color: rgba(255, 201, 74, 0.45); background: rgba(255, 201, 74, 0.08); }
+.kgc-payroll .pr-who img { width: 32px; height: 32px; border-radius: 6px; object-fit: cover; border: 0; flex: none; }
+.kgc-payroll .pr-who span { min-width: 0; display: flex; flex-direction: column; }
+.kgc-payroll .pr-who b, .kgc-payroll .pr-who small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kgc-payroll .pr-who small { color: var(--kgc-muted); font-size: 11.5px; }
+.kgc-payroll .pr-main { padding: 12px 14px; }
+.kgc-payroll .pr-guide { flex: 1; padding: 12px 14px; }
+.kgc-payroll .pr-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 10px; }
+.kgc-payroll .pr-head input[data-keep="q"] { flex: 1 1 200px; }
+.kgc-payroll .pr-wallet { color: var(--kgc-gold-text); font-size: 13px; }
+.kgc-payroll .btn { width: auto; }
+.kgc-payroll .pr-job { border: 1px solid var(--kgc-line-2); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; background: rgba(255, 255, 255, 0.02); }
+.kgc-payroll .pr-job.off { opacity: 0.6; }
+.kgc-payroll .pr-job.slim { padding: 8px 10px; }
+.kgc-payroll .pr-job header { display: flex; justify-content: space-between; gap: 10px; }
+.kgc-payroll .pr-job header small { display: block; color: var(--kgc-muted); font-size: 12px; }
+.kgc-payroll .pr-amt { text-align: right; font-weight: 600; color: var(--kgc-gold-text); white-space: nowrap; }
+.kgc-payroll .pr-amt small { display: block; font-weight: 400; color: var(--kgc-faint); font-size: 11px; }
+.kgc-payroll .pr-meta { font-size: 12.5px; color: var(--kgc-muted); margin-top: 3px; }
+.kgc-payroll .pr-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.kgc-payroll .pr-job footer { display: flex; gap: 6px; margin-top: 8px; align-items: center; }
+.kgc-payroll .pr-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-bottom: 8px; }
+.kgc-payroll label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--kgc-muted); }
+.kgc-payroll label small { color: var(--kgc-faint); font-size: 11px; }
+.kgc-payroll label.wide { margin-top: 8px; }
+.kgc-payroll .pr-check-line { flex-direction: row; align-items: center; gap: 8px; font-size: 13px; color: var(--kgc-text); margin: 4px 0; flex-wrap: wrap; }
+.kgc-payroll .pr-check-line select { width: auto; }
+.kgc-payroll input[type="checkbox"] { width: 16px; height: 16px; margin: 0; }
+.kgc-payroll .pct { display: flex; align-items: center; gap: 4px; }
+.kgc-payroll .pct input { min-width: 0; }
+.kgc-payroll .pct select { width: auto; flex: none; }
+.kgc-payroll input.tiny { width: 56px; flex: none; }
+.kgc-payroll .pr-bands td:first-child { width: 80px; }
+.kgc-payroll .pr-bands td:nth-child(2) { width: 100px; }
+.kgc-payroll .r { text-align: right; white-space: nowrap; }
+.kgc-payroll .pr-sum { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
+.kgc-payroll .pr-sum div { background: rgba(255, 255, 255, 0.04); border-radius: 8px; padding: 8px 10px; }
+.kgc-payroll .pr-sum small { display: block; color: var(--kgc-muted); font-size: 11.5px; }
+.kgc-payroll .pr-sum b { font-size: 18px; color: var(--kgc-gold-text); }
+.kgc-payroll .pr-cats { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.kgc-payroll .pr-cats .btn.on { border-color: var(--kgc-gold); color: var(--kgc-gold-text); background: rgba(255, 201, 74, 0.1); }
+.kgc-payroll .pr-checks { display: grid; gap: 6px; }
+.kgc-payroll .pr-check { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid var(--kgc-line); border-radius: 8px; }
+.kgc-payroll .pr-check img { width: 30px; height: 30px; border: 0; flex: none; }
+.kgc-payroll .pr-check span { flex: 1; min-width: 0; }
+.kgc-payroll .pr-check small { display: block; color: var(--kgc-muted); font-size: 11.5px; }
+.kgc-payroll .pr-stubs { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; }
+.kgc-payroll .pr-mine + .pr-mine { margin-top: 16px; border-top: 1px solid var(--kgc-line); padding-top: 12px; }
+
+/* A pay stub: in the chat and in the windows. */
+.kgc-stub { font-family: "Courier New", monospace; font-size: 12px; background: #f3f1e7; color: #2b2a24; border: 1px solid #c9c4ad; border-radius: 4px; padding: 8px 10px; margin: 4px 0; }
+.kgc-stub header { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px dashed #a9a38a; padding-bottom: 4px; margin-bottom: 4px; }
+.kgc-stub header b { text-transform: uppercase; letter-spacing: 0.04em; }
+.kgc-stub-job, .kgc-stub-roll { font-size: 11.5px; color: #55523f; }
+.kgc-stub table { width: 100%; border-collapse: collapse; margin: 4px 0 0; background: none; border: 0; }
+.kgc-stub td { padding: 1px 0; border: 0; background: none; color: inherit; }
+.kgc-stub td:last-child { text-align: right; white-space: nowrap; padding-left: 8px; }
+.kgc-stub tr.sum td { border-top: 1px dashed #a9a38a; }
+.kgc-stub tr.tax td { color: #7a2d2d; }
+.kgc-stub tr.net td { border-top: 1px solid #2b2a24; font-weight: 700; }
+.kgc-stub tr.side td { color: #3d5a2f; font-style: italic; }
+.kgc-stub-note { margin: 4px 0 0; font-size: 12px; }.kgc-payroll .pr-home { border: 1px solid var(--kgc-line-2); border-radius: 10px; padding: 10px 12px; background: rgba(255, 255, 255, 0.02); display: grid; gap: 6px; }
+.kgc-payroll .pr-budget { width: 100%; font-size: 12.5px; border-collapse: collapse; background: none; border: 0; margin-top: 4px; }
+.kgc-payroll .pr-budget td { padding: 2px 0; border: 0; border-top: 1px dashed var(--kgc-line); color: var(--kgc-muted); }
+.kgc-payroll .pr-budget td:last-child { text-align: right; color: var(--kgc-text); white-space: nowrap; }
+.kgc-payroll .pr-sum .neg b { color: var(--kgc-danger); }
+.kgc-payroll .warn-line { margin: 4px 0 0; font-size: 12.5px; color: #ffcf70; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.kgc-stub.bills header b { color: #7a2d2d; }
