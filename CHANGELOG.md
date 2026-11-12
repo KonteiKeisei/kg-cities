@@ -1,5 +1,9 @@
 # KG Cities changelog
 
+## 0.13.1
+
+- **The job guide's search types forwards**: each letter redrew the window and put the cursor back at the start, so "garbage" came out "egabrag". The cursor now stays where you are typing.
+
 ## 0.13.0
 
 - **Payroll**: characters get paid on the world clock.

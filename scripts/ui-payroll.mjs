@@ -17,10 +17,17 @@ function keep(root, draw) {
   const values = new Map([...root.querySelectorAll("[data-keep]")].map((el) => [el.dataset.keep, el.value]));
   const f = document.activeElement?.closest?.("[data-keep],[data-f]");
   const key = f && root.contains(f) ? (f.dataset.keep ? `[data-keep="${f.dataset.keep}"]` : `[data-f="${f.dataset.f}"]`) : null;
+  // Where the cursor was in the box being typed in: a redraw must not send it back to the start.
+  let sel = null;
+  try { sel = key ? [f.selectionStart, f.selectionEnd] : null; } catch { /* not a text box */ }
   const scroll = [...root.querySelectorAll(".pr-scroll")].map((el) => el.scrollTop);
   draw();
-  for (const el of root.querySelectorAll("[data-keep]")) if (values.has(el.dataset.keep)) el.value = values.get(el.dataset.keep);
-  if (key) root.querySelector(key)?.focus();
+  for (const el of root.querySelectorAll("[data-keep]")) if (values.has(el.dataset.keep) && el.type !== "checkbox") el.value = values.get(el.dataset.keep);
+  if (key) {
+    const el = root.querySelector(key);
+    el?.focus();
+    try { if (sel && sel[0] != null) el.setSelectionRange(sel[0], sel[1]); } catch { /* not a text box */ }
+  }
   root.querySelectorAll(".pr-scroll").forEach((el, i) => { el.scrollTop = scroll[i] ?? 0; });
 }
 
