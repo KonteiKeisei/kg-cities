@@ -22,6 +22,7 @@ import { PhoneUI } from "./ui-phone.mjs";
 import { formatNumber, sameNumber } from "./phone-core.mjs";
 import { Payroll, jobsOf, saveJobs } from "./payroll.mjs";
 import { PayrollUI } from "./ui-payroll.mjs";
+import { openChainStores } from "./ui-chains.mjs";
 
 const MODULE_ID = "kg-cities";
 const SETTINGS = { look: "look", lean: "tilt", highDpi: "highDpi", businesses: "businesses", dayStart: "dayStart", nightStart: "nightStart" };
@@ -164,7 +165,11 @@ const card = new HoverCard({
   landmarks: landmarkOrAdded, search: searchData, isEditing: () => !!editor?.editing,
   openCard, enterScene: (lm, scene) => enterScene(cityId, lm, scene, false)
 });
-editor = new PoiEditor({ places, landmarks, search: searchData, card, api: projection, openCard });
+editor = new PoiEditor({
+  places, landmarks, search: searchData, card, api: projection, openCard,
+  // Today's drugstores as 1986 points of interest, linked to the GM's shop actors.
+  openChains: () => openChainStores({ places, landmarks, bounds: () => cityOf(canvas.scene)?.bounds ?? null })
+});
 const mapSearch = new MapSearch({ getLayer: () => layer, getPlaces: () => places.places, getLandmarks: () => drawnLandmarks(), data: searchData });
 
 /* ---------------------------------------- */
@@ -361,7 +366,7 @@ function currentLook() {
 /* ---------------------------------------- */
 
 /** Which local build is running (the browser console says, at load). */
-const BUILD = "2026-11-11 payroll";
+const BUILD = "2026-11-11 chain-stores";
 
 Hooks.once("init", () => {
   console.info(`kg-cities | ${game.modules.get(MODULE_ID)?.version} (build ${BUILD})`);

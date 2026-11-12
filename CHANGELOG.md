@@ -1,5 +1,10 @@
 # KG Cities changelog
 
+## 0.14.0
+
+- **Chain stores**: on the banner while editing points of interest, turn the map's drugstores into 1986 points of interest in one go. Today's CVS stay CVS; today's Walgreens and Rite Aids become **Brooks Drug** (keep some as Walgreens if you like). Each store is linked to your shop actor (found by name, or picked), and drawn on the map **with the actor's token** as a round badge in a gold rim. Running it again relinks and re-marks them and keeps their cards; Remove takes a chain off.
+- **Points of interest can be drawn with a picture** instead of the gold pin.
+
 ## 0.13.4
 
 - **Payroll lists only player characters**: a player's vehicles, companions and summons (an Eldritch Cannon) are left out. Drag any other actor in from the Actors sidebar to put them on the payroll, in a collapsible **Others** section; take them off again with the button beside their name.

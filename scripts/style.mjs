@@ -214,11 +214,19 @@ function landmarkPinLayers(P) {
       paint: { "circle-color": GLOW(P), "circle-opacity": 0.5, "circle-radius": exp([[11, 10], [15, 18], [19, 30]]), "circle-blur": 1 }
     },
     {
-      id: "landmark-pins", type: "circle", source: "landmarks", filter: part("pin"),
+      id: "landmark-pins", type: "circle", source: "landmarks", filter: ["all", part("pin"), ["!", ["has", "icon"]]],
       paint: {
         "circle-color": byTone(P, "RoofLit"),
         "circle-radius": exp([[11, 3.5], [15, 6], [19, 9]]),
         "circle-stroke-color": byTone(P, "WallDark"), "circle-stroke-width": 1.5
+      }
+    },
+    // Pins with a picture (a store's shop token): a round badge, loaded by the map layer when asked for.
+    {
+      id: "landmark-icons", type: "symbol", source: "landmarks", filter: ["all", part("pin"), ["has", "icon"]],
+      layout: {
+        "icon-image": ["get", "icon"], "icon-size": ["interpolate", ["linear"], ["zoom"], 11, 0.16, 14, 0.26, 16, 0.38, 19, 0.6],
+        "icon-allow-overlap": true, "icon-ignore-placement": true
       }
     }
   ];
@@ -230,7 +238,7 @@ function landmarkLabelLayers(P, zoomAt) {
   const layout = {
     "text-field": ["get", "name"], "text-font": MEDIUM, "text-max-width": 9,
     "text-size": ["interpolate", ["linear"], ["zoom"], 10, 12, 14, 14, 17, 15.5, 20, 17],
-    "text-offset": ["case", ["get", "pin"], ["literal", [0, 1.3]], ["literal", [0, 0]]],
+    "text-offset": ["case", ["has", "icon"], ["literal", [0, 2.5]], ["get", "pin"], ["literal", [0, 1.3]], ["literal", [0, 0]]],
     "text-allow-overlap": true
   };
   const tones = [

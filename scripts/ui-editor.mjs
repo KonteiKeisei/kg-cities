@@ -17,8 +17,8 @@ export class PoiEditor {
    * places: PlaceStore; landmarks: LandmarkStore; search: SearchData; card: HoverCard; api: lat/lon <-> scene;
    * openCard(lm, { edit }): open a landmark's place card.
    */
-  constructor({ places, landmarks, search, card, api, openCard }) {
-    Object.assign(this, { places, landmarks, search, card, api, openCard });
+  constructor({ places, landmarks, search, card, api, openCard, openChains = null }) {
+    Object.assign(this, { places, landmarks, search, card, api, openCard, openChains });
     this.layer = null;
     this.editing = false;
     this.click = null;
@@ -80,8 +80,10 @@ export class PoiEditor {
     this.banner.className = "kgc-ui kgc-panel kgc-banner";
     this.banner.innerHTML = `<span class="dot"></span><b>Editing points of interest</b>
       <span class="hint">Click a <b>label</b>, <b>landmark</b> or <b>building</b> · <b>Shift</b>-click for a pin</span>
-      <button type="button" class="btn pill primary">Done <span class="kbd">Esc</span></button>`;
-    this.banner.querySelector("button").addEventListener("click", () => this.setEditing(false));
+      ${this.openChains ? `<button type="button" class="btn pill" data-act="chains" data-tooltip="Today's CVS, Walgreens and Rite Aids as 1986 drugstores, linked to your shop actors"><i class="fa-solid fa-prescription-bottle-medical"></i> Chain stores</button>` : ""}
+      <button type="button" class="btn pill primary" data-act="done">Done <span class="kbd">Esc</span></button>`;
+    this.banner.querySelector('[data-act="done"]').addEventListener("click", () => this.setEditing(false));
+    this.banner.querySelector('[data-act="chains"]')?.addEventListener("click", () => this.openChains());
     document.body.append(this.banner);
   }
 

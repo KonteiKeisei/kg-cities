@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Chain stores harness</title>
+<!-- The Chain stores window (scripts/ui-chains.mjs) over a small stand-in for Foundry: a few
+     of today's drugstores, a few actors, a landmark list.
+     python tools/serve.py, then http://127.0.0.1:8779/tools/chains-harness.html -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="../styles/cities.css">
+<style>
+  body { margin: 0; min-height: 100vh; background: #2b3340; font-family: Signika, system-ui, sans-serif; }
+  .application { position: absolute; left: 30px; top: 30px; display: flex; flex-direction: column; }
+  .window-content { display: flex; flex-direction: column; }
+  .window-header { display: flex; gap: 8px; padding: 6px 10px; font-size: 13px; }
+</style>
+</head>
+<body>
+<script type="module">
+const actors = [
+  { uuid: "Actor.cvs", name: "CVS Pharmacy (shop)", type: "npc", prototypeToken: { texture: { src: "../assets/phones/payphone.svg" } } },
+  { uuid: "Actor.brooks", name: "Brooks Drug (shop)", type: "npc", prototypeToken: { texture: { src: "../assets/payroll/check.svg" } } },
+  { uuid: "Actor.wag", name: "Walgreens (shop)", type: "npc", prototypeToken: { texture: { src: "../assets/phones/payphone.svg" } } },
+  { uuid: "Actor.chandler", name: "Chandler", type: "character", prototypeToken: { texture: { src: "" } } }
+];
+let saved = [{ id: "seed:fenway", name: "Fenway Park", lat: 42.3467, lon: -71.0972 }];
+globalThis.game = { actors, i18n: { localize: (s) => s } };
+globalThis.fromUuidSync = (u) => actors.find((a) => a.uuid === u) ?? null;
+globalThis.ui = { notifications: { info: console.info, warn: console.warn } };
+globalThis.foundry = {
+  utils: { escapeHTML: (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])) },
+  applications: { api: {
+    DialogV2: { confirm: async () => true },
+    ApplicationV2: class {
+      constructor(o = {}) { this.options = { ...this.constructor.DEFAULT_OPTIONS, ...o }; }
+      render() {
+        if (!this.element) {
+          const el = document.createElement("div");
+          el.className = `application ${(this.options.classes ?? []).join(" ")}`;
+          el.style.width = `${this.options.position?.width}px`;
+          el.innerHTML = `<header class="window-header">${this.options.window.title}</header><section class="window-content"></section>`;
+          document.body.append(el);
+          this.element = el;
+        }
+        this._replaceHTML("", this.element.querySelector(".window-content"));
+        this.rendered = true;
+        return this;
+      }
+    }
+  } }
+};
+const raw = [
+  { id: "p1", name: "CVS Pharmacy", lat: 42.3535, lon: -71.0625 }, { id: "p2", name: "CVS", lat: 42.35352, lon: -71.06252 },
+  { id: "p3", name: "CVS Pharmacy", lat: 42.2210, lon: -71.0040 }, { id: "p4", name: "CVS Pharmacy", lat: 42.4630, lon: -71.0110 },
+  { id: "p5", name: "Walgreens", lat: 42.3490, lon: -71.0660 }, { id: "p6", name: "Walgreens", lat: 42.3770, lon: -71.2360 },
+  { id: "p7", name: "Rite Aid Pharmacy", lat: 42.2600, lon: -71.2300 }, { id: "p8", name: "CVS Pharmacy", lat: 44.0, lon: -71.0 }
+];
+const landmarks = { get list() { return saved; }, async save(list) { saved = structuredClone(list); app.render(); } };
+const { openChainStores } = await import("../scripts/ui-chains.mjs");
+const app = openChainStores({ places: { raw }, landmarks, bounds: () => ({ north: 42.55, south: 42.15, west: -71.35, east: -70.9 }) });
+window.saved = () => saved; window.app = app;
+</script>
+</body>
+</html>

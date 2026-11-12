@@ -35,6 +35,13 @@ See the [wiki](https://github.com/KonteiKeisei/kg-cities/wiki) for a full guide.
 - **Search** (Ctrl+F, or the magnifier in the token controls): landmarks, addresses ("193 Salem St"), streets and places, nearest first. Picking one pans there and makes it blink.
 - **Edit points of interest** (GM, the landmark tool in the token controls): click a label, landmark or building to edit it in a panel beside the sidebar: name, kind, shape, glow, who sees it, move, remove, and **Edit the card** for its text and links. Click a plain building or empty map for a quick menu (point of interest, safe haven, label, pin). Landmarks and label edits are kept per city, so a campaign can travel between cities.
 
+## Chain stores
+
+**Chain stores** (GM), on the banner while you edit points of interest, turns the city map's drugstores into 1986 points of interest in one go.
+- **Where they go:** today's stores stand in for 1986's, since no list of where the stores stood in 1986 survives. Today's **CVS** were CVS (a Massachusetts chain since 1963). Today's **Walgreens** and **Rite Aids** stand in for **Brooks Drug**, the New England chain of the day; many of them are Brooks's own old stores (Rite Aid bought Brooks in 2007, and Walgreens bought those stores in 2017). Walgreens itself came to Boston about 2000, but you can keep some of today's Walgreens as Walgreens if your Boston has them.
+- **What each store gets:** a 1986 name, your **shop actor** on its card (found by name: an actor called "CVS", "Brooks" or "Walgreens"; pick any other), and the **actor's token as its marker** on the map, a round badge in a gold rim. A store's two entries in the map data (shop and pharmacy counter) count once.
+- **Running it again** relinks and re-marks the stores, and keeps what you wrote on their cards. **Remove** takes a chain's stores off again.
+
 ## Phones and pagers
 
 Phones belong to places; pagers belong to people.

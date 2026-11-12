@@ -306,6 +306,9 @@ export class CityLayer {
       maxZoom: 24
     });
     this.map.on("render", () => this.#copy());
+    // A pin's picture (a store's shop token), loaded the first time the map draws it.
+    this.icons = new Set();
+    this.map.on("styleimagemissing", (e) => this.#loadIcon(e.id));
     // One warning per draw: a failing host would otherwise log every tile.
     let warned = false;
     this.map.on("error", (e) => {
@@ -326,6 +329,46 @@ export class CityLayer {
     this.#startPulse();
     this.#startTwinkle();
     this.update();
+  }
+
+  /**
+   * A pin's picture as a round badge: the image (a token's art) on a dark disc in a gold rim, 128
+   * px across. Pictures that fail to load get a plain gold badge, so the pin still shows.
+   */
+  async #loadIcon(id) {
+    const map = this.map;
+    if (!map || !id || this.icons.has(id)) return;
+    this.icons.add(id);
+    const S = 128, c = document.createElement("canvas");
+    c.width = c.height = S;
+    const ctx = c.getContext("2d");
+    ctx.beginPath(); ctx.arc(S / 2, S / 2, S / 2 - 6, 0, Math.PI * 2); ctx.fillStyle = "#1a2030"; ctx.fill();
+    try {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = /^(https?:|blob:|data:)/.test(id) ? id : foundry.utils.getRoute(id);
+      await img.decode();
+      const r = S / 2 - 10, k = Math.min((2 * r) / img.naturalWidth, (2 * r) / img.naturalHeight) * 1.08;
+      const w = img.naturalWidth * k, h = img.naturalHeight * k;
+      ctx.save(); ctx.beginPath(); ctx.arc(S / 2, S / 2, r, 0, Math.PI * 2); ctx.clip();
+      ctx.drawImage(img, (S - w) / 2, (S - h) / 2, w, h);
+      ctx.restore();
+    } catch (err) {
+      console.warn(`kg-cities | pin picture ${id} did not load`, err);
+    }
+    ctx.beginPath(); ctx.arc(S / 2, S / 2, S / 2 - 6, 0, Math.PI * 2);
+    ctx.lineWidth = 8; ctx.strokeStyle = "#ffc94a"; ctx.stroke();
+    if (this.map !== map || map.hasImage(id)) return;
+    let data;
+    try { data = ctx.getImageData(0, 0, S, S).data; } catch {
+      // A picture from another site without permission to read it: a plain badge instead.
+      const plain = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
+      plain.canvas.width = plain.canvas.height = S;
+      plain.beginPath(); plain.arc(S / 2, S / 2, S / 2 - 6, 0, Math.PI * 2); plain.fillStyle = "#1a2030"; plain.fill();
+      plain.lineWidth = 8; plain.strokeStyle = "#ffc94a"; plain.stroke();
+      data = plain.getImageData(0, 0, S, S).data;
+    }
+    try { map.addImage(id, { width: S, height: S, data: new Uint8Array(data.buffer) }, { pixelRatio: 1 }); } catch (err) { console.warn(`kg-cities | pin picture ${id}`, err); }
   }
 
   destroy() {

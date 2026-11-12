@@ -247,6 +247,8 @@ export function landmarkFeatures(landmarks, { lean = DEFAULT_LEAN } = {}) {
     // Tone: "gold" for points of interest, "haven" (blue) for the players' safe havens, "airport"
     // (violet) for airports.
     const props = { landmark: lm.id, name: lm.name, glow: lm.glow !== false, tone: ["haven", "airport"].includes(lm.tone) ? lm.tone : "gold" };
+    // A pin drawn as a picture (a chain store's shop actor's token) instead of the gold dot.
+    if (lm.icon) props.icon = lm.icon;
     // An airport's airfield, under everything else of it (hovering anywhere on it shows its card).
     if (lm.grounds) features.push({ type: "Feature", properties: { ...props, part: "grounds" }, geometry: { type: "Polygon", coordinates: [lm.grounds] } });
     const faces = landmarkFaces(lm);

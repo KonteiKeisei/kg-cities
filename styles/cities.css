@@ -822,3 +822,22 @@ a.kgc-link:hover { background: rgba(255, 201, 74, 0.22); text-shadow: none; }
 .kgc-payroll .pr-others-head:focus-visible { outline: 2px solid var(--kgc-gold); }
 .kgc-payroll .pr-drop { border: 1px dashed var(--kgc-line-2); border-radius: 8px; padding: 10px 8px; font-size: 11.5px; color: var(--kgc-faint); text-align: center; }
 .kgc-payroll .pr-drop.hot { border-color: var(--kgc-gold); color: var(--kgc-gold-text); background: rgba(255, 201, 74, 0.06); }
+/* Chain stores */
+.kgc-chains .window-content { padding: 0; }
+.kgc-chains .ch-body { padding: 12px 14px; display: grid; gap: 10px; }
+.kgc-chains .sb-table td small { display: block; color: var(--kgc-muted); font-size: 11.5px; margin-left: 24px; }
+.kgc-chains tr.off td:not(:first-child) { opacity: 0.45; }
+.kgc-chains .who { display: flex; align-items: center; gap: 6px; }
+.kgc-chains .who img { width: 30px; height: 30px; border: 1px solid var(--kgc-gold); border-radius: 50%; object-fit: cover; flex: none; background: #1a2030; }
+.kgc-chains .who select { flex: 1; min-width: 0; }
+.kgc-chains .pr-check-line { display: flex; align-items: center; gap: 8px; font-size: 13px; margin: 0; }
+.kgc-chains input[type="checkbox"] { width: 16px; height: 16px; margin: 0; }
+.kgc-chains .ch-foot { display: flex; align-items: center; gap: 8px; }
+.kgc-chains .ch-foot .grow { flex: 1; }
+.kgc-chains .ok { color: #8fe0a0; font-size: 13px; }
+.kgc-chains .warn { margin: 0; }
+.kgc-banner .btn.pill + .btn.pill { margin-left: 6px; }.kgc-chains .sb-table td:first-child { width: 170px; }
+.kgc-chains .sb-table td:first-child .pr-check-line { white-space: nowrap; }
+.kgc-chains tr.keep td { border-top: 0; padding-top: 0; }
+.kgc-chains tr.keep small { margin-left: 24px; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.kgc-chains input.tiny { width: 56px; height: 28px; }
