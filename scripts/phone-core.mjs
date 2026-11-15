@@ -61,18 +61,25 @@ export function sameNumber(a, b) {
  * A free number: 555-01XX first (the exchange set aside for fiction), then 555-XXXX. `taken`:
  * numbers already given out; `random`: a 0..1 source, for tests.
  */
-export function freeNumber(taken = [], random = Math.random) {
+export function freeNumber(taken = [], random = Math.random, area = "") {
   const used = (n) => taken.some((t) => sameNumber(t, n));
+  const full = (n) => formatNumber(withArea(n, area));
   const tries = [];
   for (let i = 0; i < 100; i++) tries.push(`5550${100 + i}`);
   for (let i = tries.length - 1; i > 0; i--) { const j = Math.floor(random() * (i + 1)); [tries[i], tries[j]] = [tries[j], tries[i]]; }
   const found = tries.find((n) => !used(n));
-  if (found) return formatNumber(found);
+  if (found) return full(found);
   for (let k = 0; k < 2000; k++) {
     const n = `555${String(Math.floor(random() * 10000)).padStart(4, "0")}`;
-    if (!used(n)) return formatNumber(n);
+    if (!used(n)) return full(n);
   }
   return null;
+}
+
+/** A seven-digit number with an area code put in front ("555-0142", "617" → "(617) 555-0142"); others as they are. */
+export function withArea(n, area = "") {
+  const d = digits(n), a = digits(area);
+  return /^\d{7}$/.test(d) && /^\d{3}$/.test(a) ? formatNumber(a + d) : formatNumber(n);
 }
 
 /**

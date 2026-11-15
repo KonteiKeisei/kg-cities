@@ -11,7 +11,7 @@
 import { makeFrame, metres, sceneToLatLon } from "./geo.mjs";
 import { groupMembers } from "./party.mjs";
 import { pay, walletValue } from "./money.mjs";
-import { DEVICES, OLD_MODELS, PAGER_MEMORY, PAGER_MODELS, REAL_MS, SERVICES, coinCopper, contact, digits, findContact, formatNumber, freeNumber, fromOldBook, fromOldLog, mergeBooks, pageFor, pushRecent, putContact, reach, sameNumber } from "./phone-core.mjs";
+import { DEVICES, OLD_MODELS, PAGER_MEMORY, PAGER_MODELS, REAL_MS, SERVICES, coinCopper, contact, digits, findContact, formatNumber, freeNumber, fromOldBook, fromOldLog, mergeBooks, pageFor, pushRecent, putContact, reach, sameNumber, withArea } from "./phone-core.mjs";
 
 const ID = "kg-cities";
 const SOCKET = `module.${ID}`;
@@ -106,7 +106,11 @@ export const placePhone = (city, id) => directory().find((e) => e.kind === "plac
 /** Every number given out, for picking a new one. */
 export const takenNumbers = () => directory().map((e) => e.number).filter(Boolean);
 /** A fresh number nobody has. */
-export const newNumber = () => freeNumber(takenNumbers());
+/** The area code new numbers are given (a world setting: Boston's 617 by default). */
+export function areaCode() {
+  try { return digits(game.settings.get(ID, "phoneAreaCode") ?? "617"); } catch { return "617"; }
+}
+export const newNumber = () => freeNumber(takenNumbers(), Math.random, areaCode());
 
 /* ---------------------------------------- */
 /*  Who is where                             */
@@ -620,6 +624,34 @@ export async function copyToDevice(item, c) {
   if (pagerOf(item) && list.length >= PAGER_MEMORY) return false;
   await setDeviceContacts(item, putContact(list, contact({ name: c.name, number: c.number, note: c.note ?? "" }, () => foundry.utils.randomID())));
   return true;
+}
+
+/**
+ * Numbers given out before the area code setting (0.15.3) were seven digits: once, the GM in
+ * charge puts the area code in front of each place's, payphone's, pager's and the GM's own. A
+ * number written in a book stays as written: dialled, it still reaches the same line.
+ */
+export async function addAreaCodes() {
+  if (!isPrimaryGM() || game.settings.get(ID, "areaCodesAdded")) return 0;
+  const area = areaCode(), fix = (n) => withArea(n, area), short = (n) => /^\d{7}$/.test(digits(n ?? ""));
+  let n = 0;
+  const all = clone(game.settings.get(ID, "landmarks") ?? {});
+  let changed = false;
+  for (const city of Object.values(all)) for (const lm of city?.list ?? []) if (lm.phone && short(lm.phone.number)) { lm.phone.number = fix(lm.phone.number); changed = true; n++; }
+  if (changed) await game.settings.set(ID, "landmarks", all);
+  for (const scene of game.scenes) {
+    const ups = scene.tiles.filter((t) => short(t.flags?.[ID]?.phone?.number)).map((t) => ({ _id: t.id, [`flags.${ID}.phone.number`]: fix(t.flags[ID].phone.number) }));
+    if (ups.length) { await scene.updateEmbeddedDocuments("Tile", ups); n += ups.length; }
+  }
+  for (const actor of game.actors) {
+    const ups = actor.items.filter((i) => short(pagerOf(i)?.number)).map((i) => ({ _id: i.id, [`flags.${ID}.pager.number`]: fix(pagerOf(i).number) }));
+    if (ups.length) { await actor.updateEmbeddedDocuments("Item", ups); n += ups.length; }
+  }
+  const mine = clone(game.settings.get(ID, "phoneNumbers") ?? []);
+  if (mine.some((x) => short(x.number))) { for (const x of mine) if (short(x.number)) { x.number = fix(x.number); n++; } await game.settings.set(ID, "phoneNumbers", mine); }
+  await game.settings.set(ID, "areaCodesAdded", true);
+  if (n) ui.notifications.info(`KG Cities: (${area}) put in front of ${n} phone and pager number${n === 1 ? "" : "s"}. Dialling them without it still works.`);
+  return n;
 }
 
 /**

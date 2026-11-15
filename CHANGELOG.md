@@ -1,5 +1,10 @@
 # KG Cities changelog
 
+## 0.15.3
+
+- **Click an entry in a black book or Rolodex to call it**: the phone the character is at pops up with the number dialled. **Right click** an entry for **Edit** or **Cross it out** (Take the card out).
+- **Every number KG Cities gives out has the area code**: (617) by default, set in the module settings (**Area code**) for other cities. Numbers already given to places, payphones, pagers and your own numbers get it put in front once, when you load the world. Dialling a number without it still reaches it.
+
 ## 0.15.2
 
 - **The switchboard's Pagers and books tab lists only player characters** to give a pager or book to: a player's vehicles, companions and summons (a motorcycle, an Eldritch Cannon) are left out, and out of the Places tab's "who is there" too. Drag any other actor onto the tab from the Actors sidebar to give one to an NPC; they are added under **Others**.

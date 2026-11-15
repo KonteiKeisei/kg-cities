@@ -63,7 +63,10 @@ function paperClass() {
     _replaceHTML(html, content) {
       if (!content.kgcBound) {
         content.kgcBound = true;
-        content.addEventListener("click", (e) => this.#click(e));
+        content.addEventListener("click", (e) => { this.#closeMenu(e); this.#click(e); });
+        // Right click an entry: Edit, or cross it out.
+        content.addEventListener("contextmenu", (e) => this.#menu(e));
+        content.addEventListener("keydown", (e) => { if (e.key === "Escape") this.#closeMenu(); });
         content.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.matches("[data-f]")) { e.preventDefault(); this.#save(); } });
         content.addEventListener("input", () => { if (this.err) { this.err = ""; this.element.querySelector(".pp-err")?.remove(); } });
       }
@@ -89,7 +92,7 @@ function paperClass() {
           ${this.err ? `<p class="pp-err">${esc(this.err)}</p>` : ""}
           <div class="pp-acts">${editing ? `<button type="button" class="btn small danger" data-act="cross">${this.rolodex ? "Take the card out" : "Cross it out"}</button><button type="button" class="btn small" data-act="cancel">Cancel</button>` : ""}<span class="grow"></span>
             <button type="button" class="btn small primary" data-act="save"><i class="fa-solid fa-pen"></i> ${verb}</button></div>
-          <p class="hint">Tap a number to call it from a phone ${esc(this.item?.parent?.name ?? "they")} ${this.item?.parent ? "is" : "are"} at. Click an entry to change it. Everything written here is remembered too, so a new book or pager starts with it.</p>
+          <p class="hint">Click an entry to call it from a phone ${esc(this.item?.parent?.name ?? "they")} ${this.item?.parent ? "is" : "are"} at. Right click it to change it or cross it out. Everything written here is remembered too, so a new book or pager starts with it.</p>
         </div>`;
     }
 
@@ -97,7 +100,7 @@ function paperClass() {
       const re = TABS.find((t) => t[0] === this.tab)?.[2];
       const rows = list.filter((c) => !re || re.test(c.name || "#"));
       const lines = Math.max(LINES, rows.length + 1);
-      const entry = (c) => `<div class="pp-line entry ${c.id === this.editing ? "on" : ""}" data-act="edit" data-id="${esc(c.id)}"><span class="who">${esc(c.name || "?")}${c.note ? ` <span class="note">(${esc(c.note)})</span>` : ""}</span><button type="button" class="dial" data-act="call" data-value="${esc(c.number)}" data-tooltip="Call it">${esc(formatNumber(c.number))}</button></div>`;
+      const entry = (c) => `<div class="pp-line entry ${c.id === this.editing ? "on" : ""}" data-act="call" data-value="${esc(c.number)}" data-id="${esc(c.id)}" data-tooltip="Call it (right click to change it)"><span class="who">${esc(c.name || "?")}${c.note ? ` <span class="note">(${esc(c.note)})</span>` : ""}</span><span class="dial">${esc(formatNumber(c.number))}</span></div>`;
       return `<div class="pp-cover"><div class="pp-stamp">${esc(this.item?.parent?.name ?? "")}</div>
         <nav class="pp-tabs">${TABS.map(([k, l]) => `<button type="button" class="${k === this.tab ? "on" : ""}" data-act="tab" data-value="${k}">${l}</button>`).join("")}</nav>
         <div class="pp-page hand">${Array.from({ length: lines }, (_, i) => (rows[i] ? entry(rows[i]) : `<div class="pp-line"></div>`)).join("")}</div></div>`;
@@ -112,8 +115,8 @@ function paperClass() {
         // The cards still to come stand up behind the front one, their tops showing; the ones
         // already flipped lie forward, below it.
         const t = d === 0 ? "translateY(54px)" : d > 0 ? `translateY(${54 - d * 18}px) scale(${1 - d * 0.05})` : `translateY(${224 + (Math.abs(d) - 1) * 8}px) rotateX(-55deg) scale(${1 - Math.abs(d) * 0.05})`;
-        return `<div class="pp-card hand ${d === 0 ? "front" : ""}" style="transform:${t};z-index:${10 - Math.abs(d)}" ${d === 0 ? `data-act="edit" data-id="${esc(c.id)}"` : `data-act="flip" data-value="${i}"`}>
-          <div class="head"><span class="who">${esc(c.name || "?")}</span><button type="button" class="dial" data-act="call" data-value="${esc(c.number)}" data-tooltip="Call it">${esc(formatNumber(c.number))}</button></div>
+        return `<div class="pp-card hand ${d === 0 ? "front" : ""}" style="transform:${t};z-index:${10 - Math.abs(d)}" ${d === 0 ? `data-act="call" data-value="${esc(c.number)}" data-id="${esc(c.id)}" data-tooltip="Call it (right click to change it)"` : `data-act="flip" data-value="${i}"`}>
+          <div class="head"><span class="who">${esc(c.name || "?")}</span><span class="dial">${esc(formatNumber(c.number))}</span></div>
           <div class="l">${esc(c.note ?? "")}</div><div class="l"></div><div class="l"></div><div class="notch"></div></div>`;
       }).join("");
       return `<div class="pp-rolo"><div class="pp-drum">${cards}</div>
@@ -143,10 +146,31 @@ function paperClass() {
 
     #clearForm() { for (const el of this.element.querySelectorAll("[data-f]")) el.value = ""; }
 
+    /** The right-click menu on an entry: Edit, and cross it out (take the card out). */
+    #menu(e) {
+      const entry = e.target.closest("[data-id]");
+      if (!entry) return;
+      e.preventDefault();
+      this.#closeMenu();
+      const content = this.element.querySelector(".window-content"), box = content.getBoundingClientRect();
+      const m = document.createElement("div");
+      m.className = "pp-menu";
+      m.innerHTML = `<button type="button" data-act="edit" data-id="${esc(entry.dataset.id)}"><i class="fa-solid fa-pen"></i> Edit</button>
+        <button type="button" data-act="cross" data-id="${esc(entry.dataset.id)}"><i class="fa-solid fa-strikethrough"></i> ${this.rolodex ? "Take the card out" : "Cross it out"}</button>`;
+      Object.assign(m.style, { left: `${Math.round(e.clientX - box.left)}px`, top: `${Math.round(e.clientY - box.top)}px` });
+      content.append(m);
+      m.querySelector("button")?.focus();
+    }
+    #closeMenu(e = null) {
+      if (e?.target?.closest?.(".pp-menu")) return;
+      this.element?.querySelector(".pp-menu")?.remove();
+    }
+
     async #click(e) {
       const b = e.target.closest("[data-act]");
       if (!b || b.disabled) return;
       const act = b.dataset.act;
+      if (b.closest(".pp-menu")) b.closest(".pp-menu").remove();
       if (act === "call") { e.stopPropagation(); return this.deps.callBack?.(b.dataset.value, this.item?.parent); }
       if (act === "tab") { this.tab = b.dataset.value; return this.redraw(); }
       if (act === "flip") { this.card = Number(b.dataset.value); this.editing = null; this.keepForm = true; this.#clearForm(); return this.redraw(); }
@@ -154,7 +178,7 @@ function paperClass() {
       if (act === "cancel") { this.editing = null; this.err = ""; this.keepForm = true; this.#clearForm(); return this.redraw(); }
       if (act === "save") return this.#save();
       if (act === "cross") {
-        const item = this.item, p = this.paper, c = (p?.contacts ?? []).find((x) => x.id === this.editing);
+        const item = this.item, p = this.paper, c = (p?.contacts ?? []).find((x) => x.id === (b.dataset.id ?? this.editing));
         if (!c) return;
         // Crossed out of the book; still remembered (a new book would bring it back: that is the GM's to forget).
         await item.update({ [`flags.${ID}.paper.contacts`]: (p.contacts ?? []).filter((x) => x.id !== c.id) });

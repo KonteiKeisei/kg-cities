@@ -17,7 +17,7 @@ import { openTravel } from "./ui-travel.mjs";
 import { RoadView } from "./ui-roadview.mjs";
 import { installFlashBar } from "./flash-bar.mjs";
 import { metres as metresBetween } from "./geo.mjs";
-import { DEVICES, Phones, directory as phoneDirectory, givePager, givePaper, giveBooksToTheEmptyHanded, migrateUnsleepingPagers, myDevices, myPagers, newNumber, phonesHere, placePhone, speakerAt, watchNewPagers } from "./phones.mjs";
+import { DEVICES, Phones, addAreaCodes, directory as phoneDirectory, givePager, givePaper, giveBooksToTheEmptyHanded, migrateUnsleepingPagers, myDevices, myPagers, newNumber, phonesHere, placePhone, speakerAt, watchNewPagers } from "./phones.mjs";
 import { PhoneUI } from "./ui-phone.mjs";
 import { formatNumber, sameNumber } from "./phone-core.mjs";
 import { Payroll, jobsOf, saveJobs } from "./payroll.mjs";
@@ -366,6 +366,8 @@ Hooks.once("ready", () => {
   migrateUnsleepingPagers()
     // Then: anyone who remembers numbers but carries nothing to keep them in gets a black book with them.
     .then(() => giveBooksToTheEmptyHanded())
+    // And seven-digit numbers given out before the area code setting get it in front, once.
+    .then(() => addAreaCodes())
     .then(() => phoneUI.refresh()).catch((err) => console.error(`${MODULE_ID} | Unsleeping Pagers migration`, err));
   if (game.users.activeGM?.isSelf) convertJournalLandmarks().catch((err) => console.error(`${MODULE_ID} | journal conversion`, err));
 });
@@ -459,6 +461,11 @@ Hooks.once("init", () => {
   // Phones: the GM's own numbers (people and businesses not on the map), how long a phone rings,
   // and each user's volume for rings, tones and pagers.
   register("phoneNumbers", { scope: "world", config: false, type: Array, default: [], onChange: () => phoneUI.refresh() });
+  register("phoneAreaCode", {
+    name: "Area code", hint: "Put in front of every phone and pager number KG Cities gives out (617 is Boston). Dialling a number without it still reaches it.",
+    scope: "world", config: true, type: String, default: "617"
+  });
+  register("areaCodesAdded", { scope: "world", config: false, type: Boolean, default: false });
   register("phoneRingSeconds", {
     name: "Phones ring for", hint: "Seconds a phone rings before the caller hears no answer.",
     scope: "world", config: true, type: Number, default: 30, range: { min: 10, max: 120, step: 5 }

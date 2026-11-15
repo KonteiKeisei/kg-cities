@@ -1,6 +1,16 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { PAGER_MEMORY, carriedNumbers, copyTargets } from "../scripts/phone-core.mjs";
+import { PAGER_MEMORY, carriedNumbers, copyTargets, freeNumber as freeNum, sameNumber as same, withArea } from "../scripts/phone-core.mjs";
+
+test("new numbers carry the area code; short ones still reach them", () => {
+  assert.equal(withArea("555-0142", "617"), "(617) 555-0142");
+  assert.equal(withArea("(212) 555-0142", "617"), "(212) 555-0142");
+  assert.equal(withArea("911", "617"), "911");
+  const n = freeNum(["555-0100"], () => 0, "617");
+  assert.match(n, /^\(617\) 555-01\d\d$/);
+  assert.ok(same(n, n.slice(6)));
+  assert.ok(!same(freeNum(["(617) 555-0100"], () => 0, "617"), "555-0100"));
+});
 
 test("a character's numbers: each once, from every device, with where it is kept", () => {
   const devices = [

@@ -934,4 +934,9 @@ a.kgc-link:hover { background: rgba(255, 201, 74, 0.22); text-shadow: none; }
 .kgc-device .yp .dev-list .pick { flex-wrap: wrap; }.kgc-device .dev-gm { background: rgba(20, 40, 70, 0.85); }
 .kgc-device .dev-gm .faint { color: #b9c6d8; }
 .kgc-device .dev-gm .mini-btn { background: #2d6ea3; border-color: #5aa6e0; color: #fff; }
-.kgc-device .dev-gm .mini-btn:hover { background: #3a82bd; }
+.kgc-device .dev-gm .mini-btn:hover { background: #3a82bd; }.kgc-paper-window .window-content { position: relative; }
+.kgc-paper-window .pp-line.entry, .kgc-paper-window .pp-card.front { cursor: pointer; }
+.kgc-paper-window .pp-menu { position: absolute; z-index: 20; display: grid; min-width: 150px; padding: 4px; border-radius: 8px; background: var(--kgc-panel); border: 1px solid var(--kgc-line-2); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); }
+.kgc-paper-window .pp-menu button { all: unset; cursor: pointer; padding: 6px 10px; border-radius: 6px; font-size: 13px; color: var(--kgc-text); }
+.kgc-paper-window .pp-menu button i { width: 18px; color: var(--kgc-muted); }
+.kgc-paper-window .pp-menu button:hover, .kgc-paper-window .pp-menu button:focus-visible { background: rgba(255, 255, 255, 0.08); outline: none; }
