@@ -11,6 +11,7 @@ use, copy, share and change for noncommercial purposes, not to be sold. It is bu
 | pbf, vector-tile, point-geometry (`lib/mvt`) | Mapbox, https://github.com/mapbox | BSD 3-Clause / ISC (`lib/mvt/LICENSE-*.txt`) |
 | Noto Sans font glyphs (`data/fonts`) | The Noto Project Authors, https://notofonts.github.io | SIL Open Font License 1.1 (`data/fonts/OFL.txt`) |
 | Phone and pager sounds (`assets/sounds/phone`: ring, dial tone, ringback, keypad tones, pager beep and vibrate) and the payphone and desk phone pictures (`assets/phones/payphone.webp`, `desk-phone.webp`) | Unsleeping Pagers (Unsleeping City Campaign), folded into this module | As that module's |
+| Just Another Hand font, the handwriting in the black books and Rolodexes (`assets/fonts/JustAnotherHand-Regular.ttf`) | Astigmatic (Brian J. Bonislawsky), via Google Fonts, https://fonts.google.com/specimen/Just+Another+Hand | Apache License 2.0 (`assets/fonts/JustAnotherHand-LICENSE.txt`) |
 | PMTiles format (the saved map's file format; the reader and writer here are this module's own) | Protomaps, https://github.com/protomaps/PMTiles | Specification: BSD 3-Clause |
 
 The build tools (`tools/`, not shipped) also used, to make the data:

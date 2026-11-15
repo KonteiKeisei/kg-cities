@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <rect x="58" y="26" width="150" height="204" rx="10" fill="#1d1b1a" stroke="#000" stroke-width="4"/>
+  <rect x="200" y="36" width="14" height="184" rx="4" fill="#f4efe1" stroke="#c9bfa1" stroke-width="2"/>
+  <line x1="203" y1="50" x2="211" y2="50" stroke="#9fc1e6" stroke-width="2"/>
+  <line x1="203" y1="70" x2="211" y2="70" stroke="#9fc1e6" stroke-width="2"/>
+  <line x1="203" y1="90" x2="211" y2="90" stroke="#9fc1e6" stroke-width="2"/>
+  <line x1="203" y1="110" x2="211" y2="110" stroke="#9fc1e6" stroke-width="2"/>
+  <line x1="203" y1="130" x2="211" y2="130" stroke="#9fc1e6" stroke-width="2"/>
+  <line x1="203" y1="150" x2="211" y2="150" stroke="#9fc1e6" stroke-width="2"/>
+  <line x1="203" y1="170" x2="211" y2="170" stroke="#9fc1e6" stroke-width="2"/>
+  <line x1="203" y1="190" x2="211" y2="190" stroke="#9fc1e6" stroke-width="2"/>
+  <rect x="70" y="26" width="8" height="204" fill="#2c2926"/>
+  <path d="M74 34 v188" stroke="#5a554f" stroke-width="2" stroke-dasharray="6 6"/>
+  <rect x="100" y="78" width="80" height="30" rx="3" fill="none" stroke="#c9b98a" stroke-width="3"/>
+  <text x="140" y="99" font-family="Georgia, serif" font-size="15" fill="#c9b98a" text-anchor="middle" letter-spacing="2">PHONES</text>
+  <rect x="180" y="150" width="34" height="18" rx="3" fill="#7a1f1f"/>
+</svg>

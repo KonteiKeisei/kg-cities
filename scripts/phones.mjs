@@ -11,7 +11,7 @@
 import { makeFrame, metres, sceneToLatLon } from "./geo.mjs";
 import { groupMembers } from "./party.mjs";
 import { pay, walletValue } from "./money.mjs";
-import { DEVICES, OLD_MODELS, PAGER_MODELS, REAL_MS, SERVICES, coinCopper, digits, findContact, formatNumber, freeNumber, fromOldBook, fromOldLog, mergeBooks, pageFor, pushRecent, reach, sameNumber } from "./phone-core.mjs";
+import { DEVICES, OLD_MODELS, PAGER_MEMORY, PAGER_MODELS, REAL_MS, SERVICES, coinCopper, contact, digits, findContact, formatNumber, freeNumber, fromOldBook, fromOldLog, mergeBooks, pageFor, pushRecent, putContact, reach, sameNumber } from "./phone-core.mjs";
 
 const ID = "kg-cities";
 const SOCKET = `module.${ID}`;
@@ -156,8 +156,21 @@ export function actorsAt(place) {
 /** The actor this user would speak as at a place (their character first), or null when they are not there. */
 export function speakerAt(place, user = game.user) {
   const here = actorsAt(place);
-  return myActors(user).find((a) => here.has(a)) ?? null;
+  return myActors(user).find((a) => here.has(a) || granted(a, place)) ?? null;
 }
+
+/**
+ * The GM opening a phone for a player lets their character use it for an hour, wherever their
+ * token is. Every client keeps the grants it is told of (the player's, to use it; the GM in
+ * charge's, to put the calls through). Key: actor id and the phone.
+ */
+const GRANT_MS = 60 * 60 * 1000;
+const grants = new Map();
+const grantKey = (actorId, place) => `${actorId}|${place?.city}|${place?.id}`;
+export function grant(actorId, city, id) { if (actorId) grants.set(grantKey(actorId, { city, id }), Date.now() + GRANT_MS); }
+export const granted = (actor, place) => !!actor && (grants.get(grantKey(actor.id, place)) ?? 0) > Date.now();
+/** Is this actor at the phone: standing there, or let use it by the GM. */
+export const atPhone = (actor, place) => !!actor && !!place && (actorsAt(place).has(actor) || granted(actor, place));
 
 /** The players (active, not GM) with a character at a place: the ones who hear it ring. */
 export function usersAt(place) {
@@ -215,7 +228,12 @@ export class Phones {
       if (msg.op === "paged") return this.#paged(msg);
       if (msg.op === "notice") { if (msg.userId === game.user.id) ui.notifications.info(msg.text); return; }
       // The GM opened a phone for this player (a Tile clicked on their behalf).
-      if (msg.op === "open") { if (msg.userId === game.user.id && game.users.get(msg.from)?.isGM) this.deps.onOpen?.(msg); return; }
+      if (msg.op === "open") {
+        if (!game.users.get(msg.from)?.isGM) return;
+        if (msg.actorId && msg.city) grant(msg.actorId, msg.city, msg.id);
+        if (msg.userId === game.user.id) this.deps.onOpen?.(msg);
+        return;
+      }
       if (isPrimaryGM()) this.#decide(msg).catch((err) => console.error(`${ID} | phone`, err));
     });
   }
@@ -304,7 +322,10 @@ export class Phones {
   }
 
   /** The GM opens a phone on a player's screen. */
-  openFor(userId, city, id) { game.socket.emit(SOCKET, { action: "phone", op: "open", userId, from: game.user.id, city, id }); }
+  openFor(userId, city, id, { uuid = null, actorId = null } = {}) {
+    if (actorId && city) grant(actorId, city, id);
+    game.socket.emit(SOCKET, { action: "phone", op: "open", userId, from: game.user.id, city, id, uuid, actorId });
+  }
 
   /** Let it ring, here only: the bell stops for this user. */
   silence(callId) { stopSound(`ring:${callId}`); }
@@ -357,7 +378,7 @@ export class Phones {
         if (!gm && !call.ringUsers?.includes(user.id)) return;
         // The one who answers must still be there.
         const actor = msg.actorId ? game.actors.get(msg.actorId) : null;
-        if (!gm && call.to.kind === "place" && !(actor && actorsAt(placePhone(call.to.city, call.to.id)).has(actor))) return this.#tell(user.id, "You are not at that phone any more.");
+        if (!gm && call.to.kind === "place" && !atPhone(actor, placePhone(call.to.city, call.to.id))) return this.#tell(user.id, "You are not at that phone any more.");
         if (call.coin && !(await this.#coin(call.from.actorId))) return this.#end(call, "coin");
         clearTimeout(this.timers.get(`ring:${call.id}`));
         clearTimeout(this.timers.get(`intercept:${call.id}`));
@@ -394,7 +415,7 @@ export class Phones {
       case "erase": {
         const place = placePhone(msg.city, msg.id);
         if (!place) return;
-        if (!user.isGM && !game.actors.some((a) => a.testUserPermission(user, "OWNER") && actorsAt(place).has(a))) return;
+        if (!user.isGM && !game.actors.some((a) => a.testUserPermission(user, "OWNER") && atPhone(a, place))) return;
         return setMessages(place, (place.messages ?? []).filter((m) => m.id !== msg.messageId));
       }
       case "page": return this.#page(call, msg, user);
@@ -415,7 +436,7 @@ export class Phones {
     // A player dials from a phone only when their character is there.
     if (!user.isGM) {
       const actor = game.actors.get(msg.actorId);
-      if (!actor?.testUserPermission(user, "OWNER") || !actorsAt(from).has(actor)) return this.#end(call, "gone");
+      if (!actor?.testUserPermission(user, "OWNER") || !atPhone(actor, from)) return this.#end(call, "gone");
     }
     const to = reach(msg.digits, directory());
     call.to = { ...to, number: to.number ? formatNumber(to.number) : formatNumber(msg.digits) };
@@ -527,16 +548,85 @@ export async function setPagerContacts(item, contacts) {
 /** Fill a pager's memory from its carrier's address book (adding what it lacks). Returns how many were added. */
 export async function restorePager(item) {
   const p = pagerOf(item), book = bookOf(item.parent);
-  const merged = mergeBooks(p.contacts ?? [], book);
+  const merged = mergeBooks(p.contacts ?? [], book).slice(0, Math.max(PAGER_MEMORY, (p.contacts ?? []).length));
   const added = merged.length - (p.contacts ?? []).length;
   if (added || merged.some((c, i) => c.name !== p.contacts?.[i]?.name)) await item.update({ [`flags.${ID}.pager.contacts`]: merged });
   return added;
 }
 
-/** The name a number goes by for this actor (their pager's memory, then their address book), or "". */
+/** The name a number goes by for this actor (the device's memory, then everything they carry, then their backup), or "". */
 export function nameFor(number, { actor = null, item = null } = {}) {
-  const c = findContact(pagerOf(item)?.contacts ?? [], number) ?? findContact(bookOf(actor ?? item?.parent), number);
+  const who = actor ?? item?.parent;
+  const c = findContact(contactsOf(item), number)
+    ?? devicesOn(who).map((d) => findContact(contactsOf(d), number)).find(Boolean)
+    ?? findContact(bookOf(who), number);
   return c?.name ?? "";
+}
+
+/* ---------------------------------------- */
+/*  Paper: a little black book, a Rolodex    */
+/* ---------------------------------------- */
+
+/** The paper books: no number, no limit, written in by hand. */
+export const PAPER = {
+  blackbook: { name: "Little black book", img: "assets/phones/blackbook.svg", text: "A pocket address book in black leather. Anyone holding it can read it." },
+  rolodex: { name: "Rolodex", img: "assets/phones/rolodex.svg", text: "A wheel of index cards, a name and number on each, with room for a note." }
+};
+/** An item's paper book { style, contacts }, or null. */
+export const paperOf = (item) => item?.flags?.[ID]?.paper ?? null;
+export const papersOn = (actor) => (actor?.items ?? []).filter((i) => paperOf(i));
+/** Everything an actor carries that keeps numbers: pagers, then paper books. */
+export const devicesOn = (actor) => [...pagersOn(actor), ...papersOn(actor)];
+export const myDevices = (user = game.user) => myActors(user).flatMap((a) => devicesOn(a));
+/** A device's numbers (a pager's memory or a book's pages). */
+export const contactsOf = (item) => pagerOf(item)?.contacts ?? paperOf(item)?.contacts ?? [];
+/** "pager" or "paper", for the copy rules (a pager's memory is limited). */
+export const deviceKind = (item) => (pagerOf(item) ? "pager" : paperOf(item) ? "paper" : null);
+/** What a device is called in a sentence: "pager", "black book", "Rolodex". */
+export const deviceWord = (item) => (pagerOf(item) ? "pager" : paperOf(item)?.style === "rolodex" ? "Rolodex" : "black book");
+
+/** Give an actor a little black book or a Rolodex, already holding what they remember. */
+export async function givePaper(actor, style = "blackbook") {
+  const s = PAPER[style] ?? PAPER.blackbook;
+  const type = pagerItemType();
+  const system = type === "loot" ? { description: { value: `<p>${s.text}</p>` }, quantity: 1, weight: { value: style === "rolodex" ? 2 : 0.1, units: "lb" }, type: { value: "trinket" } } : {};
+  const paper = { style: PAPER[style] ? style : "blackbook", contacts: clone(bookOf(actor)) };
+  const [item] = await actor.createEmbeddedDocuments("Item", [{ name: s.name, type, img: `modules/${ID}/${s.img}`, system, flags: { [ID]: { paper } } }]);
+  return item;
+}
+
+/** Save a device's numbers (a pager's or a book's), and copy them into what its carrier remembers. */
+export async function setDeviceContacts(item, contacts) {
+  if (pagerOf(item)) return setPagerContacts(item, contacts);
+  await item.update({ [`flags.${ID}.paper.contacts`]: contacts });
+  const actor = item.parent;
+  if (actor?.isOwner) await actor.setFlag(ID, "book", mergeBooks(bookOf(actor), contacts));
+}
+
+/** Copy a number into a device (a pager only while its memory has room). False when it can't. */
+export async function copyToDevice(item, c) {
+  const list = contactsOf(item);
+  if (findContact(list, c.number)) return true;
+  if (pagerOf(item) && list.length >= PAGER_MEMORY) return false;
+  await setDeviceContacts(item, putContact(list, contact({ name: c.name, number: c.number, note: c.note ?? "" }, () => foundry.utils.randomID())));
+  return true;
+}
+
+/**
+ * Characters played by someone who remember numbers but carry nothing to keep them in get a
+ * little black book with those numbers, once, so nobody's numbers vanish when address books
+ * became things you carry (0.15). The GM in charge, on load.
+ */
+export async function giveBooksToTheEmptyHanded() {
+  if (!isPrimaryGM()) return 0;
+  let n = 0;
+  for (const actor of game.actors) {
+    if (actor.type !== "character" || !actor.hasPlayerOwner || actor.flags?.[ID]?.paperGiven) continue;
+    if (bookOf(actor).length && !devicesOn(actor).length) { await givePaper(actor, "blackbook"); n++; }
+    await actor.setFlag(ID, "paperGiven", true);
+  }
+  if (n) ui.notifications.info(`KG Cities: ${n} character${n === 1 ? "" : "s"} who remembered numbers got a little black book with them in it.`);
+  return n;
 }
 
 /** A new pager arrives empty on an actor with an address book: it takes the book. The GM in charge does it. */

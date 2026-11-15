@@ -143,6 +143,29 @@ export function mergeBooks(book = [], extra = []) {
   return out;
 }
 
+/** How many numbers a pager's memory holds. A paper book holds any number. */
+export const PAGER_MEMORY = 20;
+
+/**
+ * Everything a character carries, as one list for a phone: each number once, named by the first
+ * device that names it, with the devices (ids) it is kept in. devices: [{ id, contacts }].
+ */
+export function carriedNumbers(devices = []) {
+  const out = [];
+  for (const d of devices) {
+    for (const c of d.contacts ?? []) {
+      const have = out.find((x) => sameNumber(x.number, c.number));
+      if (have) { have.in.push(d.id); if (!have.name && c.name) have.name = c.name; if (!have.note && c.note) have.note = c.note; }
+      else out.push({ ...c, in: [d.id] });
+    }
+  }
+  return sortBook(out);
+}
+
+/** The devices a number could be copied to: those without it, a pager only with room. devices: [{ id, kind, contacts }]. */
+export const copyTargets = (devices = [], number) =>
+  devices.filter((d) => !findContact(d.contacts ?? [], number) && (d.kind !== "pager" || (d.contacts ?? []).length < PAGER_MEMORY));
+
 /** The book with this contact set (by id, else by number), or removed when `remove`. */
 export function putContact(book = [], c, { remove = false } = {}) {
   const i = book.findIndex((x) => (c.id && x.id === c.id) || (!c.id && sameNumber(x.number, c.number)));

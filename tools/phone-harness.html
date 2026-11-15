@@ -49,6 +49,23 @@ const pager = {
   async update(d) { for (const [k, v] of Object.entries(d)) foundry.utils.setProperty(this, k, v); render(); }
 };
 items.set("i1", pager);
+// A little black book: no number, no limit, in handwriting.
+const book = {
+  id: "i2", uuid: "Actor.a1.Item.i2", name: "Little black book", img: "../assets/phones/blackbook.svg", parent: actor, isOwner: true,
+  flags: { "kg-cities": { paper: { style: "blackbook", contacts: [
+    { id: "b1", name: "City desk, the Globe", number: "555-0150", note: "" },
+    { id: "b2", name: "Deep Throat", number: "555-0199", note: "pay phone, after 10" },
+    { id: "b3", name: "Ma", number: "555-0110", note: "" }
+  ] } } },
+  async update(d) { for (const [k, v] of Object.entries(d)) foundry.utils.setProperty(this, k, v); render(); }
+};
+items.set("i2", book);
+actor.createEmbeddedDocuments = async (type, list) => list.map((data, n) => {
+  const id = `new${items.size}${n}`;
+  const it = { ...structuredClone(data), id, uuid: `Actor.a1.Item.${id}`, parent: actor, isOwner: true, async update(d) { for (const [k, v] of Object.entries(d)) foundry.utils.setProperty(this, k, v); render(); } };
+  it.img = it.img.replace(/^modules\/kg-cities\//, "../");
+  items.set(id, it); render(); return it;
+});
 const actors = new Coll([["a1", actor]]);
 const landmarks = { boston: { list: [
   { id: "p1", name: "Massachusetts General Hospital", lat: 42.3612, lon: -71.0569, phone: { kind: "line", number: "555-0120" }, visibility: "discovered" },
@@ -65,7 +82,10 @@ const scene = { id: "s1", tiles: [], flags: { "kg-cities": { city: "boston", bou
   tokens: [{ x: at.x - 50, y: at.y - 50, width: 1, height: 1, actor, actorId: "a1" }] };
 
 const user = { id: gm ? "gm" : "u1", name: gm ? "GM" : "Konte", isGM: gm, active: true, character: gm ? null : actor };
+// The other side, logged in too: the player (on the GM's page) or the GM (on the player's).
+const other = gm ? { id: "u1", name: "Konte", isGM: false, active: true, character: actor } : { id: "gm", name: "GM", isGM: true, active: true, character: null };
 const notes = [];
+const store = { pocketDock: {} };
 globalThis.foundry = {
   utils: {
     escapeHTML: (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])),
@@ -99,14 +119,19 @@ globalThis.foundry = {
   } } }
 };
 globalThis.game = {
-  user, users: Object.assign(new Coll([[user.id, user]]), { activeGM: { id: "gm" } }),
+  user, users: Object.assign(new Coll([[user.id, user], [other.id, other]]), { activeGM: { id: "gm" } }),
   actors, scenes: Object.assign([scene], { get: (id) => (scene.id === id ? scene : undefined) }),
-  settings: { get: (m, k) => ({ landmarks, phoneNumbers: [{ id: "n1", name: "Sal's Pizza", number: "555-0188", note: "Fence, back room" }], phoneRingSeconds: 30, phoneVolume: 0 }[k]) },
+  documentTypes: { Item: ["loot"] },
+  settings: {
+    get: (m, k) => (k in store ? store[k] : { landmarks, phoneNumbers: [{ id: "n1", name: "Sal's Pizza", number: "555-0188", note: "Fence, back room" }], phoneRingSeconds: 30, phoneVolume: 0 }[k]),
+    set: async (m, k, v) => { store[k] = structuredClone(v); }
+  },
   time: { worldTime: 0 }, socket: { on() {}, emit(_, m) { notes.push(m); } }
 };
 globalThis.ui = { notifications: { info: console.info, warn: console.warn } };
 globalThis.Hooks = { on() {}, once() {}, callAll() {} };
-globalThis.fromUuidSync = (u) => (u === pager.uuid ? pager : null);
+globalThis.fromUuidSync = (u) => [...items.values()].find((i) => i.uuid === u) ?? null;
+globalThis.CSS ??= { escape: (s) => s };
 globalThis.ChatMessage = { create: console.info, getSpeaker: () => ({}) };
 
 const { Phones } = await import("../scripts/phones.mjs");
@@ -129,7 +154,9 @@ const states = {
 };
 const bar = document.getElementById("controls");
 for (const [label, fn] of Object.entries(states)) { const b = document.createElement("button"); b.textContent = label; b.onclick = fn; bar.append(b); }
-for (const [label, fn] of Object.entries({ "Desk phone": () => phoneUI.openPlace("boston", "p1"), "Payphone": () => phoneUI.openPlace("boston", "p2"), "Pager": () => phoneUI.openPager(pager), ...(gm ? { "Switchboard": () => phoneUI.switchboard() } : {}) })) {
+for (const [label, fn] of Object.entries({ "Desk phone": () => phoneUI.openPlace("boston", "p1"), "Payphone": () => phoneUI.openPlace("boston", "p2"), "Pager": () => phoneUI.openPager(pager), "Black book": () => phoneUI.openPaper(book),
+  "Rolodex": async () => { const { givePaper } = await import("../scripts/phones.mjs"); const it = [...items.values()].find((i) => i.flags?.["kg-cities"]?.paper?.style === "rolodex") ?? await givePaper(actor, "rolodex"); phoneUI.openPaper(it); },
+  ...(gm ? { "Switchboard": () => phoneUI.switchboard() } : {}) })) {
   const b = document.createElement("button"); b.textContent = label; b.onclick = fn; bar.append(b);
 }
 if (gm) { phoneUI.switchboard(); phoneUI.openPlace("boston", "p1"); }

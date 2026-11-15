@@ -841,3 +841,97 @@ a.kgc-link:hover { background: rgba(255, 201, 74, 0.22); text-shadow: none; }
 .kgc-chains tr.keep td { border-top: 0; padding-top: 0; }
 .kgc-chains tr.keep small { margin-left: 24px; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
 .kgc-chains input.tiny { width: 56px; height: 28px; }
+/* ---------------------------------------- */
+/*  Handwriting, paper books, pocket dock    */
+/* ---------------------------------------- */
+
+/* Just Another Hand, by Astigmatic (Apache 2.0), shipped with the module: assets/fonts. */
+@font-face { font-family: "KGC Hand"; src: url("../assets/fonts/JustAnotherHand-Regular.ttf") format("truetype"); font-display: swap; }
+.kgc-ui .hand, .kgc-ui .hand * { font-family: "KGC Hand", "Just Another Hand", cursive; }
+
+.kgc-paper-window.application { background: var(--kgc-panel); color: var(--kgc-text); border: 1px solid var(--kgc-line-2); border-radius: var(--kgc-radius); box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55); }
+.kgc-paper-window .window-header { background: rgba(0, 0, 0, 0.3); color: var(--kgc-text); border-bottom: 1px solid var(--kgc-line); }
+.kgc-paper-window .window-content { padding: 12px; display: grid; gap: 10px; background: none; color: var(--kgc-text); }
+.kgc-paper-window input { height: 32px; border: 1px solid var(--kgc-line-2); border-radius: 7px; background: rgba(255, 255, 255, 0.05); color: var(--kgc-text); padding: 0 9px; font-size: 13.5px; width: 100%; }
+.kgc-paper-window .btn { width: auto; }
+
+/* The little black book: ruled cream pages in a black leather cover. */
+.kgc-paper-window .pp-cover { position: relative; background: #1d1b1a; border-radius: 10px; padding: 10px 10px 12px 22px; box-shadow: inset 0 0 0 1px #000; }
+.kgc-paper-window .pp-cover::before { content: ""; position: absolute; left: 8px; top: 10px; bottom: 10px; width: 3px; border-radius: 2px; background: repeating-linear-gradient(#5a554f 0 6px, #1d1b1a 6px 12px); }
+.kgc-paper-window .pp-stamp { color: #c9b98a; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; margin: 0 0 6px 2px; }
+.kgc-paper-window .pp-tabs { display: flex; gap: 3px; }
+.kgc-paper-window .pp-tabs button { all: unset; cursor: pointer; font-size: 11px; background: #e9e1c7; color: #5b5234; border-radius: 3px 3px 0 0; padding: 1px 6px; }
+.kgc-paper-window .pp-tabs button.on { background: #fbf7ea; color: #1f2a52; }
+.kgc-paper-window .pp-tabs button:focus-visible { outline: 2px solid var(--kgc-gold); }
+.kgc-paper-window .pp-page { --line: 26px; color: #1f2a52; border-radius: 3px; padding: 6px 10px 10px 38px; box-shadow: inset 0 0 0 1px #e3dcc6;
+  background-color: #fbf7ea;
+  background-image: linear-gradient(90deg, transparent 30px, #e48b8b 30px, #e48b8b 31.5px, transparent 31.5px),
+    repeating-linear-gradient(transparent 0 calc(var(--line) - 1px), #9fc1e6 calc(var(--line) - 1px) var(--line)),
+    radial-gradient(circle at 20% 30%, rgba(120, 100, 60, 0.07), transparent 60%), radial-gradient(circle at 80% 75%, rgba(120, 100, 60, 0.06), transparent 50%);
+  background-position: 0 0, 0 6px, 0 0, 0 0; }
+.kgc-paper-window .pp-line { height: 26px; line-height: 26px; display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; font-size: 23px; }
+.kgc-paper-window .pp-line.entry { cursor: pointer; border-radius: 3px; }
+.kgc-paper-window .pp-line.entry:hover, .kgc-paper-window .pp-line.entry.on { background: rgba(31, 42, 82, 0.07); }
+.kgc-paper-window .pp-line .who { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kgc-paper-window .pp-line .note { font-size: 18px; color: #4a5a8a; }
+.kgc-paper-window .dial { all: unset; cursor: pointer; flex: none; color: #1a3a8f; font-size: 22px; letter-spacing: 0.02em; border-bottom: 1px dashed transparent; }
+.kgc-paper-window .dial:hover, .kgc-paper-window .dial:focus-visible { border-bottom-color: #1a3a8f; outline: none; }
+
+/* The Rolodex: index cards on a wheel. */
+.kgc-paper-window .pp-rolo { background: #2a2f36; border-radius: 10px; padding: 10px; }
+.kgc-paper-window .pp-drum { position: relative; height: 250px; perspective: 600px; overflow: hidden; }
+.kgc-paper-window .pp-card { position: absolute; left: 6px; right: 6px; height: 160px; border-radius: 6px; color: #1f2a52; padding: 4px 12px; transform-origin: 50% 120%; transition: transform 0.25s; cursor: pointer;
+  background-color: #fffdf6; box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25), 0 0 0 1px #ddd6c2;
+  background-image: linear-gradient(transparent 30px, #e48b8b 30px, #e48b8b 31.5px, transparent 31.5px), repeating-linear-gradient(transparent 0 25px, #9fc1e6 25px 26px);
+  background-position: 0 0, 0 38px; }
+.kgc-paper-window .pp-card.only { transform: translateY(54px); cursor: default; }
+.kgc-paper-window .pp-card .head { display: flex; justify-content: space-between; align-items: flex-end; height: 30px; gap: 8px; font-size: 27px; }
+.kgc-paper-window .pp-card .head .dial { font-size: 24px; }
+.kgc-paper-window .pp-card .l { font-size: 21px; height: 26px; line-height: 26px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.kgc-paper-window .pp-card .notch { position: absolute; bottom: -1px; left: 50%; width: 46px; height: 10px; margin-left: -23px; background: #2a2f36; border-radius: 6px 6px 0 0; }
+.kgc-paper-window .pp-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; color: #c9ced6; font-size: 12px; }
+.kgc-paper-window .pp-nav button { all: unset; cursor: pointer; padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.15); }
+.kgc-paper-window .pp-nav button[disabled] { opacity: 0.35; cursor: default; }
+
+.kgc-paper-window .pp-form { display: grid; gap: 6px; }
+.kgc-paper-window .pp-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--kgc-muted); font-weight: 600; }
+.kgc-paper-window .pp-fields { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 6px; }
+.kgc-paper-window .pp-acts { display: flex; gap: 6px; align-items: center; }
+.kgc-paper-window .pp-acts .grow { flex: 1; }
+.kgc-paper-window .pp-err { margin: 0; color: var(--kgc-danger); font-size: 12.5px; }
+.kgc-paper-window .hint { margin: 0; font-size: 12px; color: var(--kgc-muted); }
+
+/* A phone's lower pane: whose numbers, kept where, copied where. */
+.kgc-device .dev-gm { display: flex; gap: 6px; align-items: center; margin: 0 0 8px; padding: 6px; border-radius: 8px; background: rgba(76, 201, 255, 0.08); }
+.kgc-device .dev-gm select { flex: 1; min-width: 0; height: 30px; }
+.kgc-device .dev-gm .mini-btn { flex: none; height: 30px; padding: 0 10px; border-radius: 7px; border: 1px solid rgba(76, 201, 255, 0.45); background: rgba(76, 201, 255, 0.12); color: var(--kgc-text); cursor: pointer; font-size: 12.5px; white-space: nowrap; }
+.kgc-device .dev-gm .mini-btn:hover { background: rgba(76, 201, 255, 0.22); }
+.kgc-device .dev-list .tags { flex: none; display: inline-flex; gap: 3px; }
+.kgc-device .dev-list .tag { font: 600 10px/1.6 Signika, sans-serif; padding: 0 5px; border-radius: 4px; background: rgba(255, 201, 74, 0.16); color: #ffd98a; text-transform: lowercase; }
+.kgc-device .dev-list .tag.pager { background: rgba(76, 201, 255, 0.16); color: #9fe1ff; }
+.kgc-device .dev-list .copy { flex: none; height: 26px; max-width: 120px; font-size: 12px; padding: 0 4px; }
+.kgc-device .add-num { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+.kgc-device .add-num select { grid-column: 1; height: 30px; }
+.kgc-device .add-num .btn { grid-column: 2; }
+.kgc-device .yp input { width: 100%; margin-bottom: 6px; }
+
+/* The pocket dock: everything a player's character carries. */
+#kgc-pocket-dock { position: fixed; z-index: 90; display: inline-flex; align-items: center; gap: 4px; padding: 4px; }
+#kgc-pocket-dock .grip { cursor: grab; color: var(--kgc-faint); padding: 4px 3px; font-size: 12px; }
+#kgc-pocket-dock.locked .grip { cursor: default; }
+#kgc-pocket-dock .lock { all: unset; cursor: pointer; color: var(--kgc-faint); padding: 4px; font-size: 11px; }
+#kgc-pocket-dock .lock:hover, #kgc-pocket-dock .lock:focus-visible { color: var(--kgc-gold); }
+#kgc-pocket-dock .pocket { all: unset; position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: 8px; cursor: pointer; color: var(--kgc-text); font-size: 18px; }
+#kgc-pocket-dock .pocket:hover, #kgc-pocket-dock .pocket:focus-visible { background: rgba(255, 255, 255, 0.07); outline: none; }
+#kgc-pocket-dock .pocket img { width: 26px; height: 26px; border: 0; }
+#kgc-pocket-dock .dock-lcd { padding: 3px 8px; border-radius: 4px; background: #a9b58c; color: #1d2714; font: 700 12px "Courier New", monospace; box-shadow: inset 1px 1px 4px rgba(0, 0, 0, 0.35); }
+#kgc-pocket-dock .dock-badge { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--kgc-danger); color: #fff; font: 700 11px/18px Signika, sans-serif; text-align: center; }
+#kgc-pocket-dock .pocket.buzz { animation: kgc-buzz 0.12s linear 12; }
+@media (prefers-reduced-motion: reduce) { #kgc-pocket-dock .pocket.buzz { animation: none; } }.kgc-device .dev-list .pick:has(.tags) { flex-wrap: wrap; row-gap: 0; }
+.kgc-device .dev-list .pick:has(.tags) > span:first-child { flex: 1 0 100%; }
+.kgc-device .dev-list .pick:has(.tags) .tags { margin-left: auto; }
+.kgc-device .dev-list .copy { max-width: 96px; align-self: center; }
+.kgc-device .yp .dev-list .pick { flex-wrap: wrap; }.kgc-device .dev-gm { background: rgba(20, 40, 70, 0.85); }
+.kgc-device .dev-gm .faint { color: #b9c6d8; }
+.kgc-device .dev-gm .mini-btn { background: #2d6ea3; border-color: #5aa6e0; color: #fff; }
+.kgc-device .dev-gm .mini-btn:hover { background: #3a82bd; }

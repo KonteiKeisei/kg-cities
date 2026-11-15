@@ -6,11 +6,13 @@
 
 import {
   DEVICES, ENDINGS, PAGER_MODELS, SERVICES, TILE, actorsAt, makeTilePhone, setTilePhone, bookOf, directory, formatNumber, givePager, myPagers, nameFor,
-  newNumber, pagerOf, phonesHere, placePhone, restorePager, sameNumber, setPagerContacts, sound, SOUND, speakerAt, stopSound
+  newNumber, pagerOf, phonesHere, placePhone, restorePager, sameNumber, setPagerContacts, sound, SOUND, speakerAt, stopSound, usersAt,
+  PAPER, contactsOf, copyToDevice, deviceKind, deviceWord, devicesOn, givePaper, myActors, myDevices, paperOf, setDeviceContacts
 } from "./phones.mjs";
-import { contact, coinCopper, digits, duplicates, findContact, mergeBooks, putContact, sortBook } from "./phone-core.mjs";
+import { PAGER_MEMORY, carriedNumbers, contact, coinCopper, copyTargets, digits, duplicates, findContact, mergeBooks, putContact, sortBook } from "./phone-core.mjs";
 import { formatMoney, walletValue } from "./money.mjs";
 import { uiBounds } from "./ui-trail.mjs";
+import { openPaper as openPaperWindow, refreshPaper } from "./ui-paper.mjs";
 
 const ID = "kg-cities";
 const esc = (s) => foundry.utils.escapeHTML(String(s ?? ""));
@@ -101,7 +103,10 @@ export class PhoneUI {
       this.strip();
       shrinkPlacedPhones().catch((err) => console.warn(`${ID} | resizing placed phones`, err));
     });
-    for (const h of ["updateItem", "createItem", "deleteItem", "updateUser"]) Hooks.on(h, (doc) => { if (h !== "updateUser" || doc === game.user) redrawDock(); if (h.endsWith("Item") && pagerOf(doc)) this.refresh(); });
+    for (const h of ["updateItem", "createItem", "deleteItem", "updateUser"]) Hooks.on(h, (doc) => {
+      if (h !== "updateUser" || doc === game.user) redrawDock();
+      if (h.endsWith("Item") && (pagerOf(doc) || paperOf(doc))) { this.refresh(); refreshPaper(); }
+    });
     Hooks.on("updateActor", (a, ch) => { if (foundry.utils.hasProperty(ch, `flags.${ID}.book`) || "system" in ch) this.refresh(); });
     for (const h of ["collapseSidebar", "renderSidebar", "renderHotbar", "canvasReady"]) Hooks.on(h, () => this.#placeDock());
     window.addEventListener("resize", () => this.#placeDock());
@@ -114,7 +119,8 @@ export class PhoneUI {
     // Tokens moving change who is at a phone.
     for (const h of ["updateToken", "createToken", "deleteToken", "canvasReady"]) Hooks.on(h, () => this.refresh({ only: "place" }));
     // The GM's numbers and the places' phones are world settings.
-    setInterval(() => { for (const app of this.windows.values()) app.tick?.(); this.board?.tick?.(); this.#tickStrip(); }, 1000);
+    // Once a second: the clocks, and the dock stepping round a street view that opened or closed.
+    setInterval(() => { for (const app of this.windows.values()) app.tick?.(); this.board?.tick?.(); this.#tickStrip(); this.#placeDock(); }, 1000);
   }
 
   /** Redraw every open device window (and the switchboard). */
@@ -155,7 +161,7 @@ export class PhoneUI {
     const alert = p.alert ?? "beep";
     if (alert === "beep") sound(SOUND.beep);
     if (alert !== "silent") sound(SOUND.vibrate, { vol: alert === "vibrate" ? 1 : 0.5 });
-    const dock = document.getElementById("kgc-pager-dock");
+    const dock = document.querySelector(`#kgc-pocket-dock .pocket[data-uuid="${CSS.escape(item.uuid)}"]`);
     dock?.classList.remove("buzz");
     void dock?.offsetWidth;
     dock?.classList.add("buzz");
@@ -275,7 +281,11 @@ export class PhoneUI {
   }
 
   /** The GM opened a phone for this player. */
-  onOpen(msg) { return this.#open(`place:${msg.city}:${msg.id}`, { kind: "place", city: msg.city, id: msg.id }); }
+  onOpen(msg) {
+    // A pager the GM opened for its carrier.
+    if (msg.uuid) { const item = fromUuidSync(msg.uuid, { strict: false }); return item ? this.openPager(item) : null; }
+    return this.#open(`place:${msg.city}:${msg.id}`, { kind: "place", city: msg.city, id: msg.id });
+  }
 
   /** This player's pager (the first, when they carry several). */
   openMyPager() {
@@ -329,35 +339,105 @@ export class PhoneUI {
   /*  The pager dock (players with a pager)    */
   /* ---------------------------------------- */
 
+  /** The pocket dock: one button per device the player's characters carry (pagers, black books, Rolodexes). */
   dock() {
-    const pagers = game.user.isGM ? [] : myPagers();
-    // The token controls' Pager button comes and goes with the pager.
-    if (this.pagerCount !== undefined && !!this.pagerCount !== !!pagers.length) ui.controls?.render?.();
-    this.pagerCount = pagers.length;
-    let el = document.getElementById("kgc-pager-dock");
-    if (!pagers.length) { el?.remove(); return; }
+    const devices = game.user.isGM ? [] : myDevices();
+    // The token controls' button comes and goes with the devices.
+    if (this.deviceCount !== undefined && !!this.deviceCount !== !!devices.length) ui.controls?.render?.();
+    this.deviceCount = devices.length;
+    let el = document.getElementById("kgc-pocket-dock");
+    if (!devices.length) { el?.remove(); return; }
     if (!el) {
-      el = document.createElement("button");
-      el.type = "button";
-      el.id = "kgc-pager-dock";
+      el = document.createElement("div");
+      el.id = "kgc-pocket-dock";
       el.className = "kgc-ui kgc-panel";
-      el.addEventListener("click", () => this.openPager(myPagers()[0]));
-      el.addEventListener("animationend", () => el.classList.remove("buzz"));
+      el.addEventListener("click", (e) => {
+        if (e.target.closest(".lock")) return this.#lockDock();
+        const b = e.target.closest(".pocket");
+        if (!b) return;
+        const item = fromUuidSync(b.dataset.uuid, { strict: false });
+        if (pagerOf(item)) this.openPager(item); else if (paperOf(item)) this.openPaper(item);
+      });
+      el.addEventListener("animationend", (e) => e.target.classList?.remove("buzz"));
+      el.addEventListener("pointerdown", (e) => { if (e.target.closest(".grip")) this.#dragDock(e); });
       document.body.append(el);
     }
-    const p = pagerOf(pagers[0]), unread = pagers.reduce((n, i) => n + (pagerOf(i).unread ?? 0), 0);
-    el.dataset.tooltip = `${pagers[0].parent.name}'s pager, ${formatNumber(p.number)}`;
-    el.setAttribute("aria-label", `Pager${unread ? `, ${unread} new` : ""}`);
-    el.innerHTML = `<span class="dock-lcd">${unread ? `${unread} NEW` : esc(clock())}</span><i class="fa-solid fa-pager"></i>${unread ? `<span class="dock-badge">${unread}</span>` : ""}`;
+    const saved = this.#dockSpot();
+    el.classList.toggle("locked", !!saved.locked);
+    const several = new Set(devices.map((d) => d.parent?.id)).size > 1;
+    el.innerHTML = `<span class="grip" data-tooltip="${saved.locked ? "Locked" : "Drag to move"}"><i class="fa-solid fa-grip-vertical"></i></span>${devices.map((d) => {
+      const whose = several ? `${d.parent.name}'s ` : "";
+      if (pagerOf(d)) {
+        const p = pagerOf(d), unread = p.unread ?? 0;
+        return `<button type="button" class="pocket" data-uuid="${d.uuid}" data-tooltip="${esc(`${whose}${d.name}, ${formatNumber(p.number)}`)}" aria-label="${esc(`${whose}pager${unread ? `, ${unread} new` : ""}`)}"><span class="dock-lcd">${unread ? `${unread} NEW` : esc(clock())}</span><i class="fa-solid fa-pager"></i>${unread ? `<span class="dock-badge">${unread}</span>` : ""}</button>`;
+      }
+      return `<button type="button" class="pocket" data-uuid="${d.uuid}" data-tooltip="${esc(`${whose}${d.name}`)}" aria-label="${esc(`${whose}${d.name}`)}"><img src="${esc(d.img)}" alt=""></button>`;
+    }).join("")}<button type="button" class="lock" aria-label="${saved.locked ? "Unlock the dock" : "Lock the dock where it is"}" data-tooltip="${saved.locked ? "Unlock" : "Lock here"}"><i class="fa-solid fa-${saved.locked ? "lock" : "lock-open"}"></i></button>`;
     this.#placeDock();
   }
 
+  #dockSpot() { try { return game.settings.get(ID, "pocketDock") ?? {}; } catch { return {}; } }
+
+  /**
+   * Where the dock sits: where the player dragged it, else the map's bottom right corner, and
+   * up above the street view (or KG Transit's corner views) while one is open there.
+   */
   #placeDock() {
-    const el = document.getElementById("kgc-pager-dock");
-    if (!el) return;
+    const el = document.getElementById("kgc-pocket-dock");
+    if (!el || this.draggingDock) return;
+    const s = this.#dockSpot(), w = el.offsetWidth || 160, h = el.offsetHeight || 40;
+    if (Number.isFinite(s.left) && Number.isFinite(s.top)) {
+      Object.assign(el.style, { left: `${Math.round(Math.max(4, Math.min(window.innerWidth - w - 4, s.left)))}px`, top: `${Math.round(Math.max(4, Math.min(window.innerHeight - h - 4, s.top)))}px`, right: "auto", bottom: "auto" });
+      return;
+    }
     const b = uiBounds();
-    el.style.right = `${Math.max(8, window.innerWidth - b.right + 12)}px`;
-    el.style.bottom = `${Math.max(8, window.innerHeight - b.bottom + 12)}px`;
+    let right = Math.max(8, window.innerWidth - b.right + 12), bottom = Math.max(8, window.innerHeight - b.bottom + 12);
+    // The street view is fixed in place, so it is "showing" when it has a size on screen.
+    const rv = document.querySelector(".kgc-roadview:not(.expanded)"), rr = rv?.getBoundingClientRect();
+    if (rr?.width && rr.height && getComputedStyle(rv).visibility !== "hidden") {
+      const r = rr;
+      if (r.left < window.innerWidth - right && r.right > window.innerWidth - right - w) bottom = Math.max(bottom, window.innerHeight - r.top + 8);
+    } else {
+      try { const spot = game.modules.get("kg-transit")?.active ? game.modules.get("kg-transit").api?.cornerSpot?.(12, w) : null; if (spot) { right = spot.right; bottom = spot.bottom; } } catch { /* older KG Transit */ }
+    }
+    Object.assign(el.style, { right: `${right}px`, bottom: `${bottom}px`, left: "auto", top: "auto" });
+  }
+
+  #dragDock(e) {
+    const el = document.getElementById("kgc-pocket-dock");
+    if (!el || this.#dockSpot().locked) return;
+    e.preventDefault();
+    const r = el.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top;
+    this.draggingDock = true;
+    const move = (ev) => Object.assign(el.style, { left: `${Math.round(ev.clientX - dx)}px`, top: `${Math.round(ev.clientY - dy)}px`, right: "auto", bottom: "auto" });
+    const up = async () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      this.draggingDock = false;
+      const q = el.getBoundingClientRect();
+      await game.settings.set(ID, "pocketDock", { ...this.#dockSpot(), left: q.left, top: q.top });
+      this.#placeDock();
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  }
+
+  async #lockDock() {
+    const s = this.#dockSpot();
+    const el = document.getElementById("kgc-pocket-dock"), q = el?.getBoundingClientRect();
+    // Locking where it is fixes that spot; unlocking keeps it there, now draggable.
+    await game.settings.set(ID, "pocketDock", { ...s, locked: !s.locked, ...(q && !Number.isFinite(s.left) && !s.locked ? { left: q.left, top: q.top } : {}) });
+    this.dock();
+  }
+
+  /** A paper book's window. */
+  openPaper(item) { return openPaperWindow(item, { callBack: (n) => this.callBack(n) }); }
+
+  /** Everything this player's character carries: one device opens; several open each. */
+  openMyDevices() {
+    const all = myDevices();
+    if (!all.length) return ui.notifications.warn("Your character carries no pager or address book.");
+    for (const d of all.slice(0, 4)) { if (pagerOf(d)) this.openPager(d); else this.openPaper(d); }
   }
 
   /* ---------------------------------------- */
@@ -433,7 +513,42 @@ function deviceClass() {
     get title() {
       if (this.kind === "pager") return this.item ? `${this.item.parent?.name ?? ""}: ${this.item.name}` : "Pager";
       const e = placePhone(this.city, this.placeId);
-      return e ? `${e.name}: ${DEVICES[e.device].label}` : "Phone";
+      if (!e) return "Phone";
+      // "Payphone, Tremont Street" says what it is already; "O'Malley's" gets "(phone)".
+      const label = DEVICES[e.device].label;
+      return e.name.toLowerCase().includes(label.toLowerCase()) ? e.name : `${e.name} (${label.toLowerCase()})`;
+    }
+
+    /**
+     * The GM's row on any phone: which player to open it for (one with a character at it first)
+     * and the button that opens it on their screen.
+     */
+    #openFor(e = null) {
+      if (!game.user.isGM) return "";
+      // A pager opens only for those who carry it.
+      const players = game.users.filter((u) => u.active && !u.isGM && (this.kind !== "pager" || this.item?.parent?.testUserPermission(u, "OWNER")));
+      if (!players.length) return `<div class="dev-gm"><span class="faint"><i class="fa-solid fa-user-slash"></i> ${this.kind === "pager" ? "Its carrier is not logged in" : "No players logged in"}</span></div>`;
+      const here = e ? usersAt(e) : [];
+      const pick = this.#forUser(e)?.id;
+      return `<div class="dev-gm"><select data-for-user aria-label="Player">${players.map((u) => `<option value="${u.id}" ${u.id === pick ? "selected" : ""}>${esc(u.name)}${here.includes(u.id) ? " (here)" : ""}</option>`).join("")}</select>
+        <button type="button" class="mini-btn" data-act="open-for"><i class="fa-solid fa-share-from-square"></i> Open for them</button></div>`;
+    }
+
+    /** The player the GM has picked on this phone (one with a character at it, until the GM picks). */
+    #forUser(e = null) {
+      const players = game.users.filter((u) => u.active && !u.isGM);
+      const picked = players.find((u) => u.id === this.forUserId);
+      if (picked) return picked;
+      if (this.kind === "pager") return players.find((u) => this.item?.parent?.testUserPermission(u, "OWNER")) ?? null;
+      const here = e ? usersAt(e) : [];
+      return players.find((u) => here.includes(u.id)) ?? players[0] ?? null;
+    }
+
+    /** The character whose numbers this phone shows: the player's own at it, or (for the GM) the picked player's. */
+    #who(e) {
+      if (!game.user.isGM) return speakerAt(e);
+      const u = this.#forUser(e);
+      return u ? speakerAt(e, u) ?? u.character ?? myActors(u)[0] ?? null : null;
     }
 
     redraw() { if (this.rendered) keep(this.element, () => this.#draw()); }
@@ -451,6 +566,8 @@ function deviceClass() {
         content.addEventListener("click", (e) => this.#click(e));
         content.addEventListener("keydown", (e) => this.#key(e));
         content.addEventListener("submit", (e) => e.preventDefault());
+        content.addEventListener("input", (e) => { if (e.target.matches('[data-keep="yp"]')) { this.yp = e.target.value; this.redraw(); } });
+        content.addEventListener("change", (e) => this.#changed(e));
         content.tabIndex = -1;
         // Picking up a phone: the dial tone, until the first key.
         if (this.kind === "place") {
@@ -559,12 +676,13 @@ function deviceClass() {
       }
       const canKey = ["idle", "paging", "connected"].includes(mode) && (gm || speaker) && !(mode === "paging" && this.paging !== "numeric");
       // The keys are on the phone's picture; the console beside it lists the book while idle.
-      if (!body) body = mode === "idle" ? `${this.#messages(e, gm || !!speaker)}<h5>${gm ? "Directory" : "Address book"}</h5>${this.#bookPane(speaker, e)}` : "";
+      if (!body) body = mode === "idle" ? `${this.#messages(e, gm || !!speaker)}${this.#bookPane(this.#who(e), e)}` : "";
       const coin = pay ? this.#coinSlot(speaker, mode) : "";
       return `<div class="kgc-phone skin-${e.device}">
         ${this.#art(e, !canKey)}
         <div class="kgc-device skin-${e.device} console">
         <div class="dev-top"><span class="dev-brand">${esc(e.name)}</span><span class="dev-sub">${esc(formatNumber(e.number))}</span></div>
+        ${this.#openFor(e)}
         ${this.#screen(status, main, sub, blink)}
         ${coin}
         ${body ? `<div class="dev-body">${body}</div>` : ""}
@@ -619,30 +737,86 @@ function deviceClass() {
     }
 
     /** The address book a player sees at a phone: their own, with their pagers' memories and the phone book. */
-    #book(speaker) {
-      if (!speaker) return [];
-      return mergeBooks(bookOf(speaker), speaker.items.filter((i) => pagerOf(i)).flatMap((i) => pagerOf(i).contacts ?? []));
+    /** Everything a character carries that keeps numbers, for the copy rules: [{ id, kind, contacts, item }]. */
+    #devices(actor) {
+      return devicesOn(actor).map((i) => ({ id: i.id, kind: deviceKind(i), contacts: contactsOf(i), item: i }));
     }
 
-    #bookPane(speaker, here) {
-      if (game.user.isGM) {
-        const rows = directory().filter((x) => x.number && !(x.kind === "place" && x.city === here.city && x.id === here.id));
-        const label = { place: "Places", gm: "Your numbers", pager: "Pagers" };
-        return ["place", "gm", "pager"].map((k) => {
-          const list = rows.filter((x) => x.kind === k).sort((a, b) => a.name.localeCompare(b.name));
-          return list.length ? `<h5>${label[k]}</h5><ul class="dev-list">${list.map((x) => `<li><button type="button" class="pick" data-act="pick" data-value="${esc(x.number)}"><span>${esc(x.name)}${x.kind === "pager" ? ` <small>(pager)</small>` : ""}</span><span class="num">${esc(formatNumber(x.number))}</span></button></li>`).join("")}</ul>` : "";
-        }).join("") || `<p class="empty">No numbers yet. Give places phones on their cards.</p>`;
+    /** The numbers a character carries, merged (what a phone shows them). */
+    #book(actor) {
+      return actor ? carriedNumbers(this.#devices(actor)) : [];
+    }
+
+    /** "Copy to…" for a number: the devices that don't have it yet (a pager while its memory has room). */
+    #copyMenu(actor, name, number) {
+      const to = copyTargets(this.#devices(actor), number);
+      if (!to.length) return "";
+      return `<select class="copy" data-copy="${esc(number)}" data-name="${esc(name)}" aria-label="Copy ${esc(name || number)} to"><option value="">Copy to…</option>${to.map((d) => `<option value="${d.id}">${esc(d.item.name)}</option>`).join("")}</select>`;
+    }
+
+    /**
+     * The character's numbers (from their pagers and books, tagged with where each is kept), a
+     * Copy to… on each, a form for a number with no listing, and the Yellow Pages under it all.
+     */
+    #bookPane(who, here) {
+      const gm = game.user.isGM;
+      if (!who) return `${gm ? `<p class="empty">Pick a player above to see their numbers.</p>` : `<p class="empty">You are not at this phone.</p>`}${this.#yellowPages(here, gm, null)}`;
+      const devices = this.#devices(who), list = this.#book(who);
+      const word = new Map(devices.map((d) => [d.id, deviceWord(d.item)]));
+      const rows = list.map((c) => `<li><button type="button" class="pick" data-act="pick" data-value="${esc(c.number)}"><span>${esc(c.name || "No name")}</span><span class="tags">${c.in.map((id) => `<span class="tag ${devices.find((d) => d.id === id)?.kind}">${esc(word.get(id))}</span>`).join("")}</span><span class="num">${esc(formatNumber(c.number))}</span></button>${this.#copyMenu(who, c.name, c.number)}</li>`).join("");
+      const add = devices.length ? `<h5>A number with no listing</h5><div class="dev-form add-num">
+          <input data-keep="addName" placeholder="Who is it?" aria-label="Name"><input data-keep="addNum" placeholder="555-0188" aria-label="Number" value="${esc(this.dialed ? formatNumber(this.dialed) : "")}">
+          <select data-keep="addTo" aria-label="Copy to">${devices.map((d) => `<option value="${d.id}">Copy to the ${esc(deviceWord(d.item))}</option>`).join("")}</select>
+          <button type="button" class="btn small" data-act="add-num"><i class="fa-solid fa-pen"></i> Copy</button></div>` : "";
+      return `<h5>${esc(who.name)}'s numbers</h5>
+        ${devices.length ? `<ul class="dev-list mine">${rows || `<li class="empty">Nothing written down yet.</li>`}</ul>` : `<p class="empty">${esc(who.name)} carries nothing to keep numbers in.${gm ? " Give them a black book from the switchboard." : " Look it up below."}</p>`}
+        ${add}${this.#yellowPages(here, gm, who)}`;
+    }
+
+    /**
+     * The Yellow Pages: blank until something is looked up, by name or by number. Players find
+     * the listed lines of places they know of; the GM finds every place's phone and their own
+     * numbers. Pagers are never listed: their numbers are personal, in address books only.
+     */
+    #yellowPages(here, gm, who = null) {
+      const q = (this.yp ?? "").trim().toLowerCase(), qd = digits(q);
+      const pool = directory().filter((x) => x.number && x.kind !== "pager"
+        && !(x.kind === "place" && x.city === here.city && x.id === here.id)
+        && (gm || (x.kind === "place" && x.device === "line" && x.visibility === "discovered")));
+      const hits = q ? pool.filter((x) => x.name.toLowerCase().includes(q) || (qd.length >= 3 && digits(x.number).includes(qd)))
+        .sort((a, b) => a.name.localeCompare(b.name)).slice(0, 40) : [];
+      // The GM's own numbers are theirs to give out, not listed: they are not offered to copy.
+      const list = hits.map((x) => `<li><button type="button" class="pick" data-act="pick" data-value="${esc(x.number)}"><span>${esc(x.name)}${gm && x.kind === "gm" ? ` <small>(yours)</small>` : ""}</span><span class="num">${esc(formatNumber(x.number))}</span></button>${who && x.kind === "place" ? this.#copyMenu(who, x.name, x.number) : ""}</li>`).join("");
+      return `<h5><i class="fa-solid fa-book-open"></i> Yellow Pages</h5>
+        <div class="yp"><input type="search" data-keep="yp" placeholder="Look up a name or number" value="${esc(this.yp ?? "")}" aria-label="Search the Yellow Pages">
+        ${q ? (list ? `<ul class="dev-list">${list}</ul>` : `<p class="empty">No listing for "${esc(this.yp.trim())}".</p>`) : ""}</div>`;
+    }
+
+    /** A Copy to… picked, or the GM's player picked. */
+    async #changed(ev) {
+      const el = ev.target;
+      if (el.matches("[data-for-user]")) { this.forUserId = el.value; return this.redraw(); }
+      if (el.matches("select[data-copy]") && el.value) {
+        const who = this.#who(placePhone(this.city, this.placeId)), item = who?.items.get(el.value);
+        if (!item) return;
+        const ok = await copyToDevice(item, { name: el.dataset.name, number: el.dataset.copy });
+        ui.notifications[ok ? "info" : "warn"](ok ? `${el.dataset.name || el.dataset.copy} copied to ${who.name}'s ${deviceWord(item)}.` : `${who.name}'s ${deviceWord(item)} is full.`);
+        return this.redraw();
       }
-      if (!speaker) return `<p class="empty">You are not at this phone.</p>`;
-      const own = sortBook(this.#book(speaker));
-      // The phone book: places the players know of, with a listed line.
-      const listed = directory().filter((x) => x.kind === "place" && x.device === "line" && x.visibility === "discovered" && !findContact(own, x.number)).sort((a, b) => a.name.localeCompare(b.name));
-      const row = (c) => this.editing === c.id ? this.#contactForm(c) : `<li><button type="button" class="pick" data-act="pick" data-value="${esc(c.number)}"><span>${esc(c.name || "No name")}</span><span class="num">${esc(formatNumber(c.number))}</span></button>
-        ${findContact(bookOf(speaker), c.number) ? `<button type="button" class="mini" data-act="edit" data-value="${esc(c.id)}" aria-label="Edit"><i class="fa-solid fa-pen"></i></button>` : ""}</li>`;
-      return `<ul class="dev-list">${own.map(row).join("") || `<li class="empty">Nobody written down yet.</li>`}</ul>
-        ${this.editing === "new" ? `<ul class="dev-list">${this.#contactForm({ id: "new", name: "", number: this.dialed ? formatNumber(this.dialed) : "" })}</ul>` : `<button type="button" class="btn small" data-act="edit" data-value="new"><i class="fa-solid fa-plus"></i> Write a number down</button>`}
-        ${listed.length ? `<h5>Phone book</h5><ul class="dev-list">${listed.map((x) => `<li><button type="button" class="pick" data-act="pick" data-value="${esc(x.number)}"><span>${esc(x.name)}</span><span class="num">${esc(formatNumber(x.number))}</span></button></li>`).join("")}</ul>` : ""}
-        <p class="hint">${esc(speaker.name)}'s address book. It stays with them, whatever pager they carry.</p>`;
+    }
+
+    /** A number with no listing, copied into the device picked. */
+    async #addNumber() {
+      const root = this.element, who = this.#who(placePhone(this.city, this.placeId));
+      const name = root.querySelector('[data-keep="addName"]')?.value.trim() ?? "", number = root.querySelector('[data-keep="addNum"]')?.value.trim() ?? "";
+      const item = who?.items.get(root.querySelector('[data-keep="addTo"]')?.value);
+      if (!item) return;
+      if (!name) return ui.notifications.warn("Write who it is.");
+      if (digits(number).length < 7) return ui.notifications.warn("Write the whole number.");
+      if (!(await copyToDevice(item, { name, number }))) return ui.notifications.warn(`${who.name}'s ${deviceWord(item)} is full.`);
+      for (const k of ["addName", "addNum"]) { const el = root.querySelector(`[data-keep="${k}"]`); if (el) el.value = ""; }
+      ui.notifications.info(`${name} copied to ${who.name}'s ${deviceWord(item)}.`);
+      this.redraw();
     }
 
     #contactForm(c) {
@@ -676,9 +850,9 @@ function deviceClass() {
         const book = bookOf(item.parent), missing = book.filter((c) => !findContact(p.contacts ?? [], c.number)).length;
         body = `<ul class="dev-list">${list.map((c) => this.editing === c.id ? this.#contactForm(c) : `<li><button type="button" class="pick" data-act="callback" data-value="${esc(c.number)}" data-tooltip="Call"><span>${esc(c.name || "No name")}</span><span class="num">${esc(formatNumber(c.number))}</span></button>
             <button type="button" class="mini" data-act="edit" data-value="${esc(c.id)}" aria-label="Edit"><i class="fa-solid fa-pen"></i></button></li>`).join("") || `<li class="empty">Nothing in memory.</li>`}</ul>
-          ${this.editing === "new" ? `<ul class="dev-list">${this.#contactForm({ id: "new", name: "", number: "" })}</ul>` : `<button type="button" class="btn small" data-act="edit" data-value="new"><i class="fa-solid fa-plus"></i> Add a number</button>`}
-          ${missing ? `<button type="button" class="btn small" data-act="restore"><i class="fa-solid fa-rotate"></i> Copy ${missing} from ${esc(item.parent.name)}'s address book</button>` : ""}
-          <p class="hint">Numbers saved here are copied into ${esc(item.parent.name)}'s address book too, so a new pager starts with them.</p>`;
+          ${this.editing === "new" ? `<ul class="dev-list">${this.#contactForm({ id: "new", name: "", number: "" })}</ul>` : list.length >= PAGER_MEMORY ? `<p class="hint">The memory is full (${PAGER_MEMORY}). Delete a number to save another.</p>` : `<button type="button" class="btn small" data-act="edit" data-value="new"><i class="fa-solid fa-plus"></i> Add a number</button>`}
+          ${missing && list.length < PAGER_MEMORY ? `<button type="button" class="btn small" data-act="restore"><i class="fa-solid fa-rotate"></i> Copy back what ${esc(item.parent.name)} remembers</button>` : ""}
+          <p class="hint">${list.length} of ${PAGER_MEMORY} numbers. Saved numbers are remembered too, so a new pager or book starts with them.</p>`;
       } else {
         body = `<div class="dev-form"><label>Alert</label>${seg("alert", p.alert ?? "beep", [["beep", "Beep"], ["vibrate", "Vibrate"], ["silent", "Silent"]])}
           <p class="hint">${esc(m.mode)} pager, ${m.year}. ${esc(m.description)}</p>
@@ -686,6 +860,7 @@ function deviceClass() {
       }
       return `<div class="kgc-device skin-pager model-${esc(p.model)}">
         <div class="dev-top"><span class="dev-brand">${esc(m.name)}</span><span class="dev-sub">${esc(formatNumber(p.number))}</span></div>
+        ${this.#openFor()}
         ${this.#screen(last ? (recent.length > 1 ? `PAGE 1/${recent.length}` : "PAGE") : "READY", main, sub)}
         ${tabs([["pages", "Pages", "fa-list"], ["memory", "Memory", "fa-address-book"], ["settings", "Set", "fa-sliders"]], this.tab)}
         <div class="dev-body">${body}</div></div>`;
@@ -739,6 +914,8 @@ function deviceClass() {
         let list = pagerOf(item).contacts ?? [];
         // Saving a page's number fills in an existing contact of that number rather than adding twice.
         const same = !remove && recentEntry ? findContact(list, number) : null;
+        const adding = !remove && !same && !list.some((x) => x.id === c.id) && !findContact(list, number);
+        if (adding && list.length >= PAGER_MEMORY) return ui.notifications.warn(`The pager's memory is full (${PAGER_MEMORY}).`);
         list = putContact(list, same ? { ...same, name } : c, { remove });
         await setPagerContacts(item, list);
         if (!remove) ui.notifications.info(`${c.name || formatNumber(c.number)} saved to the pager and ${item.parent.name}'s address book.`);
@@ -758,6 +935,15 @@ function deviceClass() {
       const place = this.kind === "place" ? placePhone(this.city, this.placeId) : null;
       switch (act) {
         case "tab": this.tab = v; this.editing = null; return this.redraw();
+        case "open-for": {
+          const user = game.users.get(this.element.querySelector("[data-for-user]")?.value);
+          if (!user?.active) return ui.notifications.warn("That player is not logged in.");
+          if (this.kind === "pager") this.phones.openFor(user.id, null, null, { uuid: this.uuid });
+          // Their character may use it, wherever their token is, for the next hour.
+          else this.phones.openFor(user.id, this.city, this.placeId, { actorId: this.#who(place)?.id ?? null });
+          return ui.notifications.info(`KG Cities: ${this.title} opened for ${user.name}.`);
+        }
+        case "add-num": return this.#addNumber();
         case "key": return this.#press(v);
         case "back": this.dialed = this.dialed.slice(0, -1); return this.redraw();
         case "pick": this.dialed = digits(v); this.tab = "keypad"; return this.redraw();
@@ -850,7 +1036,7 @@ function boardClass() {
       const dir = directory();
       const dup = duplicates(dir);
       const panes = { calls: () => this.#calls(), places: () => this.#places(dir), pagers: () => this.#pagers(dir), numbers: () => this.#numbers() };
-      content.innerHTML = `${tabs([["calls", "Calls", "fa-phone-volume"], ["places", "Places", "fa-landmark"], ["pagers", "Pagers", "fa-pager"], ["numbers", "Your numbers", "fa-address-book"]], this.tab)}
+      content.innerHTML = `${tabs([["calls", "Calls", "fa-phone-volume"], ["places", "Places", "fa-landmark"], ["pagers", "Pagers and books", "fa-address-book"], ["numbers", "Your numbers", "fa-user-secret"]], this.tab)}
         ${dup.length ? `<p class="warn"><i class="fa-solid fa-triangle-exclamation"></i> Given out twice: ${dup.map(([n, l]) => `${esc(formatNumber(n))} (${l.map((x) => esc(x.name)).join(", ")})`).join("; ")}. Calls reach the first.</p>` : ""}
         <div class="dev-body sb-body">${panes[this.tab]()}</div>`;
       if (this.focus) {
@@ -909,15 +1095,25 @@ function boardClass() {
       const list = dir.filter((x) => x.kind === "pager").sort((a, b) => a.name.localeCompare(b.name));
       const people = game.actors.filter((a) => a.type !== "group" && a.hasPlayerOwner).sort((a, b) => a.name.localeCompare(b.name));
       return `<div class="sb-dial"><select data-keep="giveActor">${people.map((a) => `<option value="${a.id}">${esc(a.name)}</option>`).join("")}</select>
-          <select data-keep="giveModel">${Object.entries(PAGER_MODELS).map(([k, m]) => `<option value="${k}" ${k === "numeric" ? "selected" : ""}>${esc(m.name)} (${esc(m.mode)})</option>`).join("")}</select>
-          <button type="button" class="btn primary" data-act="give" ${people.length ? "" : "disabled"}><i class="fa-solid fa-pager"></i> Give a pager</button></div>
-        <p class="hint">A pager is an item on its carrier, with its own number, its memory of numbers and the pages it received. Hand it over and all of that goes with it. A new pager starts with its carrier's address book.</p>
+          <select data-keep="giveModel"><optgroup label="Pagers">${Object.entries(PAGER_MODELS).map(([k, m]) => `<option value="${k}" ${k === "numeric" ? "selected" : ""}>${esc(m.name)} (${esc(m.mode)})</option>`).join("")}</optgroup>
+            <optgroup label="Paper">${Object.entries(PAPER).map(([k, s]) => `<option value="paper:${k}">${esc(s.name)}</option>`).join("")}</optgroup></select>
+          <button type="button" class="btn primary" data-act="give" ${people.length ? "" : "disabled"}><i class="fa-solid fa-gift"></i> Give it</button></div>
+        <p class="hint">A pager has its own number, keeps the pages it gets, and remembers ${PAGER_MEMORY} numbers. A little black book or a Rolodex has no number and no limit: numbers are written in it by hand, and anyone holding it can read it. Either starts with what its carrier remembers, and goes with whoever holds it.</p>
+        ${this.#books()}
         ${list.length ? `<table class="sb-table"><thead><tr><th>Carried by</th><th>Model</th><th>Number</th><th>Last page</th><th></th></tr></thead><tbody>${list.map((x) => {
           const item = game.actors.get(x.actorId)?.items.get(x.itemId), p = pagerOf(item), last = p?.recent?.at(-1);
           return `<tr><td>${esc(x.name)}</td><td>${esc(PAGER_MODELS[x.model]?.name ?? x.model)}</td><td><input class="num" data-act-change="number" data-actor="${x.actorId}" data-item="${x.itemId}" value="${esc(formatNumber(x.number))}"></td>
             <td>${last ? `${esc(last.text)}<small>${esc(when(last))}${p.unread ? `, ${p.unread} unread` : ""}</small>` : '<span class="faint">None</span>'}</td>
             <td class="acts"><input data-keep="gmPage:${x.itemId}" placeholder="Message or number"><button type="button" class="btn small primary" data-act="page" data-value="${esc(x.number)}" data-item="${x.itemId}">Page</button><button type="button" class="btn small" data-act="open-pager" data-actor="${x.actorId}" data-item="${x.itemId}" data-tooltip="Open it"><i class="fa-solid fa-pager"></i></button></td></tr>`;
         }).join("")}</tbody></table>` : `<p class="empty">Nobody carries a pager.</p>`}`;
+    }
+
+    /** The paper books in the world, and who carries them. */
+    #books() {
+      const books = game.actors.filter((a) => a.type !== "group").flatMap((a) => a.items.filter((i) => paperOf(i))).sort((a, b) => a.parent.name.localeCompare(b.parent.name));
+      if (!books.length) return "";
+      return `<table class="sb-table"><thead><tr><th>Carried by</th><th>Book</th><th>Numbers</th><th></th></tr></thead><tbody>${books.map((i) => `<tr><td>${esc(i.parent.name)}</td><td>${esc(i.name)}</td><td>${(paperOf(i).contacts ?? []).length}</td>
+        <td class="acts"><button type="button" class="btn small" data-act="open-paper" data-actor="${i.parent.id}" data-item="${i.id}" data-tooltip="Open it"><i class="fa-solid fa-book"></i></button></td></tr>`).join("")}</tbody></table>`;
     }
 
     #numbers() {
@@ -1017,10 +1213,16 @@ function boardClass() {
         case "give": {
           const actor = game.actors.get(this.element.querySelector('[data-keep="giveActor"]')?.value), model = this.element.querySelector('[data-keep="giveModel"]')?.value;
           if (!actor) return;
+          if (model?.startsWith("paper:")) {
+            const item = await givePaper(actor, model.slice(6));
+            ui.notifications.info(`${actor.name} now carries a ${item.name.toLowerCase()}, with ${(paperOf(item).contacts ?? []).length} numbers in it.`);
+            return this.redraw();
+          }
           const item = await givePager(actor, model);
           ui.notifications.info(`${actor.name} now carries a ${item.name}, number ${formatNumber(pagerOf(item).number)}.`);
           return this.redraw();
         }
+        case "open-paper": return this.ui.openPaper(game.actors.get(b.dataset.actor)?.items.get(b.dataset.item));
         case "gm-add": await this.#saveNumbers((list) => [...list, { id: foundry.utils.randomID(), name: "New number", number: newNumber(), note: "" }]); return this.redraw();
         case "gm-remove": await this.#saveNumbers((list) => list.filter((n) => n.id !== b.dataset.id)); return this.redraw();
       }

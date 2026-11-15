@@ -1,5 +1,15 @@
 # KG Cities changelog
 
+## 0.15.0
+
+- **Little black books and Rolodexes**: paper address books for characters, given from the switchboard's **Pagers and books** tab. No number and no limit; every entry is in handwriting (Just Another Hand), on blue-ruled cream pages in a black leather cover, or on index cards on a Rolodex wheel with a note on each.
+- **The pocket dock** shows everything a character carries (pagers and books) and opens them anywhere, so a number heard in play is written straight in. It steps up above the street view while a party travels, and can be dragged and locked (remembered per computer).
+- **At a phone, the list is the character's own numbers** from all they carry, tagged pager, black book or Rolodex, with **Copy to** on each and on every Yellow Pages listing, and a form for a number with no listing. The **Yellow Pages** stays blank until searched and never lists pagers.
+- **Pagers remember 20 numbers.**
+- **Open for them** (GM), on every phone and pager window: opens it on a player's screen, and lets their character use that phone for an hour wherever their token is. On your screen the list shows the picked player's numbers.
+- **Payphones are named for where they stand** on a city map ("Payphone, 193 Salem Street") instead of all being "Payphone, <scene>", and phone windows no longer say "Payphone: Payphone".
+- On update, player characters who remembered numbers but carried nothing get a little black book holding them, so nobody's numbers disappear.
+
 ## 0.14.0
 
 - **Chain stores**: on the banner while editing points of interest, turn the map's drugstores into 1986 points of interest in one go. Today's CVS stay CVS; today's Walgreens and Rite Aids become **Brooks Drug** (keep some as Walgreens if you like). Each store is linked to your shop actor (found by name, or picked), and drawn on the map **with the actor's token** as a round badge in a gold rim. Running it again relinks and re-marks them and keeps their cards; Remove takes a chain off.

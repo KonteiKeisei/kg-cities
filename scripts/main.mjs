@@ -17,7 +17,7 @@ import { openTravel } from "./ui-travel.mjs";
 import { RoadView } from "./ui-roadview.mjs";
 import { installFlashBar } from "./flash-bar.mjs";
 import { metres as metresBetween } from "./geo.mjs";
-import { DEVICES, Phones, directory as phoneDirectory, givePager, migrateUnsleepingPagers, myPagers, newNumber, phonesHere, placePhone, speakerAt, watchNewPagers } from "./phones.mjs";
+import { DEVICES, Phones, directory as phoneDirectory, givePager, givePaper, giveBooksToTheEmptyHanded, migrateUnsleepingPagers, myDevices, myPagers, newNumber, phonesHere, placePhone, speakerAt, watchNewPagers } from "./phones.mjs";
 import { PhoneUI } from "./ui-phone.mjs";
 import { formatNumber, sameNumber } from "./phone-core.mjs";
 import { Payroll, jobsOf, saveJobs } from "./payroll.mjs";
@@ -60,6 +60,21 @@ const partyManager = new PartyManager();
 /* ---------------------------------------- */
 /*  Travel                                   */
 /* ---------------------------------------- */
+
+/**
+ * Phones placed on a city map without a name are named for where they stand ("Payphone, 193
+ * Salem Street"), so the phone book and the switchboard can tell them apart. The GM in charge,
+ * on the scene on screen; names given by hand are kept.
+ */
+async function nameTilePhones(scene = canvas.scene, tiles = null) {
+  if (!game.user.isGM || game.users.activeGM?.id !== game.user.id || !layer.frame || current?.scene !== scene) return;
+  for (const t of tiles ?? scene.tiles) {
+    const ph = t.flags?.[MODULE_ID]?.phone;
+    if (!ph || ph.name) continue;
+    const where = await describePoint({ x: t.x + t.width / 2, y: t.y + t.height / 2 }).catch(() => "");
+    if (where && current?.scene === scene) await t.update({ [`flags.${MODULE_ID}.phone.name`]: `${DEVICES[ph.kind]?.label ?? "Phone"}, ${where}` });
+  }
+}
 
 /** A point in words: the landmark there, else the nearest house number. */
 async function describePoint(p) {
@@ -334,7 +349,10 @@ Hooks.once("ready", () => {
   // Paydays that came while nobody was on.
   payroll.runDue();
   // Unsleeping Pagers' pagers, numbers and page logs, once (installed or not).
-  migrateUnsleepingPagers().then(() => phoneUI.refresh()).catch((err) => console.error(`${MODULE_ID} | Unsleeping Pagers migration`, err));
+  migrateUnsleepingPagers()
+    // Then: anyone who remembers numbers but carries nothing to keep them in gets a black book with them.
+    .then(() => giveBooksToTheEmptyHanded())
+    .then(() => phoneUI.refresh()).catch((err) => console.error(`${MODULE_ID} | Unsleeping Pagers migration`, err));
   if (game.users.activeGM?.isSelf) convertJournalLandmarks().catch((err) => console.error(`${MODULE_ID} | journal conversion`, err));
 });
 
@@ -366,7 +384,7 @@ function currentLook() {
 /* ---------------------------------------- */
 
 /** Which local build is running (the browser console says, at load). */
-const BUILD = "2026-11-11 chain-stores";
+const BUILD = "2026-11-15 address-books";
 
 Hooks.once("init", () => {
   console.info(`kg-cities | ${game.modules.get(MODULE_ID)?.version} (build ${BUILD})`);
@@ -435,6 +453,8 @@ Hooks.once("init", () => {
     name: "Phone and pager volume", hint: "Rings, dial tones, keypad tones and pager alerts, on this computer. 0 is silent.",
     scope: "client", config: true, type: Number, default: 0.6, range: { min: 0, max: 1, step: 0.05 }
   });
+  // Where a player put the pocket dock (pagers and books), and whether it is locked there.
+  register("pocketDock", { scope: "client", config: false, type: Object, default: {} });
   phoneUI.install();
   watchNewPagers();
 
@@ -552,6 +572,10 @@ Hooks.once("init", () => {
       here: () => phoneHere(),
       switchboard: () => phoneUI.switchboard(),
       givePager: (actor, model) => givePager(actor, model),
+      /** Give a paper address book: style "blackbook" or "rolodex". */
+      giveBook: (actor, style = "blackbook") => givePaper(actor, style),
+      /** Open a pager or a paper book (an item) on this screen. */
+      openDevice: (item) => (item?.flags?.[MODULE_ID]?.paper ? phoneUI.openPaper(item) : phoneUI.openPager(item)),
       page: (number, text = "") => phones.pageDirect(number, { text, callback: text }),
       dial: (number, { as = "" } = {}) => phones.dial(number, { as }),
       calls: () => [...phones.calls.values()]
@@ -673,6 +697,7 @@ async function drawCity() {
   editor.attach(layer);
   if (editor.editing) layer.setEditing(true);
   lastDrawnKey = drawnKey();
+  nameTilePhones(scene).catch((err) => console.warn(`${MODULE_ID} | naming phones`, err));
   // Back from a place's scene by the trail: centre on the place.
   const focus = trail.takeFocus(scene.id);
   if (focus) locate(landmarks.get(focus));
@@ -709,6 +734,10 @@ Hooks.on("updateScene", (scene, changes) => {
   if (foundry.utils.hasProperty(changes, `flags.${MODULE_ID}.returnTo`) || "name" in changes || "navName" in changes) trail.draw();
   if (foundry.utils.hasProperty(changes, `flags.${MODULE_ID}`) && !foundry.utils.hasProperty(changes, `flags.${MODULE_ID}.returnTo`)) drawCity();
 });
+// A phone just placed on the city map is named for where it stands.
+Hooks.on("createTile", (tile) => {
+  if (tile.flags?.[MODULE_ID]?.phone && tile.parent === canvas.scene) nameTilePhones(tile.parent, [tile]).catch(() => {});
+});
 // The GM in charge holds the calls: when no GM is left, every call is cut.
 Hooks.on("userConnected", (user, connected) => {
   if (user.isGM && !connected && !game.users.activeGM) phones.dropAll();
@@ -727,9 +756,9 @@ Hooks.on("getSceneControlButtons", (controls) => {
     controls.tokens.tools.kgCitiesPhone = game.user.isGM
       ? { name: "kgCitiesPhone", title: "Switchboard: calls, place phones, pagers and your numbers", icon: "fa-solid fa-tower-broadcast", order: 120, button: true, onChange: () => phoneUI.switchboard() }
       : { name: "kgCitiesPhone", title: "Use a phone here", icon: "fa-solid fa-phone", order: 120, button: true, onChange: () => phoneHere() };
-    // A player's pager, besides the one at the bottom right of the map.
-    if (!game.user.isGM && myPagers().length) {
-      controls.tokens.tools.kgCitiesPager = { name: "kgCitiesPager", title: "Your pager", icon: "fa-solid fa-pager", order: 121, button: true, onChange: () => phoneUI.openMyPager() };
+    // A player's pagers and address books, besides the pocket dock on the map.
+    if (!game.user.isGM && myDevices().length) {
+      controls.tokens.tools.kgCitiesPager = { name: "kgCitiesPager", title: "Your pager and address book", icon: "fa-solid fa-address-book", order: 121, button: true, onChange: () => phoneUI.openMyDevices() };
     }
     controls.tokens.tools.kgCitiesPayroll = {
       name: "kgCitiesPayroll", title: game.user.isGM ? "Payroll: jobs, paydays and the 1986 job guide" : "Your pay: jobs, pay stubs and checks",

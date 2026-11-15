@@ -1,5 +1,20 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { PAGER_MEMORY, carriedNumbers, copyTargets } from "../scripts/phone-core.mjs";
+
+test("a character's numbers: each once, from every device, with where it is kept", () => {
+  const devices = [
+    { id: "pager", kind: "pager", contacts: [{ id: "a", name: "Garage", number: "555-0171" }] },
+    { id: "rolo", kind: "paper", contacts: [{ id: "b", name: "", number: "5550171", note: "Ask for Mick" }, { id: "c", name: "Fiona", number: "555-0127" }] }
+  ];
+  const list = carriedNumbers(devices);
+  assert.deepEqual(list.map((c) => [c.name, c.in]), [["Fiona", ["rolo"]], ["Garage", ["pager", "rolo"]]]);
+  assert.equal(list[1].note, "Ask for Mick");
+  assert.deepEqual(copyTargets(devices, "555-0127").map((d) => d.id), ["pager"]);
+  const full = { id: "full", kind: "pager", contacts: Array.from({ length: PAGER_MEMORY }, (_, i) => ({ number: `555-01${String(i).padStart(2, "0")}` })) };
+  assert.deepEqual(copyTargets([full, devices[1]], "555-0199").map((d) => d.id), ["rolo"]);
+});
+
 import { OLD_MODELS, coinCopper, duplicates, formatNumber, freeNumber, fromOldBook, fromOldLog, mergeBooks, pageFor, putContact, reach, sameNumber } from "../scripts/phone-core.mjs";
 
 test("numbers format as dialled in 1986", () => {
