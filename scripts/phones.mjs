@@ -274,6 +274,11 @@ export class Phones {
   erase(city, id, messageId) { return this.#ask({ op: "erase", city, id, messageId }); }
   /** The GM: an unlisted number plays the intercept now. */
   intercept(callId) { return this.#ask({ op: "intercept", callId }); }
+  /**
+   * The GM lets a ringing call go unanswered, at once: "noanswer" (it rang out), "busy" (a busy
+   * signal) or "none" (not in service). The ringing stops at the caller's end with that ending.
+   */
+  decline(callId, reason = "noanswer") { return this.#ask({ op: "decline", callId, reason }); }
   /** Send a page on a call that reached a pager: text (alphanumeric) or callback digits. */
   page(callId, { text = "", callback = "" } = {}) { return this.#ask({ op: "page", callId, text, callback }); }
   /** The GM pages a number straight from the switchboard. */
@@ -393,6 +398,10 @@ export class Phones {
         return this.#end(call, "hangup");
       }
       case "intercept": if (call && user.isGM && call.state === "ringing") return this.#end(call, "none"); return;
+      case "decline": {
+        if (!call || !user.isGM || call.state !== "ringing") return;
+        return this.#end(call, ["noanswer", "busy", "none"].includes(msg.reason) ? msg.reason : "noanswer");
+      }
       case "machine": {
         if (!call || !user.isGM || call.state !== "ringing" || call.to?.kind !== "place") return;
         // The machine picks up: the call goes through, so a payphone keeps its quarter.

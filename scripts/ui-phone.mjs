@@ -75,6 +75,24 @@ function endLabel(end) {
   return [actor ? `${actor.name} at ${who}` : who, end.number ? formatNumber(end.number) : ""].filter(Boolean).join(" · ");
 }
 
+/**
+ * What the GM can do with a call: one ringing for them, Pick up, or let it go at once (No answer,
+ * Busy, a place's Machine, an unlisted number's Not in service), each stopping the caller's
+ * ringing with that ending; one under way, Hang up.
+ */
+function callButtons(c) {
+  const ring = c.state === "ringing", mine = c.from?.userId === game.user.id;
+  if (!ring || mine) return c.state !== "ended" ? `<button type="button" class="btn small danger" data-act="hangup" data-call="${c.id}"><i class="fa-solid fa-phone-slash"></i> Hang up</button>` : "";
+  const b = (act, label, icon, tip, extra = "", cls = "") => `<button type="button" class="btn small ${cls}" data-act="${act}" data-call="${c.id}" ${extra} data-tooltip="${tip}"><i class="fa-solid ${icon}"></i> ${label}</button>`;
+  return [
+    b("answer", "Pick up", "fa-phone", "Answer it: the ringing stops and you are on the line", "", "primary"),
+    b("decline", "No answer", "fa-bell-slash", "Nobody picks up: the caller hears it ring out", 'data-reason="noanswer"'),
+    b("decline", "Busy", "fa-phone-volume", "The caller hears a busy signal", 'data-reason="busy"'),
+    c.to?.kind === "place" ? b("machine", "Machine", "fa-voicemail", "The answering machine picks up: the caller leaves a written message") : "",
+    c.to?.kind === "none" ? b("decline", "Not in service", "fa-ban", "The recording: this number is not in service", 'data-reason="none"') : ""
+  ].join("");
+}
+
 /** Keep typed values, the focus and the scroll across a redraw. */
 function keep(root, draw) {
   const values = new Map([...root.querySelectorAll("[data-keep]")].map((el) => [el.dataset.keep, el.value]));
@@ -139,7 +157,7 @@ export class PhoneUI {
     const me = game.user.id;
     // The GM hears of every call to a place, to answer it or send it to the machine.
     if (game.user.isGM && !dropped && call.state === "ringing" && before?.state !== "ringing" && call.to?.kind === "place" && call.from?.userId !== me) {
-      ui.notifications.info(`${endLabel(call.from)} is calling ${call.to.name}. Answer it or send it to the machine from the call strip.`);
+      ui.notifications.info(`${endLabel(call.from)} is calling ${call.to.name}. Pick up, let it go (No answer, Busy) or send it to the machine from the call strip.`);
       sound(SOUND.ring, { vol: 0.25 });
     }
     if (!dropped && call.state === "ringing" && before?.state !== "ringing" && call.to?.kind === "place" && call.ringUsers?.includes(me)) {
@@ -463,6 +481,7 @@ export class PhoneUI {
         if (!b) return;
         const id = b.dataset.call;
         if (b.dataset.act === "answer") this.phones.answer(id);
+        else if (b.dataset.act === "decline") this.phones.decline(id, b.dataset.reason);
         else if (b.dataset.act === "hangup") this.phones.hangup(id);
         else if (b.dataset.act === "intercept") this.phones.intercept(id);
         else if (b.dataset.act === "machine") this.phones.machine(id);
@@ -473,12 +492,7 @@ export class PhoneUI {
     el.innerHTML = calls.map((c) => {
       const ring = c.state === "ringing", nobody = ring && c.to?.kind === "place" && !c.ringUsers?.length;
       const state = ring ? (c.gmRings ? "Ringing for you" : nobody ? "Ringing, nobody there" : "Ringing") : c.state === "paging" ? "Paging" : c.state === "connected" ? `Connected ${since(c.connectedAt)}` : c.state === "machine" ? "Leaving a message" : "Dialing";
-      const buttons = [
-        ring && c.from?.userId !== game.user.id ? `<button type="button" class="btn small primary" data-act="answer" data-call="${c.id}"><i class="fa-solid fa-phone"></i> Answer</button>` : "",
-        ring && c.to?.kind === "none" ? `<button type="button" class="btn small" data-act="intercept" data-call="${c.id}">Not in service</button>` : "",
-        ring && c.to?.kind === "place" && c.from?.userId !== game.user.id ? `<button type="button" class="btn small" data-act="machine" data-call="${c.id}" data-tooltip="Send it to the answering machine: the caller leaves a written message"><i class="fa-solid fa-voicemail"></i> Machine</button>` : "",
-        `<button type="button" class="btn small danger" data-act="hangup" data-call="${c.id}" aria-label="Hang up" data-tooltip="Hang up"><i class="fa-solid fa-phone-slash"></i></button>`
-      ].join("");
+      const buttons = callButtons(c);
       return `<div class="strip-call ${ring ? "ringing" : ""}"><i class="fa-solid ${ring ? "fa-bell" : "fa-phone-volume"}"></i>
         <button type="button" class="who" data-act="board" data-tooltip="Open the switchboard"><span><b>${esc(endLabel(c.from))}</b> <i class="fa-solid fa-arrow-right"></i> <b>${esc(endLabel(c.to))}</b></span><small data-since="${c.id}">${esc(state)}</small></button>${buttons}</div>`;
     }).join("");
@@ -1064,11 +1078,8 @@ function boardClass() {
         const state = c.state === "connected" ? `<span data-timer="${c.connectedAt}">${since(c.connectedAt)}</span>` : c.state === "ended" ? esc(ENDINGS[c.reason] ?? "Ended") : esc(c.state);
         const pagingMine = c.state === "paging" && c.from?.userId === game.user.id;
         return `<tr class="${ring ? "ringing" : ""}"><td>${esc(endLabel(c.from))}</td><td><i class="fa-solid fa-arrow-right"></i></td><td>${esc(endLabel(c.to))}${ring && c.to?.kind === "place" ? `<small>${c.ringUsers?.length ? `Ringing for ${c.ringUsers.map((u) => esc(game.users.get(u)?.name)).join(", ")}` : "Nobody is there"}</small>` : ""}</td><td>${state}</td>
-          <td class="acts">${ring && c.from?.userId !== game.user.id ? `<button type="button" class="btn small primary" data-act="answer" data-call="${c.id}">Answer</button>` : ""}
-          ${ring && c.to?.kind === "none" ? `<button type="button" class="btn small" data-act="intercept" data-call="${c.id}">Not in service</button>` : ""}
-          ${ring && c.to?.kind === "place" && c.from?.userId !== game.user.id ? `<button type="button" class="btn small" data-act="machine" data-call="${c.id}"><i class="fa-solid fa-voicemail"></i> Machine</button>` : ""}
-          ${pagingMine ? `<input data-keep="pageText:${c.id}" placeholder="Message or number"><button type="button" class="btn small primary" data-act="send-page" data-call="${c.id}">Send</button>` : ""}
-          ${c.state !== "ended" ? `<button type="button" class="btn small danger" data-act="hangup" data-call="${c.id}">Hang up</button>` : ""}</td></tr>`;
+          <td class="acts">${pagingMine ? `<input data-keep="pageText:${c.id}" placeholder="Message or number"><button type="button" class="btn small primary" data-act="send-page" data-call="${c.id}">Send</button>` : ""}
+          ${callButtons(c)}</td></tr>`;
       }).join("");
       return `<div class="sb-dial"><input data-keep="dial" placeholder="Number to call" value="${esc(formatNumber(this.dialed))}"><input data-keep="as" placeholder="Calling as (only you see it)">
           <button type="button" class="btn primary" data-act="dial"><i class="fa-solid fa-phone"></i> Call</button></div>
@@ -1183,6 +1194,7 @@ function boardClass() {
         case "tab": this.tab = b.dataset.value; return this.redraw();
         case "dial": return this.#dial();
         case "answer": return this.phones.answer(call);
+        case "decline": return this.phones.decline(call, b.dataset.reason);
         case "hangup": return this.phones.hangup(call);
         case "intercept": return this.phones.intercept(call);
         case "machine": return this.phones.machine(call);

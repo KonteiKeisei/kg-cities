@@ -1,5 +1,9 @@
 # KG Cities changelog
 
+## 0.15.1
+
+- **Every call ringing for you can be let go at once**: on the call strip and the switchboard, **Pick up**, **No answer** (it rings out for the caller), **Busy** (a busy signal), **Machine** for a place, and **Not in service** for an unlisted number. Each stops the ringing at the caller's end right away, instead of it ringing on until the timer runs out.
+
 ## 0.15.0
 
 - **Little black books and Rolodexes**: paper address books for characters, given from the switchboard's **Pagers and books** tab. No number and no limit; every entry is in handwriting (Just Another Hand), on blue-ruled cream pages in a black leather cover, or on index cards on a Rolodex wheel with a note on each.
