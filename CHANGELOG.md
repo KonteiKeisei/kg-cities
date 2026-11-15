@@ -1,5 +1,9 @@
 # KG Cities changelog
 
+## 0.15.2
+
+- **The switchboard's Pagers and books tab lists only player characters** to give a pager or book to: a player's vehicles, companions and summons (a motorcycle, an Eldritch Cannon) are left out, and out of the Places tab's "who is there" too. Drag any other actor onto the tab from the Actors sidebar to give one to an NPC; they are added under **Others**.
+
 ## 0.15.1
 
 - **Every call ringing for you can be let go at once**: on the call strip and the switchboard, **Pick up**, **No answer** (it rings out for the caller), **Busy** (a busy signal), **Machine** for a place, and **Not in service** for an unlisted number. Each stops the ringing at the caller's end right away, instead of it ringing on until the timer runs out.

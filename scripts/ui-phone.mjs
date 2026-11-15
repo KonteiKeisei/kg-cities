@@ -1051,6 +1051,22 @@ function boardClass() {
         content.kgcBound = true;
         content.addEventListener("click", (e) => this.#click(e));
         content.addEventListener("change", (e) => this.#change(e));
+        // An actor dragged from the sidebar onto the Pagers and books tab: added to who can be given one.
+        content.addEventListener("dragover", (e) => { if (this.tab === "pagers") e.preventDefault(); });
+        content.addEventListener("drop", async (e) => {
+          if (this.tab !== "pagers") return;
+          let data;
+          try { data = JSON.parse(e.dataTransfer.getData("text/plain")); } catch { return; }
+          if (data?.type !== "Actor") return;
+          e.preventDefault();
+          const actor = data.uuid ? await fromUuid(data.uuid) : game.actors.get(data.id);
+          if (!actor) return;
+          (this.giveOthers ??= []).push(actor.id);
+          this.giveTo = actor.id;
+          this.#draw();
+          const pick = this.element.querySelector('[data-keep="giveActor"]');
+          if (pick) pick.value = actor.id;
+        });
         content.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.matches('[data-keep="dial"]')) { e.preventDefault(); this.#dial(); } });
       }
       this.#draw(content);
@@ -1100,7 +1116,7 @@ function boardClass() {
         <p class="hint">Place one, then click the map where it stands on this scene. Anyone with a character beside it clicks it to use it; <b>Use a phone here</b> in the token controls works too. Move or resize it like any tile. Places on the city map get phones on their cards (Edit, Links).</p>`;
       if (!list.length) return `${tools}<p class="empty">No phones yet.</p>`;
       return `${tools}<table class="sb-table"><thead><tr><th>Place</th><th>Phone</th><th>Who is there</th><th></th></tr></thead><tbody>${list.map((x) => {
-        const people = [...actorsAt(x)].filter((a) => a.type !== "group" && a.hasPlayerOwner).map((a) => a.name);
+        const people = [...actorsAt(x)].filter((a) => a.type === "character" && a.hasPlayerOwner).map((a) => a.name);
         const busy = this.phones.onPlace(x.city, x.id);
         const number = x.tile ? `<input class="num" data-act-change="tile-number" data-id="${esc(x.id)}" value="${esc(formatNumber(x.number))}">` : esc(formatNumber(x.number));
         // A tile's phone is named here ("Payphone outside O'Malley's"), so the books can tell them apart.
@@ -1114,11 +1130,16 @@ function boardClass() {
 
     #pagers(dir) {
       const list = dir.filter((x) => x.kind === "pager").sort((a, b) => a.name.localeCompare(b.name));
-      const people = game.actors.filter((a) => a.type !== "group" && a.hasPlayerOwner).sort((a, b) => a.name.localeCompare(b.name));
-      return `<div class="sb-dial"><select data-keep="giveActor">${people.map((a) => `<option value="${a.id}">${esc(a.name)}</option>`).join("")}</select>
+      // Player characters (not their vehicles, companions or summons), and anyone the GM dragged in.
+      const byName = (a, b) => a.name.localeCompare(b.name);
+      const people = game.actors.filter((a) => a.type === "character" && a.hasPlayerOwner).sort(byName);
+      const others = [...new Set(this.giveOthers ?? [])].map((id) => game.actors.get(id)).filter((a) => a && !people.includes(a)).sort(byName);
+      const opt = (a) => `<option value="${a.id}" ${a.id === this.giveTo ? "selected" : ""}>${esc(a.name)}</option>`;
+      return `<div class="sb-dial"><select data-keep="giveActor">${people.map(opt).join("")}${others.length ? `<optgroup label="Others">${others.map(opt).join("")}</optgroup>` : ""}</select>
           <select data-keep="giveModel"><optgroup label="Pagers">${Object.entries(PAGER_MODELS).map(([k, m]) => `<option value="${k}" ${k === "numeric" ? "selected" : ""}>${esc(m.name)} (${esc(m.mode)})</option>`).join("")}</optgroup>
             <optgroup label="Paper">${Object.entries(PAPER).map(([k, s]) => `<option value="paper:${k}">${esc(s.name)}</option>`).join("")}</optgroup></select>
           <button type="button" class="btn primary" data-act="give" ${people.length ? "" : "disabled"}><i class="fa-solid fa-gift"></i> Give it</button></div>
+        <p class="hint"><i class="fa-solid fa-hand-pointer"></i> To give one to an NPC, drag the actor here from the Actors sidebar.</p>
         <p class="hint">A pager has its own number, keeps the pages it gets, and remembers ${PAGER_MEMORY} numbers. A little black book or a Rolodex has no number and no limit: numbers are written in it by hand, and anyone holding it can read it. Either starts with what its carrier remembers, and goes with whoever holds it.</p>
         ${this.#books()}
         ${list.length ? `<table class="sb-table"><thead><tr><th>Carried by</th><th>Model</th><th>Number</th><th>Last page</th><th></th></tr></thead><tbody>${list.map((x) => {
