@@ -7,8 +7,8 @@
 - **At a phone, the list is the character's own numbers** from all they carry, tagged pager, black book or Rolodex, with **Copy to** on each and on every Yellow Pages listing, and a form for a number with no listing. The **Yellow Pages** stays blank until searched and never lists pagers.
 - **Pagers remember 20 numbers.**
 - **Open for them** (GM), on every phone and pager window: opens it on a player's screen, and lets their character use that phone for an hour wherever their token is. On your screen the list shows the picked player's numbers.
-- **Payphones are named for where they stand** on a city map ("Payphone, 193 Salem Street") instead of all being "Payphone, <scene>", and phone windows no longer say "Payphone: Payphone".
-- On update, player characters who remembered numbers but carried nothing get a little black book holding them, so nobody's numbers disappear.
+- **Payphones are named for where they stand** on a city map (its street address, or a landmark the players know, never a chain store), when placed and, for unnamed ones, when the GM loads the scene, instead of all being "Payphone, <scene>", and phone windows no longer say "Payphone: Payphone".
+- On update, any number a player character remembered that nothing they carry holds is written into their black book (a new one if they have none), so nobody's numbers disappear from the phone.
 
 ## 0.14.0
 

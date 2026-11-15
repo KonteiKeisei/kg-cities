@@ -126,7 +126,8 @@ globalThis.game = {
     get: (m, k) => (k in store ? store[k] : { landmarks, phoneNumbers: [{ id: "n1", name: "Sal's Pizza", number: "555-0188", note: "Fence, back room" }], phoneRingSeconds: 30, phoneVolume: 0 }[k]),
     set: async (m, k, v) => { store[k] = structuredClone(v); }
   },
-  time: { worldTime: 0 }, socket: { on() {}, emit(_, m) { notes.push(m); } }
+  // The socket's listeners are kept, so a test can feed this client another user's messages.
+  time: { worldTime: 0 }, socket: { on(_, fn) { (window.listeners ??= []).push(fn); }, emit(_, m) { notes.push(m); } }
 };
 globalThis.ui = { notifications: { info: console.info, warn: console.warn } };
 globalThis.Hooks = { on() {}, once() {}, callAll() {} };

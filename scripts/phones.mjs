@@ -533,7 +533,8 @@ export async function givePager(actor, model = "numeric", { number = null } = {}
   const m = PAGER_MODELS[model] ?? PAGER_MODELS.numeric;
   const type = pagerItemType();
   const system = type === "loot" ? { description: { value: `<p><strong>${m.mode} pager</strong>, ${m.year}.</p><p>${m.description}</p>` }, quantity: 1, weight: { value: 0.5, units: "lb" }, type: { value: "trinket" } } : {};
-  const pager = { model, number: number ?? newNumber(), contacts: clone(bookOf(actor)), recent: [], unread: 0, alert: "beep" };
+  // Its memory holds 20: it starts with the first 20 its carrier remembers.
+  const pager = { model, number: number ?? newNumber(), contacts: clone(bookOf(actor)).slice(0, PAGER_MEMORY), recent: [], unread: 0, alert: "beep" };
   const [item] = await actor.createEmbeddedDocuments("Item", [{ name: m.name, type, img: `modules/${ID}/${m.img}`, system, flags: { [ID]: { pager } } }]);
   return item;
 }
@@ -619,14 +620,22 @@ export async function copyToDevice(item, c) {
  */
 export async function giveBooksToTheEmptyHanded() {
   if (!isPrimaryGM()) return 0;
-  let n = 0;
+  let given = 0, added = 0;
   for (const actor of game.actors) {
     if (actor.type !== "character" || !actor.hasPlayerOwner || actor.flags?.[ID]?.paperGiven) continue;
-    if (bookOf(actor).length && !devicesOn(actor).length) { await givePaper(actor, "blackbook"); n++; }
+    // Before 0.15 a phone showed what a character remembered; now it shows what they carry. Any
+    // remembered number nothing they carry holds goes into their book (a new one if they have none).
+    const devices = devicesOn(actor);
+    const loose = bookOf(actor).filter((c) => !devices.some((d) => findContact(contactsOf(d), c.number)));
+    if (loose.length) {
+      const book = papersOn(actor)[0];
+      if (book) { await setDeviceContacts(book, mergeBooks(contactsOf(book), loose)); added++; }
+      else { await givePaper(actor, "blackbook"); given++; }
+    }
     await actor.setFlag(ID, "paperGiven", true);
   }
-  if (n) ui.notifications.info(`KG Cities: ${n} character${n === 1 ? "" : "s"} who remembered numbers got a little black book with them in it.`);
-  return n;
+  if (given || added) ui.notifications.info(`KG Cities: address books are now things characters carry. ${given ? `${given} character${given === 1 ? "" : "s"} got a little black book with the numbers they knew. ` : ""}${added ? `${added} had numbers they knew written into their book.` : ""}`.trim());
+  return given + added;
 }
 
 /** A new pager arrives empty on an actor with an address book: it takes the book. The GM in charge does it. */
@@ -634,7 +643,7 @@ export function watchNewPagers() {
   Hooks.on("createItem", (item) => {
     if (!isPrimaryGM() || !item.parent || !pagerOf(item)) return;
     if ((pagerOf(item).contacts ?? []).length || !bookOf(item.parent).length) return;
-    item.update({ [`flags.${ID}.pager.contacts`]: clone(bookOf(item.parent)) }).catch(() => {});
+    item.update({ [`flags.${ID}.pager.contacts`]: clone(bookOf(item.parent)).slice(0, PAGER_MEMORY) }).catch(() => {});
   });
 }
 

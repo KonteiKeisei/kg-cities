@@ -71,9 +71,22 @@ async function nameTilePhones(scene = canvas.scene, tiles = null) {
   for (const t of tiles ?? scene.tiles) {
     const ph = t.flags?.[MODULE_ID]?.phone;
     if (!ph || ph.name) continue;
-    const where = await describePoint({ x: t.x + t.width / 2, y: t.y + t.height / 2 }).catch(() => "");
-    if (where && current?.scene === scene) await t.update({ [`flags.${MODULE_ID}.phone.name`]: `${DEVICES[ph.kind]?.label ?? "Phone"}, ${where}` });
+    const where = await phoneSpot({ x: t.x + t.width / 2, y: t.y + t.height / 2 }).catch(() => "");
+    if (where && current?.scene === scene) await t.update({ [`flags.${MODULE_ID}.phone.name`]: `${DEVICES[ph.kind]?.label ?? "Phone"}, ${where}`, [`flags.${MODULE_ID}.phone.autoNamed`]: true });
   }
+}
+
+/**
+ * Where a phone stands, in words players may see: the street address, else a landmark there they
+ * have discovered (not a chain store: a hundred "Payphone, CVS" would tell nobody anything).
+ */
+async function phoneSpot(p) {
+  const ll = layer.frame && current?.scene === canvas.scene ? sceneToLatLon(layer.frame, p) : null;
+  if (!ll) return "";
+  const a = await searchData.addressAt(ll.lat, ll.lon).catch(() => null);
+  if (a?.text) return a.text;
+  const lm = landmarks.list.find((l) => !l.chain && visibilityOf(l) === "discovered" && Number.isFinite(l.lat) && metresBetween(ll, l) < 80);
+  return lm?.name ?? "";
 }
 
 /** A point in words: the landmark there, else the nearest house number. */
@@ -106,7 +119,8 @@ const phones = new Phones({
 });
 const phoneUI = new PhoneUI({
   phones, dollarRate: () => travel.dollarRate(),
-  openCard: (city, id) => cards.open({ kind: "landmark", city, id }, { warnMissing: true })
+  openCard: (city, id) => cards.open({ kind: "landmark", city, id }, { warnMissing: true }),
+  nameAt: (p) => phoneSpot(p)
 });
 // Paychecks: jobs on characters, paid on the world clock by the GM in charge's client.
 const payroll = new Payroll({ dollarRate: () => travel.dollarRate(), onChange: () => payrollUI.refresh() });
@@ -733,10 +747,6 @@ Hooks.on("updateScene", (scene, changes) => {
   if (scene !== canvas.scene) return;
   if (foundry.utils.hasProperty(changes, `flags.${MODULE_ID}.returnTo`) || "name" in changes || "navName" in changes) trail.draw();
   if (foundry.utils.hasProperty(changes, `flags.${MODULE_ID}`) && !foundry.utils.hasProperty(changes, `flags.${MODULE_ID}.returnTo`)) drawCity();
-});
-// A phone just placed on the city map is named for where it stands.
-Hooks.on("createTile", (tile) => {
-  if (tile.flags?.[MODULE_ID]?.phone && tile.parent === canvas.scene) nameTilePhones(tile.parent, [tile]).catch(() => {});
 });
 // The GM in charge holds the calls: when no GM is left, every call is cut.
 Hooks.on("userConnected", (user, connected) => {

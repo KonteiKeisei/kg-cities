@@ -89,9 +89,9 @@ function keep(root, draw) {
 }
 
 export class PhoneUI {
-  /** phones: the Phones service; openCard(city, id); dollarRate(). */
-  constructor({ phones, openCard, dollarRate }) {
-    Object.assign(this, { phones, openCard, dollarRate });
+  /** phones: the Phones service; openCard(city, id); dollarRate(); nameAt(scenePoint): where a phone placed there stands, in words, or "". */
+  constructor({ phones, openCard, dollarRate, nameAt = null }) {
+    Object.assign(this, { phones, openCard, dollarRate, nameAt });
     this.windows = new Map();
     this.board = null;
   }
@@ -272,11 +272,15 @@ export class PhoneUI {
     const at = e.getLocalPosition(canvas.stage), size = phoneTileSize(canvas.scene);
     this.cancelPlacing({ reopen: false });
     const number = newNumber();
+    // Named for where it stands on a city map ("Payphone, 193 Salem Street") before it exists, so
+    // nothing renames it while the GM types a name of their own.
+    const where = await this.nameAt?.({ x: at.x, y: at.y }).catch(() => "") ?? "";
+    const name = where ? `${DEVICES[kind].label}, ${where}` : "";
     const [tile] = await canvas.scene.createEmbeddedDocuments("Tile", [{
       texture: { src: PHONE_ICON }, x: Math.round(at.x - size / 2), y: Math.round(at.y - size / 2), width: size, height: size,
-      flags: { [ID]: { phone: { kind, number, name: "" } } }
+      flags: { [ID]: { phone: { kind, number, name, autoNamed: !!name } } }
     }]);
-    ui.notifications.info(`KG Cities: ${kind === "payphone" ? "payphone" : "phone"} ${number} placed. Name it in the switchboard so the books can tell it apart.`);
+    ui.notifications.info(`KG Cities: ${name || (kind === "payphone" ? "payphone" : "phone")} (${number}) placed.${name ? " Rename it in the switchboard if you like." : " Name it in the switchboard so the books can tell it apart."}`);
     this.switchboard({ tab: "places", focus: tile?.uuid });
   }
 
@@ -566,7 +570,11 @@ function deviceClass() {
         content.addEventListener("click", (e) => this.#click(e));
         content.addEventListener("keydown", (e) => this.#key(e));
         content.addEventListener("submit", (e) => e.preventDefault());
-        content.addEventListener("input", (e) => { if (e.target.matches('[data-keep="yp"]')) { this.yp = e.target.value; this.redraw(); } });
+        content.addEventListener("input", (e) => {
+          if (e.target.matches('[data-keep="yp"]')) { this.yp = e.target.value; this.redraw(); }
+          // What is typed in the number box; emptied, it shows the number dialled again.
+          if (e.target.matches("[data-add-num]")) this.addNumTyped = e.target.value || null;
+        });
         content.addEventListener("change", (e) => this.#changed(e));
         content.tabIndex = -1;
         // Picking up a phone: the dial tone, until the first key.
@@ -765,7 +773,7 @@ function deviceClass() {
       const word = new Map(devices.map((d) => [d.id, deviceWord(d.item)]));
       const rows = list.map((c) => `<li><button type="button" class="pick" data-act="pick" data-value="${esc(c.number)}"><span>${esc(c.name || "No name")}</span><span class="tags">${c.in.map((id) => `<span class="tag ${devices.find((d) => d.id === id)?.kind}">${esc(word.get(id))}</span>`).join("")}</span><span class="num">${esc(formatNumber(c.number))}</span></button>${this.#copyMenu(who, c.name, c.number)}</li>`).join("");
       const add = devices.length ? `<h5>A number with no listing</h5><div class="dev-form add-num">
-          <input data-keep="addName" placeholder="Who is it?" aria-label="Name"><input data-keep="addNum" placeholder="555-0188" aria-label="Number" value="${esc(this.dialed ? formatNumber(this.dialed) : "")}">
+          <input data-keep="addName" placeholder="Who is it?" aria-label="Name"><input data-add-num placeholder="555-0188" aria-label="Number" value="${esc(this.addNumTyped ?? (this.dialed ? formatNumber(this.dialed) : ""))}">
           <select data-keep="addTo" aria-label="Copy to">${devices.map((d) => `<option value="${d.id}">Copy to the ${esc(deviceWord(d.item))}</option>`).join("")}</select>
           <button type="button" class="btn small" data-act="add-num"><i class="fa-solid fa-pen"></i> Copy</button></div>` : "";
       return `<h5>${esc(who.name)}'s numbers</h5>
@@ -808,13 +816,15 @@ function deviceClass() {
     /** A number with no listing, copied into the device picked. */
     async #addNumber() {
       const root = this.element, who = this.#who(placePhone(this.city, this.placeId));
-      const name = root.querySelector('[data-keep="addName"]')?.value.trim() ?? "", number = root.querySelector('[data-keep="addNum"]')?.value.trim() ?? "";
+      const name = root.querySelector('[data-keep="addName"]')?.value.trim() ?? "", number = root.querySelector("[data-add-num]")?.value.trim() ?? "";
       const item = who?.items.get(root.querySelector('[data-keep="addTo"]')?.value);
       if (!item) return;
       if (!name) return ui.notifications.warn("Write who it is.");
       if (digits(number).length < 7) return ui.notifications.warn("Write the whole number.");
       if (!(await copyToDevice(item, { name, number }))) return ui.notifications.warn(`${who.name}'s ${deviceWord(item)} is full.`);
-      for (const k of ["addName", "addNum"]) { const el = root.querySelector(`[data-keep="${k}"]`); if (el) el.value = ""; }
+      const nameBox = root.querySelector('[data-keep="addName"]');
+      if (nameBox) nameBox.value = "";
+      this.addNumTyped = null;
       ui.notifications.info(`${name} copied to ${who.name}'s ${deviceWord(item)}.`);
       this.redraw();
     }
