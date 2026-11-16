@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bank harness</title>
+<!-- The Chain stores window's Banks and Radio Shack tabs, and the bank window (scripts/ui-bank.mjs),
+     over a small stand-in for Foundry: a few of Boston's banks and phone stores today, one player
+     character with a wallet and a paycheck. Item Piles is off unless ?ip is in the address.
+     python tools/serve.py, then http://127.0.0.1:8779/tools/bank-harness.html -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="../styles/cities.css">
+<style>
+  body { margin: 0; min-height: 100vh; background: #2b3340; font-family: Signika, system-ui, sans-serif; }
+  .application { position: absolute; top: 30px; display: flex; flex-direction: column; }
+  .kgc-chains { left: 20px; } .kgc-bank { left: 760px; }
+  .window-content { display: flex; flex-direction: column; }
+  .window-header { display: flex; gap: 8px; padding: 6px 10px; font-size: 13px; }
+</style>
+</head>
+<body>
+<script type="module">
+const setPath = (obj, path, v) => { const k = path.split("."); let o = obj; for (const p of k.slice(0, -1)) o = o[p] ??= {}; o[k.at(-1)] = v; };
+const items = new Map();
+const pc = {
+  id: "pc1", uuid: "Actor.pc1", name: "Dot Callahan", type: "character", hasPlayerOwner: true, img: "", flags: {},
+  system: { currency: { pp: 0, gp: 12, ep: 0, sp: 5, cp: 0 } },
+  items: { filter: (fn) => [...items.values()].filter(fn), get size() { return items.size; } },
+  async update(changes) { for (const [k, v] of Object.entries(changes)) setPath(this, k, structuredClone(v)); window.dispatchEvent(new Event("acted")); }
+};
+const check = { uuid: "Item.chk", img: "../assets/payroll/check.svg", flags: { "kg-cities": { check: { amount: 212.4, from: "Faneuil Fish Co.", time: 3 * 86400 } } }, async delete() { items.delete("chk"); } };
+items.set("chk", check);
+const actors = [pc, { uuid: "Actor.bb", id: "bb", name: "BayBank", type: "npc", prototypeToken: { texture: { src: "../assets/banks/bank.svg" } } }];
+actors.get = (id) => actors.find((a) => a.id === id);
+let saved = [];
+const ip = location.search.includes("ip");
+globalThis.game = {
+  actors, i18n: { localize: (s) => s }, system: { id: "dnd5e" }, time: { worldTime: 5 * 86400 },
+  user: { id: "u1", isGM: new URLSearchParams(location.search).has("gm") },
+  users: { activeGM: { id: "gm" } },
+  modules: { get: (id) => (id === "item-piles" && ip ? { active: true } : null) },
+  itempiles: ip ? { API: {} } : undefined,
+  socket: { emit: (...a) => console.info("socket", a) }
+};
+globalThis.fromUuidSync = (u) => actors.find((a) => a.uuid === u) ?? null;
+globalThis.fromUuid = async (u) => (u === "Item.chk" ? check : fromUuidSync(u));
+globalThis.ui = { notifications: { info: console.info, warn: console.warn, error: console.error } };
+globalThis.foundry = {
+  utils: { escapeHTML: (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])), hasProperty: () => false, randomID: () => Math.random().toString(36).slice(2) },
+  applications: { api: {
+    DialogV2: { confirm: async () => true },
+    ApplicationV2: class {
+      constructor(o = {}) { this.options = { ...this.constructor.DEFAULT_OPTIONS, ...o }; }
+      render() {
+        if (!this.element) {
+          const el = document.createElement("div");
+          el.className = `application ${(this.options.classes ?? []).join(" ")}`;
+          el.style.width = `${this.options.position?.width}px`;
+          el.innerHTML = `<header class="window-header">${this.title ?? this.options.window.title}</header><section class="window-content"></section>`;
+          document.body.append(el);
+          this.element = el;
+        }
+        this._replaceHTML("", this.element.querySelector(".window-content"));
+        this.rendered = true;
+        return this;
+      }
+    }
+  } }
+};
+const raw = [
+  { id: "b1", name: "Bank of America", kind: "bank", lat: 42.3555, lon: -71.0605 },
+  { id: "a1", name: "Bank of America", kind: "atm", lat: 42.35552, lon: -71.06052 },
+  { id: "b2", name: "Bank of America", kind: "bank", lat: 42.3960, lon: -71.1220 },
+  { id: "b3", name: "Bank of America", kind: "bank", lat: 42.3110, lon: -71.0530 },
+  { id: "a2", name: "Bank of America", kind: "atm", lat: 42.3420, lon: -71.0850 },
+  { id: "b4", name: "Citizens Bank", kind: "bank", lat: 42.3500, lon: -71.0750 },
+  { id: "b5", name: "Santander Bank", kind: "bank", lat: 42.3650, lon: -71.0560 },
+  { id: "b6", name: "Cambridge Savings Bank", kind: "bank", lat: 42.3730, lon: -71.1190 },
+  { id: "t1", name: "Verizon", kind: "mobile_phone", lat: 42.3500, lon: -71.0610 },
+  { id: "t2", name: "T-Mobile", kind: "mobile_phone", lat: 42.3880, lon: -71.0990 },
+  { id: "t3", name: "AT&T Store", kind: "mobile_phone", lat: 42.3330, lon: -71.0750 },
+  { id: "t4", name: "AT&T Labs", kind: "office", lat: 42.3600, lon: -71.0700 }
+];
+const landmarks = { get list() { return saved; }, async save(list) { saved = structuredClone(list); chains.render(); } };
+const { openChainStores } = await import("../scripts/ui-chains.mjs");
+const chains = openChainStores({ places: { raw }, landmarks, bounds: () => ({ north: 42.55, south: 42.15, west: -71.35, east: -70.9 }), city: () => "boston", dollarRate: () => 100 });
+const { Bank } = await import("../scripts/bank.mjs");
+const { openBank, refreshBank } = await import("../scripts/ui-bank.mjs");
+const bank = new Bank({ dollarRate: () => 100 });
+window.addEventListener("acted", () => refreshBank());
+const atm = new URLSearchParams(location.search).has("atm");
+const teller = openBank(bank, { city: "boston", id: "chain:bos-bofa:b1", name: "100 Federal Street", bank: "BayBank", atm }, pc);
+Object.assign(window, { saved: () => saved, chains, teller, pc, bank });
+</script>
+</body>
+</html>

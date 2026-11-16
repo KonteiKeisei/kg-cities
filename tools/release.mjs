@@ -17,7 +17,7 @@ if (!/^\d+\.\d+\.\d+$/.test(version ?? "")) {
 }
 
 // What the live module needs. Everything else (tools, tests, mockups, caches) stays out.
-const SHIP = ["module.json", "scripts", "styles", "lib", "assets/interiors", "assets/sounds", "assets/phones", "assets/payroll", "assets/fonts", "data/fonts", "data/cities", "data/transit", "README.md", "CHANGELOG.md", "LICENSE", "DATA-LICENSE.md", "CREDITS.md"];
+const SHIP = ["module.json", "scripts", "styles", "lib", "assets/interiors", "assets/sounds", "assets/phones", "assets/payroll", "assets/banks", "assets/shops", "assets/fonts", "data/fonts", "data/cities", "data/transit", "README.md", "CHANGELOG.md", "LICENSE", "DATA-LICENSE.md", "CREDITS.md"];
 
 const manifestPath = join(ROOT, "module.json");
 const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));

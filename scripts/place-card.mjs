@@ -65,8 +65,10 @@ export const plainLinks = (text) => String(text ?? "").replace(LINK, (m, type, t
 /**
  * The card's source of places. deps:
  *   get(ref) -> card data or null: { name, type, tone, icon, subtitle, img, known, gmNotes, rumours,
- *     visibility, actors, journal, images, scene, locate, gmOnly? }
- *   save(ref, fields), remove(ref), enter(ref, all), locate(ref), placeChoices() -> [{ name, where, ref }]
+ *     visibility, actors, journal, images, scene, locate, gmOnly?, phone?, bank? { label, here },
+ *     shop? { here } }
+ *   save(ref, fields), remove(ref), enter(ref, all), locate(ref), placeChoices() -> [{ name, where, ref }],
+ *   phone(ref), bank(ref) (the teller or ATM), shop(ref) (the store's Item Piles shop)
  */
 export class PlaceCards {
   constructor(deps) {
@@ -356,6 +358,8 @@ function cardClass() {
         d.locate ? `<button type="button" class="btn" data-act="locate" aria-label="Show it on the map" data-tooltip="Show it on the map"><i class="fa-solid fa-location-crosshairs"></i></button>` : "",
         journal ? `<button type="button" class="btn" data-act="journal" data-tooltip="Open ${esc(journal.name)}"><i class="fa-solid fa-book-open"></i> Journal</button>` : "",
         d.phone && !rumoured ? `<button type="button" class="btn" data-act="phone" ${d.phone.here ? "" : "disabled"} data-tooltip="${esc(d.phone.here ? `Use the ${d.phone.label.toLowerCase()}` : "Only once you are there")}"><i class="fa-solid fa-phone"></i> ${esc(d.phone.label)}</button>` : "",
+        d.bank && !rumoured ? `<button type="button" class="btn" data-act="bank" ${d.bank.here ? "" : "disabled"} data-tooltip="${esc(d.bank.here ? (d.bank.label === "ATM" ? "Use the machine" : "Go to a teller") : "Only once you are there")}"><i class="fa-solid ${d.bank.label === "ATM" ? "fa-money-bill-wave" : "fa-building-columns"}"></i> ${esc(d.bank.label)}</button>` : "",
+        d.shop && !rumoured ? `<button type="button" class="btn" data-act="shop" ${d.shop.here ? "" : "disabled"} data-tooltip="${esc(d.shop.here ? "Look around the store" : "Only once you are there")}"><i class="fa-solid fa-cart-shopping"></i> Shop</button>` : "",
         `<span class="grow"></span>`,
         gm && d.img ? `<button type="button" class="btn" data-act="share" aria-label="Show the art to players" data-tooltip="Show the art to players"><i class="fa-solid fa-image"></i></button>` : "",
         gm ? `<button type="button" class="btn" data-act="edit"><i class="fa-solid fa-pen-to-square"></i> Edit</button>` : ""
@@ -555,6 +559,8 @@ function cardClass() {
           return this.#markDirty();
         }
         case "phone": return deps.phone?.(this.ref);
+        case "bank": return deps.bank?.(this.ref);
+        case "shop": return deps.shop?.(this.ref);
         case "clear": {
           const box = b.closest("[data-drop]");
           box.innerHTML = docBox(FIELDS.find((x) => x.name === box.dataset.field), "");

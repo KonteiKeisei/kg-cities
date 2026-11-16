@@ -23,6 +23,9 @@ import { formatNumber, sameNumber } from "./phone-core.mjs";
 import { Payroll, jobsOf, saveJobs } from "./payroll.mjs";
 import { PayrollUI } from "./ui-payroll.mjs";
 import { openChainStores } from "./ui-chains.mjs";
+import { Bank, isMerchant, itemPiles } from "./bank.mjs";
+import { openBank, refreshBank } from "./ui-bank.mjs";
+import { installCurrencyExpressions } from "./currency-expressions.mjs";
 
 const MODULE_ID = "kg-cities";
 const SETTINGS = { look: "look", lean: "tilt", highDpi: "highDpi", businesses: "businesses", dayStart: "dayStart", nightStart: "nightStart" };
@@ -125,6 +128,8 @@ const phoneUI = new PhoneUI({
 // Paychecks: jobs on characters, paid on the world clock by the GM in charge's client.
 const payroll = new Payroll({ dollarRate: () => travel.dollarRate(), onChange: () => payrollUI.refresh() });
 const payrollUI = new PayrollUI({ payroll, dollarRate: () => travel.dollarRate() });
+// Banks: accounts on characters, safe deposit boxes as Item Piles vaults made by the GM in charge.
+const bank = new Bank({ dollarRate: () => travel.dollarRate(), onChange: () => refreshBank() });
 
 /** Use a phone where this user's character is: the one there, or the first of several. */
 function phoneHere() {
@@ -197,7 +202,7 @@ const card = new HoverCard({
 editor = new PoiEditor({
   places, landmarks, search: searchData, card, api: projection, openCard,
   // Today's drugstores as 1986 points of interest, linked to the GM's shop actors.
-  openChains: () => openChainStores({ places, landmarks, bounds: () => cityOf(canvas.scene)?.bounds ?? null })
+  openChains: () => openChainStores({ places, landmarks, bounds: () => cityOf(canvas.scene)?.bounds ?? null, city: () => cityOf(canvas.scene)?.city ?? null, dollarRate: () => travel.dollarRate() })
 });
 const mapSearch = new MapSearch({ getLayer: () => layer, getPlaces: () => places.places, getLandmarks: () => drawnLandmarks(), data: searchData });
 
@@ -239,6 +244,9 @@ function locate(lm) {
   canvas.animatePan({ x: at.x, y: at.y, scale: Math.min(canvasScaleForTileZoom(layer.frame, 17.5), CONFIG.Canvas.maxZoom), duration: 900 });
 }
 
+/** A point of interest as a place characters stand at (the phones' test: on its scene, or near it on the map). */
+const placeOf = (city, lm) => ({ city, id: lm.id, lat: lm.lat, lon: lm.lon, scene: lm.scene ?? null });
+
 /** Card fields kept only when set. */
 const CARD_KEYS = ["img", "known", "rumours", "gmNotes", "scene", "journal"];
 
@@ -258,9 +266,14 @@ function placeCardSource() {
       const journal = lm.journal ?? lm.page ?? null;
       const phone = lm.phone?.number && DEVICES[lm.phone.kind] ? lm.phone : null;
       const phoneEntry = phone ? placePhone(ref.city, lm.id) : null;
+      // A bank's teller or ATM, a chain store's Item Piles shop: for a character standing there.
+      const shopActor = lm.chainActor && itemPiles() ? fromUuidSync(lm.chainActor, { strict: false }) : null;
+      const present = (lm.bank || shopActor) && (game.user.isGM || !!speakerAt(placeOf(ref.city, lm)));
       return {
         rows: phone && (game.user.isGM || vis === "discovered") ? [[DEVICES[phone.kind].label, formatNumber(phone.number)]] : [],
         phone: phone ? { label: DEVICES[phone.kind].label, here: game.user.isGM || !!(phoneEntry && speakerAt(phoneEntry)) } : null,
+        bank: lm.bank ? { label: lm.atm ? "ATM" : "Bank", here: present } : null,
+        shop: shopActor && isMerchant(shopActor) ? { here: present } : null,
         name: lm.name || "Landmark", type: haven ? "Safe haven" : "Point of interest", tone: haven ? "haven" : "gold", icon: haven ? "fa-house-chimney" : "fa-landmark",
         subtitle: [address?.text, address?.area, here ? "" : cityName].filter(Boolean).join(" · "),
         img: lm.img ?? "", known, gmNotes: lm.gmNotes ?? "", rumours: lm.rumours ?? "", visibility: vis,
@@ -311,6 +324,22 @@ function placeCardSource() {
     },
     async locate(ref) { if (ref.city === cityId && current) locate(await find(ref)); },
     phone: (ref) => phoneUI.openPlace(ref.city, ref.id),
+    async bank(ref) {
+      const lm = await find(ref);
+      if (!lm?.bank) return;
+      const at = placeOf(ref.city, lm), actor = speakerAt(at) ?? (game.user.isGM ? game.user.character ?? null : null);
+      if (!actor && !game.user.isGM) return ui.notifications.warn("Your character has to be there.");
+      const address = ref.city === cityId && current ? await searchData.addressAt(lm.lat, lm.lon).catch(() => null) : null;
+      openBank(bank, { city: ref.city, id: lm.id, name: address?.text ?? lm.name, bank: lm.bank, atm: !!lm.atm }, actor);
+    },
+    async shop(ref) {
+      const lm = await find(ref), api = itemPiles();
+      const shop = lm?.chainActor && api ? await fromUuid(lm.chainActor) : null;
+      if (!shop || !isMerchant(shop)) return ui.notifications.warn("This store has no shop to open.");
+      const actor = speakerAt(placeOf(ref.city, lm));
+      if (!actor && !game.user.isGM) return ui.notifications.warn("Your character has to be there.");
+      try { await api.renderItemPileInterface(shop, actor ? { inspectingTarget: actor } : {}); } catch (err) { ui.notifications.error(`KG Cities: ${err.message}`); }
+    },
     newNumber: () => newNumber(),
     async placeChoices(ref) {
       const city = ref?.city ?? cityId;
@@ -360,6 +389,7 @@ Hooks.once("ready", () => {
   listenForOpens();
   phones.install();
   payroll.install();
+  bank.install();
   // Paydays that came while nobody was on.
   payroll.runDue();
   // Unsleeping Pagers' pagers, numbers and page logs, once (installed or not).
@@ -400,7 +430,7 @@ function currentLook() {
 /* ---------------------------------------- */
 
 /** Which local build is running (the browser console says, at load). */
-const BUILD = "2026-11-15 address-books";
+const BUILD = "2026-11-15 banks";
 
 Hooks.once("init", () => {
   console.info(`kg-cities | ${game.modules.get(MODULE_ID)?.version} (build ${BUILD})`);
@@ -487,6 +517,14 @@ Hooks.once("init", () => {
     scope: "world", config: true, type: String, default: "anywhere",
     choices: { anywhere: "The player cashes it at once", gm: "The GM approves each one" }
   });
+
+  // Item Piles currency abbreviations that do sums ("${#/10}": gold read as dollars).
+  register("currencyExpressions", {
+    name: "Dollars in Item Piles",
+    hint: "Lets an Item Piles currency abbreviation do sums on its amount, so coins read as dollars: \"${#/10}\" shows 799 gold as $79.9. Set the abbreviations in Item Piles' currency settings. Needs a reload.",
+    scope: "world", config: true, type: Boolean, default: true, requiresReload: true
+  });
+  if (game.modules.get("item-piles")?.active && game.settings.get(MODULE_ID, "currencyExpressions")) installCurrencyExpressions();
 
   // { [city]: { edits: { placeId: {...} }, added: { id: {...} } } }: the GM's label edits.
   register("placeEdits", { scope: "world", config: false, type: Object, default: {}, onChange: () => refreshPlaces() });

@@ -1,5 +1,13 @@
 # KG Cities changelog
 
+## 0.16.0
+
+- **Dollars in Item Piles**: Item Piles currency abbreviations can do sums on their amount (`${#/10}` shows 799 gold as $79.9), in every price, payment and currency label. This was a hand edit of Item Piles' own file, lost on every update; it now comes with KG Cities (setting **Dollars in Item Piles**, on by default).- **Banks**: the Chain stores window's new **Banks** tab places each city's banks as they were in 1986. Today's bank stands in for the banks it bought (in Boston, Bank of America's branches become Bank of Boston, BayBank, Shawmut and Bank of New England; Santander's become Bank of New England and Shawmut; Citizens' become Boston Five and Neworld Bank), with every other city's own (not yet checked against sources, and marked so). ATMs inside a branch count as the branch; ATMs on their own are placed as ATMs. A branch keeps its 1986 name when you run it again.
+- **Chain stores' Place** now places only the open tab's chains, and every chain can be limited to a number of stores.
+- **Bank accounts**: a **Bank** (or **ATM**) button on a bank's card, once the character is there. Free accounts: deposit, withdraw, pay in paychecks, a statement. The GM can open any and change a balance.
+- **Safe deposit boxes** (with Item Piles): rent one at a branch by the month. It is a vault only that character can open, at that branch. The rent comes with the bills and shows in the budget.
+- **Radio Shack**: the **Radio Shack** tab puts today's phone stores on the map as Radio Shacks (how many is up to you), and **Make the Radio Shack** makes one Item Piles shop for all of them: 49 things from the fall 1986 catalog at its prices, pairs sold singly, each describing what it does and carrying a scrap value for crafting. Chain stores linked to an Item Piles shop get a **Shop** button on their cards.
+
 ## 0.15.3
 
 - **Click an entry in a black book or Rolodex to call it**: the phone the character is at pops up with the number dialled. **Right click** an entry for **Edit** or **Cross it out** (Take the card out).

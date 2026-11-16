@@ -5,6 +5,7 @@
 import { BOSTON, DAY, FOOD, GUIDE, HOUSING, MEDIAN_1986, MIN_WAGE_MA, NEIGHBORHOODS, PAY_TYPES, PRESETS, SCHEDULES, VEHICLES, computePay, describeRate, dollars, guideJob, homeBills, makeJob, weekly, weeklyTakeHome } from "./payroll-core.mjs";
 import { checksOf, dateLabel, homeOf, isPlayerCharacter, jobsOf, monthList, otherPayroll, payrollActors, playerCharacters, saveHome, saveJobs, setListed, skillChoices, stubHtml, stubsOf } from "./payroll.mjs";
 import { walletValue } from "./money.mjs";
+import { accountOf, boxBills } from "./bank-core.mjs";
 
 const ID = "kg-cities";
 const esc = (s) => foundry.utils.escapeHTML(String(s ?? ""));
@@ -184,7 +185,7 @@ function boardClass() {
     /* -------- Living costs -------- */
 
     #home(actor, jobs) {
-      const h = homeOf(actor), bills = homeBills(h), take = weeklyTakeHome(jobs);
+      const h = homeOf(actor), bills = homeBills(h, { monthly: boxBills(accountOf(actor)) }), take = weeklyTakeHome(jobs);
       const left = take - bills.perWeek;
       const num = (k, v, ph, step = 1) => `<input data-h="${k}" data-type="numOrNull" type="number" min="0" step="${step}" value="${v ?? ""}" placeholder="${esc(ph)}">`;
       const list = [...bills.weekly.map((b) => [b.label, b.amount, "a week"]), ...bills.monthly.map((b) => [b.label, b.amount, "a month"])];

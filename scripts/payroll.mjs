@@ -3,6 +3,7 @@
 // character's owners and the GM. Paydays are run by the GM in charge's client, so a time skip pays
 // once, however many GMs are on.
 
+import { accountOf, boxRentsDue } from "./bank-core.mjs";
 import { DAY, billsDue, cents, computePay, dollars, dueTimes, homeBills, inSeason, makeHome, makeJob, MONTHS } from "./payroll-core.mjs";
 import { addCopper, pay, walletValue } from "./money.mjs";
 
@@ -123,8 +124,9 @@ export class Payroll {
           const jobs = jobsOf(actor);
           if (jobs.some((j) => dueTimes(j, now).times.length)) await this.#pay(actor, jobs, (j) => dueTimes(j, now));
           // Then the bills: paid out of what payday just put in the wallet.
-          const home = homeOf(actor), due = billsDue(home, now);
-          if (due.weeks.length || due.months.length) await this.#bills(actor, home, due);
+          // A safe deposit box's rent comes with them, on its own day, living costs on or off.
+          const home = homeOf(actor), due = billsDue(home, now), rent = boxRentsDue(accountOf(actor), now);
+          if (due.weeks.length || due.months.length || rent.due) await this.#bills(actor, home, due, rent);
         }
       } while (this.again);
     })().catch((err) => console.error(`${ID} | payroll`, err)).finally(() => { this.running = null; });
@@ -175,11 +177,12 @@ export class Payroll {
    * Living costs come due: the weekly bills for each week, the monthly ones for each month, and
    * anything still owed, taken from the wallet. Short, the wallet is emptied and the rest is owed.
    */
-  async #bills(actor, home, due) {
+  async #bills(actor, home, due, rent = null) {
     const bills = homeBills(home), lines = [];
     const sum = (list) => list.reduce((s, b) => s + b.amount, 0);
     if (due.weeks.length) for (const b of bills.weekly) lines.push({ label: due.weeks.length > 1 ? `${b.label} × ${due.weeks.length} weeks` : b.label, amount: cents(b.amount * due.weeks.length) });
     if (due.months.length) for (const b of bills.monthly) lines.push({ label: due.months.length > 1 ? `${b.label} × ${due.months.length} months` : b.label, amount: cents(b.amount * due.months.length) });
+    if (rent?.due) lines.push(...rent.lines);
     if (home.owed > 0) lines.push({ label: "Still owed from before", amount: home.owed });
     const total = cents(sum(lines));
     const cur = actor.system?.currency, rate = this.rate;
@@ -192,11 +195,12 @@ export class Payroll {
     }
     const owed = cents(cur ? total - paid : 0);
     const update = { [`flags.${ID}.payroll.home`]: { ...home, next: due.next, rentNext: due.rentNext, owed } };
+    if (rent?.due) update[`flags.${ID}.bank.boxes`] = rent.boxes;
     if (wallet) update["system.currency"] = wallet;
     await actor.update(update);
     if (!total) return;
     const owners = game.users.filter((u) => u.isGM || actor.testUserPermission(u, "OWNER")).map((u) => u.id);
-    const time = (due.weeks.at(-1) ?? due.months.at(-1));
+    const time = due.weeks.at(-1) ?? due.months.at(-1) ?? game.time.worldTime;
     const content = `<div class="kgc-stub-msg"><div class="kgc-stub bills"><header><b>Bills</b><span>${esc(dateLabel(time))}</span></header>
       <table>${lines.map((l) => `<tr><td>${esc(l.label)}</td><td>${dollars(l.amount)}</td></tr>`).join("")}
       <tr class="net"><td>${cur ? "Paid from the wallet" : "Due (note it down)"}</td><td>${dollars(cur ? paid : total)}</td></tr>

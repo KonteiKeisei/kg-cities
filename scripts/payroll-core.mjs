@@ -361,8 +361,9 @@ export function makeHome(part = {}) {
 /**
  * A household's bills: { weekly: [{ label, amount }], monthly: [...], perWeek }. A dependant pays
  * no rent, utilities or groceries (someone else does); a vehicle's insurance and gas are theirs.
+ * monthly: more monthly bills kept elsewhere (a safe deposit box's rent), for the budget.
  */
-export function homeBills(home) {
+export function homeBills(home, { monthly: more = [] } = {}) {
   const h = makeHome(home), weekly = [], monthly = [];
   const kind = h.dependant ? HOUSING.family : HOUSING[h.housing];
   const housing = h.housingCost ?? Math.round(NEIGHBORHOODS[h.hood].rent * kind.factor);
@@ -376,6 +377,7 @@ export function homeBills(home) {
     monthly.push({ key: "insurance", label: `${v.label} insurance`, amount: cents((h.insurance ?? v.insurance) / 12) });
   }
   for (const x of h.extras) (x.monthly ? monthly : weekly).push({ key: x.id, label: x.label, amount: x.amount });
+  for (const x of more) monthly.push({ key: x.key, label: x.label, amount: cents(x.amount) });
   const perWeek = cents(weekly.reduce((s, b) => s + b.amount, 0) + monthly.reduce((s, b) => s + b.amount, 0) * 12 / 52);
   return { weekly, monthly, perWeek };
 }
