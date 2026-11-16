@@ -116,15 +116,54 @@ export function catalogItems() {
  * Make the Radio Shack: an Item Piles shop actor with the catalog, never out of stock, that buys
  * nothing back. Returns the actor. The GM's client.
  */
-export async function makeRadioShack() {
+export function radioShackShops() {
+  return [...game.actors].filter((a) => a.flags?.["item-piles"]?.data?.type === "merchant"
+    && (a.flags?.[ID]?.radioShackShop || [...a.items].some((i) => i.flags?.[ID]?.radioShack)));
+}
+
+/** Add missing catalog entries without replacing existing items or merchant settings. */
+export async function stockRadioShack(shop) {
+  if (!game.user.isGM) throw new Error("Only the GM can stock the Radio Shack.");
+  const catalog = catalogItems();
+  const names = new Set([...shop.items].map((i) => i.name));
+  const missing = catalog.filter((i) => !names.has(i.name));
+  // Foundry assigns IDs here. Item Piles' createItemPile groups incoming data by _id,
+  // which collapses a catalog of ID-less items to its last entry.
+  if (missing.length) await shop.createEmbeddedDocuments("Item", missing);
+  const stocked = new Set([...shop.items].map((i) => i.name));
+  if (catalog.some((i) => !stocked.has(i.name))) throw new Error("The Radio Shack catalog is incomplete. Use Make / repair the Radio Shack to retry.");
+  await shop.update({ [`flags.${ID}.radioShackShop`]: true, [`flags.${ID}.radioShackStockVersion`]: 1 });
+  return missing.length;
+}
+
+/** Repair only the specific one-item inventory produced by 0.16.0, once. */
+export async function repairRadioShacks() {
+  if (!game.user.isGM || game.users.activeGM?.id !== game.user.id) return 0;
+  let added = 0;
+  for (const shop of radioShackShops()) {
+    if (shop.flags?.[ID]?.radioShackStockVersion) continue;
+    const items = [...shop.items];
+    if (items.length === 1 && items[0].name === "Turbo Racer radio-controlled car" && items[0].flags?.[ID]?.radioShack) {
+      added += await stockRadioShack(shop);
+    }
+  }
+  return added;
+}
+
+export async function makeRadioShack(existing = null) {
   const api = game.itempiles?.API;
   if (!game.user.isGM || !api) throw new Error("The Radio Shack needs the Item Piles module, made by the GM.");
+  const previous = existing ?? radioShackShops()[0];
+  if (previous) {
+    if (previous.flags?.["item-piles"]?.data?.type !== "merchant") throw new Error("Choose an Item Piles merchant for the Radio Shack.");
+    await stockRadioShack(previous);
+    return previous;
+  }
   const made = await api.createItemPile({
     createActor: true, actor: "Radio Shack", sceneId: game.user.viewedScene ?? canvas.scene?.id ?? "",
     tokenOverrides: { actorLink: true, name: "Radio Shack", texture: { src: SHOP_ICON } },
-    actorOverrides: { img: SHOP_ICON },
+    actorOverrides: { img: SHOP_ICON, [`flags.${ID}.radioShackShop`]: true },
     folders: ["KG Cities: shops"],
-    items: catalogItems(),
     itemPileFlags: {
       enabled: true, type: "merchant", merchantImage: SHOP_ICON,
       infiniteQuantity: true, purchaseOnly: true, hideItemsWithZeroCost: false,
@@ -133,8 +172,8 @@ export async function makeRadioShack() {
     }
   });
   const shop = made?.actorUuid ? await fromUuid(made.actorUuid) : null;
+  if (!shop) throw new Error("Item Piles did not return the Radio Shack actor.");
   if (shop && (shop.name !== "Radio Shack" || shop.img !== SHOP_ICON)) await shop.update({ name: "Radio Shack", img: SHOP_ICON });
-  // The items go on a linked actor; if this Item Piles version left them off, put them on.
-  if (shop && !shop.items.size) await shop.createEmbeddedDocuments("Item", catalogItems());
+  await stockRadioShack(shop);
   return shop;
 }

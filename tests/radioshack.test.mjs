@@ -3,7 +3,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 globalThis.game = { system: { id: "dnd5e" } };
-const { CATALOG, catalogItems, priceInCoins, scrapValue } = await import("../scripts/radioshack.mjs");
+const { CATALOG, catalogItems, priceInCoins, scrapValue, makeRadioShack, repairRadioShacks, stockRadioShack } = await import("../scripts/radioshack.mjs");
 
 const all = CATALOG.flatMap(([, list]) => list);
 
@@ -46,4 +46,86 @@ test("pairs are sold singly at half price; anything on the air carries its range
   assert.equal(by("FM wireless intercom").radio.via, "wiring");
   for (const i of all.filter((x) => x.radio)) for (const k of ["range", "cityRange", "channels", "transmits", "receives"]) assert.ok(k in i.radio, `${i.name} ${k}`);
   assert.equal(all.filter((x) => x.radio).length, 13);
+});
+
+function shopWith(items = []) {
+  const shop = {
+    uuid: "Actor.radio", name: "Radio Shack", img: "my-logo.webp", items: structuredClone(items),
+    flags: { "item-piles": { data: { type: "merchant", enabled: true } } },
+    async update(changes) {
+      for (const [path, value] of Object.entries(changes)) {
+        const keys = path.split(".");
+        let obj = this;
+        for (const key of keys.slice(0, -1)) obj = obj[key] ??= {};
+        obj[keys.at(-1)] = value;
+      }
+    },
+    async createEmbeddedDocuments(type, data) {
+      assert.equal(type, "Item");
+      this.items.push(...structuredClone(data).map((i, n) => ({ ...i, _id: `new${this.items.length + n}` })));
+    }
+  };
+  Object.defineProperty(shop.items, "size", { get() { return this.length; } });
+  return shop;
+}
+
+function world(actors = []) {
+  game.user = { id: "gm", isGM: true, viewedScene: "Scene.city" };
+  game.users = { activeGM: { id: "gm" } };
+  game.actors = actors;
+  globalThis.fromUuid = async (uuid) => game.actors.find((a) => a.uuid === uuid);
+  game.itempiles = { API: { async createItemPile(options) {
+    const shop = shopWith();
+    await shop.update(options.actorOverrides);
+    // Reproduce Item Piles' _id-keyed reduction: ID-less entries overwrite each other.
+    const byId = Object.fromEntries((options.items ?? []).map((item) => [item._id, item]));
+    shop.items.push(...Object.values(byId));
+    game.actors.push(shop);
+    return { actorUuid: shop.uuid };
+  } } };
+}
+
+test("creating the merchant stocks all 49 distinct items through Foundry", async () => {
+  world();
+  const shop = await makeRadioShack();
+  assert.equal(shop.items.size, 49);
+  assert.equal(new Set(shop.items.map((i) => i.name)).size, 49);
+  assert.equal(new Set(shop.items.map((i) => i._id)).size, 49);
+  assert.equal(game.actors.length, 1);
+});
+
+test("repair restores 48 missing entries without duplicating the merchant or replacing edits", async () => {
+  const remaining = { ...catalogItems().at(-1), _id: "original", system: { quantity: 7, price: { value: 123, denomination: "gp" } } };
+  const shop = shopWith([remaining]);
+  world([shop]);
+  assert.equal(await repairRadioShacks(), 48);
+  assert.deepEqual(shop.items[0], remaining);
+  assert.equal(shop.img, "my-logo.webp");
+  assert.equal(shop.items.size, 49);
+  assert.equal(await repairRadioShacks(), 0);
+  assert.equal(await makeRadioShack(), shop);
+  assert.equal(shop.items.size, 49);
+  assert.equal(game.actors.length, 1);
+});
+
+test("automatic repair leaves customized inventories and other GM clients alone", async () => {
+  const shop = shopWith([catalogItems().at(-1), { name: "Custom repair kit" }]);
+  world([shop]);
+  assert.equal(await repairRadioShacks(), 0);
+  shop.items.pop();
+  game.users.activeGM.id = "other";
+  assert.equal(await repairRadioShacks(), 0);
+  assert.equal(shop.items.size, 1);
+});
+
+test("partial insertion reports failure and a retry adds only what is still missing", async () => {
+  const shop = shopWith();
+  world([shop]);
+  const create = shop.createEmbeddedDocuments;
+  shop.createEmbeddedDocuments = async function(type, data) { await create.call(this, type, data.slice(0, 1)); };
+  await assert.rejects(stockRadioShack(shop), /incomplete/);
+  assert.equal(shop.flags["kg-cities"]?.radioShackStockVersion, undefined);
+  shop.createEmbeddedDocuments = create;
+  assert.equal(await stockRadioShack(shop), 48);
+  assert.equal(shop.items.size, 49);
 });

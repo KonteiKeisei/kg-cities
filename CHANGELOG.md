@@ -1,5 +1,9 @@
 # KG Cities changelog
 
+## 0.16.1
+
+For real though, Take me to radio shack
+
 ## 0.16.0
 
 Take me to a radio shack

@@ -26,6 +26,7 @@ import { openChainStores } from "./ui-chains.mjs";
 import { Bank, isMerchant, itemPiles } from "./bank.mjs";
 import { openBank, refreshBank } from "./ui-bank.mjs";
 import { installCurrencyExpressions } from "./currency-expressions.mjs";
+import { repairRadioShacks } from "./radioshack.mjs";
 
 const MODULE_ID = "kg-cities";
 const SETTINGS = { look: "look", lean: "tilt", highDpi: "highDpi", businesses: "businesses", dayStart: "dayStart", nightStart: "nightStart" };
@@ -386,6 +387,12 @@ async function convertJournalLandmarks() {
 }
 
 Hooks.once("ready", () => {
+  repairRadioShacks().then((n) => {
+    if (n) ui.notifications.info(`KG Cities: restored ${n} missing Radio Shack items.`);
+  }).catch((err) => {
+    console.error(`${MODULE_ID} | Radio Shack repair`, err);
+    ui.notifications.error(`KG Cities: Radio Shack repair failed: ${err.message}`);
+  });
   listenForOpens();
   phones.install();
   payroll.install();
@@ -435,6 +442,7 @@ const BUILD = "2026-11-15 banks";
 Hooks.once("init", () => {
   console.info(`kg-cities | ${game.modules.get(MODULE_ID)?.version} (build ${BUILD})`);
   const register = (key, data) => game.settings.register(MODULE_ID, key, data);
+  register("storeLogos", { scope: "world", config: false, type: Object, default: {} });
   const redraw = () => drawCity();
   register(SETTINGS.look, {
     name: "Map look",
