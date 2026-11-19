@@ -21,7 +21,7 @@ for (const city of cities) {
   for (let attempt = 1; attempt <= 4; attempt++) {
     try {
       const t0 = Date.now();
-      const transit = await transitRoutes(metro, { endpoints, timeoutMs: 240000 });
+      const transit = await transitRoutes(metro, { endpoints, timeoutMs: 240000, includeTrains: city.includeTrains });
       transit.source = "OpenStreetMap contributors (ODbL), via Overpass";
       transit.fetched = new Date().toISOString().slice(0, 10);
       await writeFile(out, JSON.stringify(transit));

@@ -823,8 +823,16 @@ a.kgc-link:hover { background: rgba(255, 201, 74, 0.22); text-shadow: none; }
 .kgc-payroll .pr-drop { border: 1px dashed var(--kgc-line-2); border-radius: 8px; padding: 10px 8px; font-size: 11.5px; color: var(--kgc-faint); text-align: center; }
 .kgc-payroll .pr-drop.hot { border-color: var(--kgc-gold); color: var(--kgc-gold-text); background: rgba(255, 201, 74, 0.06); }
 /* Chain stores */
-.kgc-chains .window-content { padding: 0; }
-.kgc-chains .ch-body { padding: 12px 14px; display: grid; gap: 10px; }
+.kgc-chains, .kgc-bank { max-width: calc(100vw - 24px); max-height: calc(100dvh - 32px); }
+.kgc-chains .window-content { padding: 0; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+.kgc-chains .ch-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 0; overflow: hidden; }
+.kgc-chains .ch-scroll { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; padding-right: 6px; }
+.kgc-chains .ch-scroll > .hint { margin: 0 0 10px; }
+.kgc-chains .ch-foot, .kgc-chains .dev-tabs { flex-shrink: 0; }
+.kgc-chains .ch-foot { border-top: 1px solid var(--kgc-line); padding-top: 10px; }
+.kgc-chains .sb-table td { vertical-align: top; }
+.kgc-chains .sb-table th:nth-child(3) { width: 30%; }
+.kgc-chains .sb-table input:not([type="checkbox"]) { min-width: 0; }
 .kgc-chains .sb-table td small { display: block; color: var(--kgc-muted); font-size: 11.5px; margin-left: 24px; }
 .kgc-chains tr.off td:not(:first-child) { opacity: 0.45; }
 .kgc-chains .who { display: flex; align-items: center; gap: 6px; }
@@ -837,7 +845,7 @@ a.kgc-link:hover { background: rgba(255, 201, 74, 0.22); text-shadow: none; }
 .kgc-chains .ok { color: #8fe0a0; font-size: 13px; }
 .kgc-chains .warn { margin: 0; }
 .kgc-banner .btn.pill + .btn.pill { margin-left: 6px; }.kgc-chains .sb-table td:first-child { width: 170px; }
-.kgc-chains .sb-table td:first-child .pr-check-line { white-space: nowrap; }
+.kgc-chains .sb-table td:first-child .pr-check-line { white-space: normal; }
 .kgc-chains tr.keep td { border-top: 0; padding-top: 0; }
 .kgc-chains tr.keep small { margin-left: 24px; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
 .kgc-chains input.tiny { width: 56px; height: 28px; }
@@ -951,7 +959,7 @@ a.kgc-link:hover { background: rgba(255, 201, 74, 0.22); text-shadow: none; }
 .kgc-chains .ch-logo img { width: 22px; height: 22px; object-fit: contain; border: 0; }
 
 /* ---- The bank: a teller or an ATM ---- */
-.kgc-bank .window-content { padding: 0; }
+.kgc-bank .window-content { padding: 0; min-height: 0; overflow: auto; overscroll-behavior: contain; }
 .kgc-bank .bk-body { padding: 12px 14px; display: grid; gap: 10px; }
 .kgc-bank .bk-head { display: flex; align-items: center; gap: 10px; }
 .kgc-bank .bk-head > i { font-size: 22px; color: var(--kgc-gold); }

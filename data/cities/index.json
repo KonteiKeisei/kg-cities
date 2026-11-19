@@ -12,5 +12,7 @@
   { "id": "los-angeles", "pack": true, "name": "Los Angeles", "state": "CA", "center": [-118.2437, 34.0522], "metro": { "center": [-118.33, 34.009], "miles": [36, 31] }, "core": { "center": [-118.30, 34.06], "miles": [14, 9] } },
   { "id": "las-vegas", "pack": true, "name": "Las Vegas", "state": "NV", "center": [-115.1728, 36.1147], "metro": { "center": [-115.17, 36.14], "miles": [30, 26] }, "core": { "center": [-115.16, 36.14], "miles": [9, 8] } },
   { "id": "austin", "pack": true, "name": "Austin", "state": "TX", "center": [-97.7431, 30.2672], "metro": { "center": [-97.75, 30.29], "miles": [30, 28] }, "core": { "center": [-97.745, 30.28], "miles": [9, 8] } },
-  { "id": "miami", "pack": true, "name": "Miami", "state": "FL", "center": [-80.1918, 25.7617], "metro": { "center": [-80.22, 25.84], "miles": [28, 36] }, "core": { "center": [-80.19, 25.78], "miles": [9, 9] } }
+  { "id": "miami", "pack": true, "name": "Miami", "state": "FL", "center": [-80.1918, 25.7617], "metro": { "center": [-80.22, 25.84], "miles": [28, 36] }, "core": { "center": [-80.19, 25.78], "miles": [9, 9] } },
+  { "id": "seattle", "pack": true, "future": true, "name": "Seattle", "state": "WA", "center": [-122.3321, 47.6062], "metro": { "center": [-122.30, 47.55], "miles": [32, 34] }, "core": { "center": [-122.333, 47.613], "miles": [9, 9] } },
+  { "id": "perth", "pack": true, "future": true, "includeTrains": true, "name": "Perth", "aliases": ["Perth, Western Australia"], "state": "WA", "country": "Australia", "center": [115.8605, -31.9523], "metro": { "center": [115.86, -32.015], "miles": [32, 36] }, "core": { "center": [115.855, -31.955], "miles": [9, 8] } }
 ]

@@ -1,5 +1,5 @@
 // The 1980s era for every city but Boston (tools/build-boston-pack.mjs), into its city pack:
-//   node tools/build-eras.mjs [city]
+//   node tools/build-eras.mjs [city] [--transit-only]
 // - transit: today's lines (data/transit/<city>.json) cut to those that ran in 1986, as listed
 //   in tools/eras/1980s.json; none at all where the city had no rail transit then.
 // - towers: every building OpenStreetMap dates to 1987 or later (start_date) that is tall
@@ -16,7 +16,9 @@ const root = new URL("../", import.meta.url);
 const read = async (p, fallback) => JSON.parse(await readFile(new URL(p, root), "utf8").catch(() => JSON.stringify(fallback)));
 const config = await read("tools/eras/1980s.json");
 const cities = await read("data/cities/index.json");
-const only = process.argv[2];
+const args = process.argv.slice(2);
+const only = args.find((arg) => !arg.startsWith("--"));
+const transitOnly = args.includes("--transit-only");
 await mkdir(new URL(".cache/", root), { recursive: true });
 const ENDPOINTS = [...OVERPASS, "https://maps.mail.ru/osm/tools/overpass/api/interpreter"];
 const LATER = "^(198[7-9]|199[0-9]|20[0-9][0-9])";
@@ -277,32 +279,31 @@ for (const [id, conf] of Object.entries(config.cities)) {
   const today = await read(`data/transit/${id}.json`, { features: [], lines: [], stations: [] });
   transitAll = today;
   const transit = cutExtensions(periodTransit(today, conf.transit), conf.cuts, conf.laterStations);
-  let towers = [];
-  try {
-    towers = await laterTowers(city);
-  } catch (err) {
-    console.log(`${city.name}: towers skipped (${err.message}); run again later`);
-  }
-  let sites = [];
-  try {
-    sites = await laterSites(city, conf.sites, conf.sitesBox);
-  } catch (err) {
-    console.log(`${city.name}: sites skipped (${err.message}); run again later`);
-  }
   const era = pack.eras?.["1980s"] ?? {};
+  const map = { ...era.map, transit };
+  if (!transitOnly) {
+    try {
+      const towers = await laterTowers(city);
+      map.towers = [...(map.towers ?? []).filter((t) => t.source !== "osm start_date"), ...towers];
+    } catch (err) {
+      console.log(`${city.name}: towers skipped (${err.message}); run again later`);
+    }
+    try {
+      const sites = await laterSites(city, conf.sites, conf.sitesBox);
+      map.hiddenAreas = [...(map.hiddenAreas ?? []).filter((a) => a.source !== "osm site"), ...sites];
+    } catch (err) {
+      console.log(`${city.name}: sites skipped (${err.message}); run again later`);
+    }
+  }
   pack.eras = {
     ...(pack.eras ?? {}),
     "1980s": {
       ...era,
       year: era.year ?? config.year,
       transitNote: conf.note,
-      map: {
-        ...(era.map ?? {}), transit,
-        towers: [...(era.map?.towers ?? []).filter((t) => t.source !== "osm start_date"), ...towers],
-        hiddenAreas: [...(era.map?.hiddenAreas ?? []).filter((a) => a.source !== "osm site"), ...sites]
-      }
+      map
     }
   };
   await writeFile(packUrl, JSON.stringify(pack, null, 1) + "\n");
-  console.log(`${city.name}: ${transit.lines.length} lines (${transit.features.length} track pieces, ${transit.stations.length} stations) of ${today.lines?.length ?? 0} today; ${towers.length} towers built since 1986 hidden, ${sites.length} sites cleared.`);
+  console.log(`${city.name}: ${transit.lines.length} lines (${transit.features.length} track pieces, ${transit.stations.length} stations) of ${today.lines?.length ?? 0} today; ${map.towers?.length ?? 0} later towers hidden, ${map.hiddenAreas?.length ?? 0} sites cleared.`);
 }

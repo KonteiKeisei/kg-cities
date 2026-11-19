@@ -1,0 +1,20 @@
+{
+  "about": "Perth, Western Australia landmarks as of 1986. Coordinates are [latitude, longitude].",
+  "landmarks": [
+    { "name": "Perth Railway Station", "at": [-31.9510, 115.8601], "pin": true, "text": "Suburban trains run from the Wellington Street station towards Fremantle, Midland and Armadale." },
+    { "name": "Perth Town Hall", "at": [-31.9547, 115.8600], "text": "The brick town hall and clock tower stand at Hay and Barrack streets." },
+    { "name": "His Majesty's Theatre", "at": [-31.9534, 115.8539], "text": "The Edwardian theatre on Hay Street is home to the West Australian Ballet." },
+    { "name": "London Court", "at": [-31.9552, 115.8586], "pin": true, "text": "A narrow shopping arcade with mock Tudor shopfronts links Hay Street and St Georges Terrace." },
+    { "name": "Council House", "at": [-31.9565, 115.8610], "pin": true, "text": "Perth's modernist municipal offices overlook Stirling Gardens." },
+    { "name": "Government House", "at": [-31.9573, 115.8613], "pin": true, "text": "The Governor's residence and gardens occupy the slope below St Georges Terrace." },
+    { "name": "Barrack Street Jetty", "at": [-31.9604, 115.8584], "pin": true, "text": "Ferries leave the square for South Perth, across the Swan River." },
+    { "name": "Kings Park State War Memorial", "at": [-31.9615, 115.8424], "pin": true, "text": "The memorial on Mount Eliza overlooks the Swan River and the city." },
+    { "name": "Old Swan Brewery", "at": [-31.9656, 115.8432], "pin": true, "text": "The old brewery buildings sit between Mount Eliza and the Swan River." },
+    { "name": "WACA Ground", "at": [-31.9606, 115.8799], "pin": true, "text": "Western Australia's Test cricket ground lies at the east end of the city." },
+    { "name": "Perth Zoo", "at": [-31.9764, 115.8529], "pin": true, "text": "The zoo is a short walk up from the South Perth ferry landing." },
+    { "name": "Fremantle Railway Station", "at": [-32.0522, 115.7432], "pin": true, "text": "Passengers are back at the port's station after the Fremantle line reopened in 1983." },
+    { "name": "Fremantle Prison", "at": [-32.0555, 115.7538], "pin": true, "text": "The old limestone convict establishment still operates as a prison above the town." },
+    { "name": "Round House", "at": [-32.0561, 115.7416], "pin": true, "text": "Fremantle's early colonial gaol sits on the headland above Bathers Beach." },
+    { "name": "Perth Airport", "at": [-31.942, 115.975], "pin": true, "text": "The airport sits on the plain east of Perth." }
+  ]
+}

@@ -2,6 +2,19 @@
   "about": "The 1980s era for each city (Boston's 1986 is kept in its pack, data/cities/boston.json, by hand). transit: the lines (by ref in data/transit/<city>.json) that ran in 1986, or [] for a city with no rail transit then. cuts: extensions built since, cut off a kept line at its old end (tools/build-eras.mjs cutExtensions); laterStations: stations opened since on track that ran. sites: Las Vegas resort grounds cleared, found in OpenStreetMap by name or traced by hand (ring). towers: buildings dated 1987 or later are found in OpenStreetMap by tools/build-eras.mjs.",
   "year": 1986,
   "cities": {
+    "seattle": {
+      "transit": [
+        "Seattle Center Monorail: Seattle Center => Westlake Center",
+        "Seattle Center Monorail: Westlake Center => Seattle Center"
+      ],
+      "note": "The Seattle Center Monorail ran in 1986. The overlay uses its present alignment, shortened by about one block in 1988. The Waterfront Streetcar also ran in 1986 and is outside this overlay."
+    },
+    "perth": {
+      "transit": ["FRE", "MID", "ARM"],
+      "cuts": [{ "lines": ["ARM"], "at": "Armadale 1", "toward": "Byford" }],
+      "laterStations": ["Perth Stadium", "Byford"],
+      "note": "Diesel suburban trains served Fremantle, Midland and Armadale. The Fremantle line reopened in 1983 and all three were electrified in 1991. Track and station positions are based on the present-day network."
+    },
     "new-york": {
       "transit": [
         "1",

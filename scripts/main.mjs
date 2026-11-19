@@ -26,6 +26,7 @@ import { openChainStores } from "./ui-chains.mjs";
 import { Bank, isMerchant, itemPiles } from "./bank.mjs";
 import { openBank, refreshBank } from "./ui-bank.mjs";
 import { installCurrencyExpressions } from "./currency-expressions.mjs";
+import { setupCityRail } from "./city-rail.mjs";
 import { repairRadioShacks } from "./radioshack.mjs";
 
 const MODULE_ID = "kg-cities";
@@ -165,8 +166,8 @@ const landmarks = new LandmarkStore({ getSaved: () => ofCity("landmarks"), setSa
 const places = new PlaceStore({
   getEdits: () => ofCity("placeEdits") ?? { edits: {}, added: {} },
   setEdits: (v) => setOfCity("placeEdits", v),
-  getBusinessMode: () => setting(SETTINGS.businesses),
-  getLandmarks: () => landmarks.list
+  getBusinessMode: () => current?.city.era === "future" ? "all" : setting(SETTINGS.businesses),
+  getLandmarks: () => current?.city.era === "future" ? drawnLandmarks() : landmarks.list
 });
 const projection = {
   sceneToLatLon: (x, y) => (layer.frame ? sceneToLatLon(layer.frame, { x, y }) : null),
@@ -407,6 +408,8 @@ Hooks.once("ready", () => {
     .then(() => addAreaCodes())
     .then(() => phoneUI.refresh()).catch((err) => console.error(`${MODULE_ID} | Unsleeping Pagers migration`, err));
   if (game.users.activeGM?.isSelf) convertJournalLandmarks().catch((err) => console.error(`${MODULE_ID} | journal conversion`, err));
+  // Initial canvasReady can precede KG Transit's ready hook, which exposes its API.
+  queueMicrotask(() => installSceneRail(canvas.scene));
 });
 
 /** What the map draws of the landmarks: a card's text changing does not redraw the city. */
@@ -697,7 +700,7 @@ Hooks.once("init", () => {
         const dLat = (h * 1609.344) / 111320 / 2, dLon = (w * 1609.344) / (111320 * Math.cos((lat * Math.PI) / 180)) / 2;
         area = at && Math.abs(at.lat - lat) <= dLat * 0.95 && Math.abs(at.lon - lon) <= dLon * 0.95 ? "core" : "metro";
       }
-      return generateCity(city, { era, year, area, view, name: name ?? `${city.name}, ${year}${area === "metro" ? " (metro)" : ""}` });
+      return generateCity(city, { era, year, area, view, name: name ?? `${city.name}, ${era === "future" ? "Future" : year}${area === "metro" ? " (metro)" : ""}` });
     },
     latLonToScene: (lat, lon) => (layer.frame ? latLonToScene(layer.frame, lat, lon) : null),
     sceneToLatLon: (x, y) => (layer.frame ? sceneToLatLon(layer.frame, { x, y }) : null),
@@ -772,7 +775,7 @@ async function drawCity() {
 
 /** In the scene's year: from (built) up to until (gone). */
 const inSceneYear = (x) => {
-  const year = current?.city?.year;
+  const year = current?.city?.era === "future" ? Infinity : current?.city?.year;
   return year == null || ((x.from == null || year >= x.from) && (x.until == null || year < x.until));
 };
 /** A module's landmark takes the place of the city's own of the same name (Logan as an airport, not a pin). */
@@ -793,7 +796,20 @@ function teardown() {
   current = null;
 }
 
-Hooks.on("canvasReady", () => { trail.draw(); drawCity(); });
+async function installSceneRail(scene) {
+  const info = cityOf(scene);
+  if (!info || game.users.activeGM?.id !== game.user.id) return;
+  const api = game.modules.get(MODULE_ID)?.api;
+  try {
+    const city = (await loadCities()).find((entry) => entry.id === info.city);
+    await setupCityRail(scene, city, info, () => api.transit(info.city, info.era));
+  } catch (err) {
+    console.warn(`${MODULE_ID} | setting up rail`, err);
+    ui.notifications.warn(`KG Cities could not set up rail on ${scene.name}. ${err.message}`);
+  }
+}
+
+Hooks.on("canvasReady", () => { trail.draw(); drawCity(); installSceneRail(canvas.scene); });
 Hooks.on("canvasTearDown", () => { trail.remove(); teardown(); });
 Hooks.on("canvasPan", () => layer.update());
 Hooks.on("updateScene", (scene, changes) => {

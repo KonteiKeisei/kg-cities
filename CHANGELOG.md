@@ -1,5 +1,11 @@
 # KG Cities changelog
 
+## 0.17.2
+
+- Generate downtown or metro scenes for Seattle and Perth, Western Australia, with period landmarks and rail overlays.
+- Both cities have a Future preset with current place and business names. With KG Transit enabled, party rides use its Future scenery, the new cabin with transparent windows, and a new audio loop. KG Transit is optional for generating and viewing city maps.
+- The Chain stores window opens without duplicates. Banks and ATMs can be placed without linking a shop actor.
+
 ## 0.16.1
 
 For real though, Take me to radio shack

@@ -239,10 +239,10 @@ const normalHex = (c) => {
  *   stations: [{ name, lat, lon, lines: [ref] }]
  * The era's own lines (city pack) replace these for a past period.
  */
-export async function transitRoutes(bounds, { endpoints = OVERPASS, timeoutMs = 45000 } = {}) {
+export async function transitRoutes(bounds, { endpoints = OVERPASS, timeoutMs = 45000, includeTrains = false } = {}) {
   const box = `${bounds.south},${bounds.west},${bounds.north},${bounds.east}`;
   const query = `[out:json][timeout:120];
-rel["type"="route"]["route"~"^(subway|light_rail|tram|monorail)$"](${box})->.r;
+rel["type"="route"]["route"~"^(subway|light_rail|tram|monorail${includeTrains ? "|train" : ""})$"](${box})->.r;
 .r out body;
 way(r.r)["railway"];
 out geom;

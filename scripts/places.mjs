@@ -14,6 +14,7 @@ export { metres };
 //              here today, but nobody knows what it was in 1986
 //   "hide"     not shown
 //   "show"     shown with today's name, except chains known to have arrived after 1986
+//   "all"      the Future preset uses source names and skips the era's corrections
 
 /** Kinds that are civic, natural or historic: shown with their names unless a rule says otherwise. */
 const CIVIC = new Set([
@@ -150,7 +151,7 @@ export function buildPlaces(osm, corrections, gm = {}, { businesses = "generic" 
     let name = p.name, kind = p.kind, hidden = false, kept = !!custom, why = custom ? "1986 list" : "map data", note = p.note ?? "";
     let confidence = p.confidence ?? null;
 
-    if (!custom) {
+    if (!custom && businesses !== "all") {
       const rule = ruleFor(p, corrections.rules);
       if (rule) {
         why = "1986 list";
@@ -197,7 +198,9 @@ export function buildPlaces(osm, corrections, gm = {}, { businesses = "generic" 
   };
 
   for (const p of osm) decide(p);
-  for (const p of corrections.added) decide({ ...p, id: p.id }, { custom: true });
+  if (businesses !== "all") {
+    for (const p of corrections.added) decide({ ...p, id: p.id }, { custom: true });
+  }
   for (const [id, p] of Object.entries(gm.added ?? {})) {
     decide({ ...p, id }, { custom: true });
     out[out.length - 1].why = "GM edit";

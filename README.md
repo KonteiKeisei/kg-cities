@@ -1,11 +1,11 @@
 # KG Cities
 
-Real US cities as Foundry VTT scenes. Pick a city and the module downloads just that city's map, packs it into one file in your Foundry data, and makes a gridless scene at real scale (100 px = 250 ft, measured in feet and miles), drawn from OpenStreetMap: streets and names, parks and water, and leaning 3D buildings in a night or day look. Zoomed far out, the city fades into the city at night from orbit.
+Real cities as Foundry VTT scenes. Pick a city and the module downloads just that city's map, packs it into one file in your Foundry data, and makes a gridless scene at real scale (100 px = 250 ft, measured in feet and miles), drawn from OpenStreetMap: streets and names, parks and water, and leaning 3D buildings in a night or day look. Zoomed far out, the city fades into the city at night from orbit.
 
-Set in **1986** by default: towers built since are gone, the transit runs as it did then, and each city has 15 to 50 landmarks written as of that year, with custom models for the World Trade Center and the Empire State Building.
+Set in **1986** by default. Each city has period landmarks and a transit overlay based on the routes of the time. Buildings dated after the scene year can be hidden. New York has custom models for the World Trade Center and the Empire State Building.
 
 - **Requires:** Foundry VTT v13.
-- **Cities:** Boston, New York, Washington, Philadelphia, Baltimore, Atlanta, St. Louis, Detroit, Chicago, San Francisco, Los Angeles, Las Vegas, Austin, Miami.
+- **Cities:** Boston, New York, Washington, Philadelphia, Baltimore, Atlanta, St. Louis, Detroit, Chicago, San Francisco, Los Angeles, Las Vegas, Austin, Miami, Seattle, and Perth (Western Australia).
 - **Works with:** **[KG Transit](https://github.com/KonteiKeisei/kg-transit)** for the cities' rail networks, airports and flights between the cities (a good module on its own; on a city scene it sets up the city's known transit by itself); [Calendaria](https://github.com/Sayshal/calendaria) for the time of day (day and night looks).
 
 ## Install
@@ -18,7 +18,9 @@ https://github.com/KonteiKeisei/kg-cities/releases/latest/download/module.json
 
 Or unzip a release into your Foundry `Data/modules` folder. Then enable **KG Cities** in your world.
 
-See the [wiki](https://github.com/KonteiKeisei/kg-cities/wiki) for a full guide. **Coming:** modern cities (after the 1980s) and international cities.
+See the [wiki](https://github.com/KonteiKeisei/kg-cities/wiki) for a full guide. Modern city scenes are planned.
+
+**Future** is available for Seattle and Perth. It uses the current street map, business and place names, and rail corridors. With KG Transit active and **Set up city networks** enabled, the first GM to open the scene gets rideable rail with KG Transit's Future theme, including neon stations and cyber tunnels. GM POI edits still apply.
 
 ## Making a city
 

@@ -18,8 +18,11 @@ export const GRID = { size: 100, distance: 250, units: "ft" };
 export const DATA_VERSION = 6;
 export const ERAS = {
   "1980s": { label: "1980s", year: 1986, ready: true },
+  future: { label: "Future", year: null, ready: true },
   modern: { label: "Modern", year: null, ready: false }
 };
+const supportsEra = (city, era) => ERAS[era]?.ready && (era !== "future" || city.future);
+const eraLabel = (era, year) => era === "1980s" ? year : ERAS[era]?.label;
 const esc = (s) => foundry.utils.escapeHTML(String(s ?? ""));
 
 /** Where uploads go: The Forge's storage when hosted there, else the Data folder. */
@@ -90,7 +93,10 @@ async function existing(id) {
 export async function openGenerator() {
   if (!game.user.isGM) return;
   const cities = await loadCities();
-  const options = cities.map((c) => `<option value="${c.id}">${esc(c.name)}, ${c.state}</option>`).join("");
+  const options = cities.map((c) => {
+    const label = [c.name, c.state, c.country].filter(Boolean).join(", ");
+    return `<option value="${esc(c.id)}">${esc(label)}</option>`;
+  }).join("");
   const eras = Object.entries(ERAS).map(([k, e]) => `<option value="${k}" ${e.ready ? "" : "disabled"}>${esc(e.label)}${e.ready ? "" : " (coming later)"}</option>`).join("");
   const area = (c, which) => {
     const [w, h] = c[which].miles;
@@ -99,7 +105,7 @@ export async function openGenerator() {
   const content = `
     <div class="form-group"><label>City</label><div class="form-fields"><select name="city">${options}</select></div></div>
     <div class="form-group"><label>Era</label><div class="form-fields"><select name="era">${eras}</select><input type="number" name="year" value="1986" min="1980" max="1989" step="1" style="max-width:6em" data-tooltip="Year within the 1980s"></div>
-      <p class="hint">The 1980s hide later towers, roads and businesses, and show the period's transit. Modern comes later.</p></div>
+      <p class="hint">Future uses today's map and place names, with KG Transit's Future rail theme when enabled.</p></div>
     <div class="form-group"><label>Scene covers</label><div class="form-fields"><select name="area">
       <option value="core">City core</option><option value="metro">Whole metro area</option></select></div>
       <p class="hint kgc-area"></p></div>
@@ -121,11 +127,18 @@ export async function openGenerator() {
       const form = dialog.element.querySelector("form");
       const sync = () => {
         const c = cities.find((x) => x.id === form.elements.city.value);
+        const era = form.elements.era;
+        const future = [...era.options].find((option) => option.value === "future");
+        future.disabled = !c.future;
+        future.hidden = !c.future;
+        if (!supportsEra(c, era.value)) era.value = "1980s";
+        form.elements.year.disabled = era.value !== "1980s";
+        form.elements.year.hidden = era.value !== "1980s";
         const which = form.elements.area.value;
         const box = boxAround(c[which].center, c[which].miles);
         const { width, height } = sceneSize(box, FEET_PER_PIXEL);
         dialog.element.querySelector(".kgc-area").textContent = `${area(c, which)}: a ${width.toLocaleString()} x ${height.toLocaleString()} px scene.${which === "metro" ? " Very large scenes can be slow in Foundry." : ""}`;
-        form.elements.name.placeholder = `City of ${c.name} (${form.elements.era.value === "1980s" ? form.elements.year.value : "today"})`;
+        form.elements.name.placeholder = `City of ${c.name} (${eraLabel(era.value, form.elements.year.value)})`;
       };
       for (const el of form.elements) el.addEventListener("change", sync);
       sync();
@@ -136,7 +149,7 @@ export async function openGenerator() {
   // Download the city again and update its existing scenes, without making a new one.
   if (result.dataOnly) return updateCityData(city.id, { refresh: true });
   const year = Math.max(1980, Math.min(1989, Number(result.year) || 1986));
-  return generateCity(city, { era: result.era, year, area: result.area, name: result.name?.trim() || `City of ${city.name} (${result.era === "1980s" ? year : "today"})`, refresh: !!result.refresh });
+  return generateCity(city, { era: result.era, year, area: result.area, name: result.name?.trim(), refresh: !!result.refresh });
 }
 
 /* ---------------------------------------- */
@@ -201,7 +214,7 @@ async function cityTransit(city, metro, getTile) {
     if (res.ok) return await res.json();
   } catch { /* not bundled */ }
   try {
-    return await transitRoutes(metro, { timeoutMs: 30000 });
+    return await transitRoutes(metro, { timeoutMs: 30000, includeTrains: city.includeTrains });
   } catch (err) {
     console.warn(`${MODULE_ID} | transit routes unavailable, using the map's track`, err);
     return transitLines(getTile, metro);
@@ -340,7 +353,7 @@ export async function refreshTransit(cityId, { timeoutMs = 120000 } = {}) {
   if (!meta) { ui.notifications.warn(`KG Cities: generate ${city?.name ?? cityId} first.`); return null; }
   const note = progressNote(`${city.name}: fetching transit lines from Overpass (can take a minute or two)…`);
   try {
-    const transit = await transitRoutes(meta.metro, { timeoutMs });
+    const transit = await transitRoutes(meta.metro, { timeoutMs, includeTrains: city?.includeTrains });
     const files = cityFiles(city.id);
     meta.files.transit = await upload(files.transit, new TextEncoder().encode(JSON.stringify(transit)), "application/json");
     await upload(files.meta, new TextEncoder().encode(JSON.stringify(meta)), "application/json");
@@ -361,6 +374,9 @@ export async function refreshTransit(cityId, { timeoutMs = 120000 } = {}) {
 export async function generateCity(city, { era = "1980s", year = 1986, area = "core", name, refresh = false, view = true } = {}) {
   const note = progressNote(`${city.name}: preparing…`);
   try {
+    if (era === "future" && !city.future) throw new Error(`Future is unavailable for ${city.name}.`);
+    if (era === "future") year = null;
+    name ||= `City of ${city.name} (${eraLabel(era, year) ?? era})`;
     const meta = await buildCityData(city, { refresh, note });
     const bounds = boxAround(city[area].center, city[area].miles);
     const { width, height } = sceneSize(bounds, FEET_PER_PIXEL);

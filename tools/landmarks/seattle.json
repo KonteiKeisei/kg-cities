@@ -1,0 +1,18 @@
+{
+  "about": "Seattle landmarks as of 1986. Coordinates are [latitude, longitude].",
+  "landmarks": [
+    { "name": "Space Needle", "at": [47.6205, -122.3493], "text": "The observation tower and revolving restaurant built for the 1962 World's Fair." },
+    { "name": "Seattle Center Coliseum", "at": [47.6220, -122.3540], "pin": true, "text": "The Washington State Pavilion from the World's Fair is now home court for the Seattle SuperSonics." },
+    { "name": "Pike Place Market", "at": [47.6097, -122.3425], "pin": true, "text": "Fishmongers, produce stalls and small shops fill the public market above the waterfront." },
+    { "name": "Smith Tower", "at": [47.6019, -122.3318], "text": "The white tower above Pioneer Square has looked out over the harbor since 1914." },
+    { "name": "Columbia Seafirst Center", "at": [47.6046, -122.3307], "text": "Opened in 1985, the dark glass office tower rises over the older downtown skyline." },
+    { "name": "Kingdome", "at": [47.5951, -122.3316], "until": 2000, "shape": [{ "circle": 108, "h": 27 }, { "circle": 93, "h": 42, "base": 27 }, { "circle": 62, "h": 55, "base": 42 }], "text": "The county's concrete domed stadium houses the Mariners and Seahawks." },
+    { "name": "King Street Station", "at": [47.5985, -122.3299], "pin": true, "text": "The brick railroad station beside the Kingdome is Seattle's Amtrak stop." },
+    { "name": "Colman Dock", "at": [47.6018, -122.3375], "pin": true, "text": "State ferries leave the downtown waterfront for Bainbridge Island and Bremerton." },
+    { "name": "Seattle Aquarium", "at": [47.6074, -122.3431], "pin": true, "text": "The public aquarium on Pier 59 looks out over Elliott Bay." },
+    { "name": "Hiram M. Chittenden Locks", "at": [47.6659, -122.3978], "pin": true, "text": "The Ballard Locks carry boats between the ship canal and Puget Sound." },
+    { "name": "Gas Works Park", "at": [47.6456, -122.3344], "pin": true, "text": "The old gas plant's machinery remains at the park on the north shore of Lake Union." },
+    { "name": "Suzzallo Library", "at": [47.6556, -122.3088], "pin": true, "text": "The University of Washington's Gothic library looks over Red Square." },
+    { "name": "Seattle-Tacoma International Airport", "at": [47.4490, -122.3088], "pin": true, "text": "The region's main passenger airport lies south of Seattle." }
+  ]
+}

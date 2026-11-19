@@ -1,0 +1,24 @@
+{
+  "1980s": ["FRE", "MID", "ARM"],
+  "future": ["FRE", "MID", "ARM", "YAN", "MAN", "AIR", "ELL", "TCL"],
+  "routes": [
+    { "ref": "FRE", "name": "Fremantle Line", "stops": ["Perth", "City West", "West Leederville", "Subiaco", "Daglish", "Shenton Park", "Karrakatta", "Loch Street", "Showgrounds", "Claremont", "Swanbourne", "Grant Street", "Cottesloe", "Mosman Park", "Victoria Street", "North Fremantle", "Fremantle"] },
+    { "ref": "MID", "name": "Midland Line", "stops": ["Perth", "McIver 4", "Claisebrook", "East Perth", "Mount Lawley", "Maylands", "Meltham", "Bayswater 4", "Ashfield", "Bassendean", "Success Hill 2", "Guildford 2", "East Guildford 2", "Woodbridge 2", "Midland 3"] },
+    { "ref": "ARM", "name": "Armadale Line", "stops": ["Perth", "McIver 1", "Claisebrook", "Perth Stadium", "Burswood", "Victoria Park", "Carlisle", "Oats Street", "Queens Park", "Cannington", "Beckenham", "Kenwick 1", "Maddington", "Gosnells", "Seaforth", "Kelmscott", "Challis", "Sherwood", "Armadale 1", "Byford"] },
+    { "ref": "YAN", "name": "Yanchep Line", "stops": ["Elizabeth Quay", "Perth Underground", "Leederville", "Glendalough", "Stirling", "Warwick", "Greenwood", "Whitfords", "Edgewater", "Joondalup", "Currambine", "Clarkson", "Butler", "Alkimos", "Eglinton", "Yanchep"],
+      "underground": ["Elizabeth Quay", "Perth Underground"] },
+    { "ref": "MAN", "name": "Mandurah Line", "stops": ["Perth Underground", "Elizabeth Quay", "Canning Bridge", "Bull Creek", "Murdoch", "Cockburn Central", "Aubin Grove", "Kwinana", "Wellard", "Rockingham", "Warnbro", "Lakelands", "Mandurah"],
+      "underground": ["Perth Underground", "Elizabeth Quay"] },
+    { "ref": "AIR", "name": "Airport Line", "stops": ["Claremont", "Showgrounds", "Loch Street", "Karrakatta", "Shenton Park", "Daglish", "Subiaco", "West Leederville", "City West", "Perth", "McIver 4", "Claisebrook", "East Perth", "Mount Lawley", "Maylands", "Meltham", "Bayswater 4", "Redcliffe", "Airport Central", "High Wycombe 2"],
+      "underground": ["Redcliffe", "Airport Central"] },
+    { "ref": "ELL", "name": "Ellenbrook Line", "stops": ["Perth", "McIver 4", "Claisebrook", "East Perth", "Mount Lawley", "Maylands", "Meltham", "Bayswater 2", "Morley", "Noranda", "Ballajura", "Whiteman Park", "Ellenbrook"] },
+    { "ref": "TCL", "name": "Thornlie-Cockburn Line", "stops": ["Perth", "McIver 1", "Claisebrook", "Perth Stadium", "Burswood", "Victoria Park", "Carlisle", "Oats Street", "Queens Park", "Cannington", "Beckenham", "Thornlie", "Nicholson Road", "Ranford Road", "Cockburn Central"] }
+  ],
+  "stationAliases": {
+    "Perth Underground": "Perth",
+    "McIver 1": "McIver", "McIver 4": "McIver",
+    "Bayswater 2": "Bayswater", "Bayswater 4": "Bayswater",
+    "Success Hill 2": "Success Hill", "Guildford 2": "Guildford", "East Guildford 2": "East Guildford", "Woodbridge 2": "Woodbridge", "Midland 3": "Midland",
+    "Kenwick 1": "Kenwick", "Armadale 1": "Armadale", "High Wycombe 2": "High Wycombe"
+  }
+}

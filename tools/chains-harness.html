@@ -11,7 +11,7 @@
 <style>
   body { margin: 0; min-height: 100vh; background: #2b3340; font-family: Signika, system-ui, sans-serif; }
   .application { position: absolute; left: 30px; top: 30px; display: flex; flex-direction: column; }
-  .window-content { display: flex; flex-direction: column; }
+  .window-content { display: flex; flex-direction: column; flex: 1; min-height: 0; }
   .window-header { display: flex; gap: 8px; padding: 6px 10px; font-size: 13px; }
 </style>
 </head>
@@ -44,11 +44,13 @@ globalThis.foundry = {
     DialogV2: { confirm: async () => true },
     ApplicationV2: class {
       constructor(o = {}) { this.options = { ...this.constructor.DEFAULT_OPTIONS, ...o }; }
-      render() {
+      async render() {
+        await Promise.resolve();
         if (!this.element) {
           const el = document.createElement("div");
           el.className = `application ${(this.options.classes ?? []).join(" ")}`;
           el.style.width = `${this.options.position?.width}px`;
+          el.style.height = `${this.options.position?.height}px`;
           el.innerHTML = `<header class="window-header">${this.options.window.title}</header><section class="window-content"></section>`;
           document.body.append(el);
           this.element = el;
@@ -64,7 +66,9 @@ const raw = [
   { id: "p1", name: "CVS Pharmacy", lat: 42.3535, lon: -71.0625 }, { id: "p2", name: "CVS", lat: 42.35352, lon: -71.06252 },
   { id: "p3", name: "CVS Pharmacy", lat: 42.2210, lon: -71.0040 }, { id: "p4", name: "CVS Pharmacy", lat: 42.4630, lon: -71.0110 },
   { id: "p5", name: "Walgreens", lat: 42.3490, lon: -71.0660 }, { id: "p6", name: "Walgreens", lat: 42.3770, lon: -71.2360 },
-  { id: "p7", name: "Rite Aid Pharmacy", lat: 42.2600, lon: -71.2300 }, { id: "p8", name: "CVS Pharmacy", lat: 44.0, lon: -71.0 }
+  { id: "p7", name: "Rite Aid Pharmacy", lat: 42.2600, lon: -71.2300 }, { id: "p8", name: "CVS Pharmacy", lat: 44.0, lon: -71.0 },
+  { id: "bank1", name: "Bank of America", kind: "bank", lat: 42.35, lon: -71.06 },
+  { id: "atm1", name: "Bank of America ATM", kind: "atm", lat: 42.36, lon: -71.07 }
 ];
 const landmarks = { get list() { return saved; }, async save(list) { saved = structuredClone(list); app.render(); } };
 const { openChainStores } = await import("../scripts/ui-chains.mjs");

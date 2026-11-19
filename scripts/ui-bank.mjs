@@ -144,7 +144,6 @@ export function openBank(bank, place, actor) {
   open ??= new AppClass();
   open.at(bank, place, actor);
   open.render({ force: true });
-  open.bringToFront?.();
   return open;
 }
 

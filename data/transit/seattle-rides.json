@@ -1,0 +1,11 @@
+{
+  "1980s": ["Seattle Center Monorail: Seattle Center => Westlake Center"],
+  "future": ["Seattle Center Monorail: Seattle Center => Westlake Center", "1", "2"],
+  "routes": [
+    { "ref": "Seattle Center Monorail: Seattle Center => Westlake Center", "name": "Seattle Center Monorail", "scenery": "elevated", "stops": ["Seattle Center", "Westlake Center"] },
+    { "ref": "1", "name": "1 Line", "stops": ["Federal Way Downtown", "Star Lake", "Kent Des Moines", "Angle Lake", "SeaTac/Airport", "Tukwila International Boulevard", "Rainier Beach", "Othello", "Columbia City", "Mount Baker", "Beacon Hill", "SODO", "Stadium", "International District Chinatown", "Pioneer Square", "Symphony", "Westlake", "Capitol Hill", "University of Washington", "U District", "Roosevelt", "Northgate", "Pinehurst", "Shoreline South/148th", "Shoreline North/185th", "Mountlake Terrace", "Lynnwood City Center"],
+      "underground": ["Beacon Hill", "International District Chinatown", "Pioneer Square", "Symphony", "Westlake", "Capitol Hill", "University of Washington", "U District", "Roosevelt"] },
+    { "ref": "2", "name": "2 Line", "stops": ["Downtown Redmond", "Marymoor Village", "Redmond Technology", "Overlake Village", "BelRed", "Spring District", "Wilburton", "Bellevue Downtown", "East Main", "South Bellevue", "Mercer Island", "Judkins Park", "International District Chinatown", "Pioneer Square", "Symphony", "Westlake", "Capitol Hill", "University of Washington", "U District", "Roosevelt", "Northgate", "Pinehurst", "Shoreline South/148th", "Shoreline North/185th", "Mountlake Terrace", "Lynnwood City Center"],
+      "underground": ["International District Chinatown", "Pioneer Square", "Symphony", "Westlake", "Capitol Hill", "University of Washington", "U District", "Roosevelt"] }
+  ]
+}

@@ -30,3 +30,21 @@ test("an edit keyed by the place's own id wins and has no editKey", () => {
   assert.equal(p.name, "Ye Olde Union Oyster House");
   assert.equal(p.editKey, undefined);
 });
+
+test("Future uses source names and visibility with GM edits applied", () => {
+  const corrections = compileCorrections({ rules: [
+    { match: "^9/11 Memorial$", hide: true },
+    { match: "^Hunt's Photo & Video$", name: "Historic Photo Shop" }
+  ] });
+  const gm = { edits: { "9003": { hidden: true }, "9004": { name: "GM Oyster House" } } };
+  const period = buildPlaces(osm, corrections);
+  assert.equal(period[0].name, "Historic Photo Shop");
+  assert.equal(period[1].hidden, true);
+  const places = buildPlaces(osm, corrections, gm, { businesses: "all" });
+  assert.deepEqual(places.map(({ name, hidden }) => [name, hidden]), [
+    ["Hunt's Photo & Video", false],
+    ["9/11 Memorial", false],
+    ["9/11 Memorial", true],
+    ["GM Oyster House", false]
+  ]);
+});
