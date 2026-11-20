@@ -16,6 +16,7 @@ import { TravelController } from "./travel.mjs";
 import { openTravel } from "./ui-travel.mjs";
 import { RoadView } from "./ui-roadview.mjs";
 import { installMonksPartyBar } from "./monks-bar.mjs";
+import { installMonksMembers } from "./monks-members.mjs";
 import { metres as metresBetween } from "./geo.mjs";
 import { DEVICES, Phones, addAreaCodes, directory as phoneDirectory, givePager, givePaper, giveBooksToTheEmptyHanded, migrateUnsleepingPagers, myDevices, myPagers, newNumber, phonesHere, placePhone, speakerAt, watchNewPagers } from "./phones.mjs";
 import { PhoneUI } from "./ui-phone.mjs";
@@ -556,8 +557,10 @@ Hooks.once("init", () => {
   installParty({ manager: partyManager, isCityScene: (s) => !!cityOf(s) });
   travel.install();
   roadView.install();
-  // Monk's TokenBar: each party token is one bar entry showing who is inside it.
+  // Monk's TokenBar: each party token is one bar entry showing who is inside it; on a city scene
+  // the bar lists the people instead, and clicking one goes to their party.
   installMonksPartyBar();
+  installMonksMembers({ isScene: (s) => !!cityOf(s) });
 
   layer.onError = (err) => {
     console.warn(`${MODULE_ID} |`, err);

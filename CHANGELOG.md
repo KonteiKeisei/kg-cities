@@ -1,5 +1,9 @@
 # KG Cities changelog
 
+## 0.17.4
+
+- On a city scene, Monk's TokenBar lists the people in each party instead of one entry per party. Each party's people sit together, and the bar updates as parties split, merge or change size. Click a person to select their party's token and pan to it (shift-click adds it to the selection, ctrl-click targets it). Double-click opens the person's sheet, or asks their party for a roll when Monk's double-click is set to request a roll. Everyone in a party is listed whether or not their player is logged in. KG Realms (0.96.6) does the same on its scenes, with the same shared code.
+
 ## 0.17.3
 
 - Parties go on Monk's TokenBar instead of Flash Token Bar 5e. Each party token is one bar entry, and its picture shows the people inside the party. Requesting a roll for that entry asks the members, each once, without the party's vehicles.

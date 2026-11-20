@@ -989,3 +989,7 @@ a.kgc-link:hover { background: rgba(255, 201, 74, 0.22); text-shadow: none; }
 .kgc-bank .warn-line { margin: 0; font-size: 12.5px; color: #ffcf70; display: flex; align-items: center; gap: 8px; }
 .kgc-bank .hint { margin: 0; }
 .kgc-chains .sb-table td small:has(input) { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+
+/* Monk's TokenBar on a city scene: each party's people together, a gap before the next party. */
+#tokenbar li.token.kg-member.kg-party-start:not(:first-child) { margin-left: 12px; }
+#tokenbar.vertical li.token.kg-member.kg-party-start:not(:first-child) { margin-left: 0; margin-top: 12px; }
