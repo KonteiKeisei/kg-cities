@@ -1,5 +1,10 @@
 # KG Cities changelog
 
+## 0.17.3
+
+- Parties go on Monk's TokenBar instead of Flash Token Bar 5e. Each party token is one bar entry, and its picture shows the people inside the party. Requesting a roll for that entry asks the members, each once, without the party's vehicles.
+- The Flash Token Bar 5e bridge is removed.
+
 ## 0.17.2
 
 - Generate downtown or metro scenes for Seattle and Perth, Western Australia, with period landmarks and rail overlays.

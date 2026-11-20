@@ -15,7 +15,7 @@ import { installParty } from "./ui-party.mjs";
 import { TravelController } from "./travel.mjs";
 import { openTravel } from "./ui-travel.mjs";
 import { RoadView } from "./ui-roadview.mjs";
-import { installFlashBar } from "./flash-bar.mjs";
+import { installMonksPartyBar } from "./monks-bar.mjs";
 import { metres as metresBetween } from "./geo.mjs";
 import { DEVICES, Phones, addAreaCodes, directory as phoneDirectory, givePager, givePaper, giveBooksToTheEmptyHanded, migrateUnsleepingPagers, myDevices, myPagers, newNumber, phonesHere, placePhone, speakerAt, watchNewPagers } from "./phones.mjs";
 import { PhoneUI } from "./ui-phone.mjs";
@@ -556,8 +556,8 @@ Hooks.once("init", () => {
   installParty({ manager: partyManager, isCityScene: (s) => !!cityOf(s) });
   travel.install();
   roadView.install();
-  // Flash Token Bar 5e: the city's parties are its favourites, kept in step with splits and merges.
-  installFlashBar({ isCityScene: (s) => !!cityOf(s) });
+  // Monk's TokenBar: each party token is one bar entry showing who is inside it.
+  installMonksPartyBar();
 
   layer.onError = (err) => {
     console.warn(`${MODULE_ID} |`, err);
