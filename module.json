@@ -2,11 +2,11 @@
   "id": "kg-cities",
   "title": "KG Cities",
   "description": "Generate a real-world city as a gridless scene at real scale (feet and miles). Choose from 16 cities, including Seattle and Perth, Western Australia. Day and night looks, leaning buildings, 1980s landmarks, and a Future preset for Seattle and Perth.",
-  "version": "0.17.4",
+  "version": "0.17.5",
   "license": "LICENSE",
   "url": "https://github.com/KonteiKeisei/kg-cities",
   "manifest": "https://github.com/KonteiKeisei/kg-cities/releases/latest/download/module.json",
-  "download": "https://github.com/KonteiKeisei/kg-cities/releases/download/v0.17.4/kg-cities-0.17.4.zip",
+  "download": "https://github.com/KonteiKeisei/kg-cities/releases/download/v0.17.5/kg-cities-0.17.5.zip",
   "bugs": "https://github.com/KonteiKeisei/kg-cities/issues",
   "compatibility": {
     "minimum": "13",

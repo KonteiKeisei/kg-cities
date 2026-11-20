@@ -1,5 +1,10 @@
 # KG Cities changelog
 
+## 0.17.5
+
+- The world's designated party, and any other group that has never been split, counts as a party on Monk's TokenBar: its people are listed and its token gets the party picture. Before, only a group that had been split was recognised.
+- Same Monk's TokenBar code as KG Realms 0.96.8, so the two work alike when both are active. The console says once per scene how many parties and people were put on the bar ("KG parties | Monk's TokenBar: ...").
+
 ## 0.17.4
 
 - On a city scene, Monk's TokenBar lists the people in each party instead of one entry per party. Each party's people sit together, and the bar updates as parties split, merge or change size. Click a person to select their party's token and pan to it (shift-click adds it to the selection, ctrl-click targets it). Double-click opens the person's sheet, or asks their party for a roll when Monk's double-click is set to request a roll. Everyone in a party is listed whether or not their player is logged in. KG Realms (0.96.6) does the same on its scenes, with the same shared code.
