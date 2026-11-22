@@ -17,6 +17,7 @@ import { openTravel } from "./ui-travel.mjs";
 import { RoadView } from "./ui-roadview.mjs";
 import { installMonksPartyBar, addPartyRule } from "./monks-bar.mjs";
 import { installMonksMembers } from "./monks-members.mjs";
+import { installFlashParties } from "./flash-parties.mjs";
 import { metres as metresBetween } from "./geo.mjs";
 import { DEVICES, Phones, addAreaCodes, directory as phoneDirectory, givePager, givePaper, giveBooksToTheEmptyHanded, migrateUnsleepingPagers, myDevices, myPagers, newNumber, phonesHere, placePhone, speakerAt, watchNewPagers } from "./phones.mjs";
 import { PhoneUI } from "./ui-phone.mjs";
@@ -563,6 +564,8 @@ Hooks.once("init", () => {
   addPartyRule((a) => a.type === "group");
   installMonksPartyBar();
   installMonksMembers({ isScene: (s) => !!cityOf(s) });
+  // Flash Token Bar 5e: the same parties on its Group tab (flash-parties.mjs, shared with KG Realms).
+  installFlashParties({ isScene: (s) => !!cityOf(s) });
 
   layer.onError = (err) => {
     console.warn(`${MODULE_ID} |`, err);

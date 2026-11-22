@@ -1,5 +1,13 @@
 # KG Cities changelog
 
+## 0.17.7
+
+- Flash Token Bar 5e: parties start open, their people listed under them, and a click on one of the people (not only the party) selects the party's token and pans to it, as on Monk's TokenBar.
+
+## 0.17.6
+
+- Parties show on Flash Token Bar 5e again, as they do on Monk's TokenBar. On a city scene Flash's bar opens on its Group tab with each party there, folded, with one picture of its people. A plain click on a party picks just that party (shift adds), selects its token and pans to it. The same code as KG Realms 0.98.0.
+
 ## 0.17.5
 
 - The world's designated party, and any other group that has never been split, counts as a party on Monk's TokenBar: its people are listed and its token gets the party picture. Before, only a group that had been split was recognised.
